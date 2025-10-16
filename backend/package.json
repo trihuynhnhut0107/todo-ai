@@ -4,7 +4,9 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only server.ts"
+    "dev": "ts-node-dev --respawn --transpile-only server.ts",
+    "sync-db": "ts-node src/tools/sync-db.ts",
+    "sync-db:force": "ts-node src/tools/sync-db.ts --force"
   },
   "keywords": [],
   "author": "",

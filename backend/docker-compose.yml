@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: todoai-postgres
+    environment:
+      POSTGRES_USER: todoai
+      POSTGRES_PASSWORD: todoai
+      POSTGRES_DB: todoai
+    ports:
+      - "5432:5432"
+    volumes:
+      - todoai-postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U todoai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  todoai-postgres-data:
+    driver: local
