@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import LangchainService from "../services/langchain.service";
+import { LangchainService } from "../services/langchain.service";
 import { BaseController } from "./base.controller";
 
 interface GenerateResponseRequest {
@@ -12,11 +12,8 @@ interface GenerateResponseData {
 }
 
 class LangchainController extends BaseController {
-  private langchainService: LangchainService;
-
-  constructor() {
+  constructor(private langchainService: LangchainService) {
     super();
-    this.langchainService = LangchainService.getInstance();
   }
 
   getResponse = this.asyncHandler(async (req: Request, res: Response) => {

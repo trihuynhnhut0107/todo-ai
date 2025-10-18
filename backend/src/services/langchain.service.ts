@@ -2,8 +2,7 @@ require("dotenv").config();
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { createEventPromptTemplate } from "../prompts/create-events.prompt";
 
-class LangchainService {
-  private static instance: LangchainService;
+export class LangchainService {
   private model: ChatGoogleGenerativeAI;
 
   constructor() {
@@ -13,14 +12,6 @@ class LangchainService {
       maxRetries: 2,
       apiKey: process.env.GOOGLE_API_KEY,
     });
-  }
-
-  // Add singleton implementation
-  public static getInstance(): LangchainService {
-    if (!LangchainService.instance) {
-      LangchainService.instance = new LangchainService();
-    }
-    return LangchainService.instance;
   }
 
   async generateResponse(input: string): Promise<string> {
