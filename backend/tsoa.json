@@ -24,14 +24,6 @@
       {
         "name": "Authentication",
         "description": "User authentication and authorization endpoints"
-      },
-      {
-        "name": "Tasks",
-        "description": "Task management endpoints"
-      },
-      {
-        "name": "Projects",
-        "description": "Project management endpoints"
       }
     ]
   },

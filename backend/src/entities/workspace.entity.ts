@@ -11,10 +11,10 @@ import {
   JoinTable,
 } from "typeorm";
 import { User } from "./user.entity";
-import { Task } from "./task.entity";
+import { Event } from "./event.entity";
 
-@Entity({ name: "projects" })
-export class Project {
+@Entity({ name: "workspaces" })
+export class Workspace {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
@@ -24,23 +24,23 @@ export class Project {
   @Column({ type: "text", nullable: true })
   description?: string;
 
-  // For UI: color coding projects
+  // Timezone code (e.g., "America/New_York", "UTC", "Asia/Tokyo")
+  @Column({ default: "UTC" })
+  timezoneCode!: string;
+
+  // For UI: color coding workspaces
   @Column({ default: "#3B82F6" }) // Default blue
   color!: string;
 
-  // Project icon/emoji
+  // Workspace icon/emoji
   @Column({ nullable: true })
   icon?: string;
 
-  // For team collaboration features
-  @Column({ default: false })
-  isShared!: boolean;
-
-  // Archive completed or inactive projects
+  // Archive inactive workspaces
   @Column({ default: false })
   isArchived!: boolean;
 
-  // AI-generated insights or summary
+  // Additional metadata
   @Column({ type: "jsonb", nullable: true })
   metadata?: Record<string, unknown>;
 
@@ -52,19 +52,19 @@ export class Project {
   @JoinColumn({ name: "ownerId" })
   owner!: User;
 
-  @OneToMany(() => Task, (task) => task.project)
-  tasks!: Task[];
+  @OneToMany(() => Event, (event) => event.workspace)
+  events!: Event[];
 
   // For team collaboration: shared with multiple users
   @ManyToMany(() => User)
   @JoinTable({
-    name: "project_members",
-    joinColumn: { name: "projectId", referencedColumnName: "id" },
+    name: "workspace_members",
+    joinColumn: { name: "workspaceId", referencedColumnName: "id" },
     inverseJoinColumn: { name: "userId", referencedColumnName: "id" },
   })
   members?: User[];
 
-  // Ordering/position in user's project list
+  // Ordering/position in user's workspace list
   @Column({ type: "integer", default: 0 })
   order!: number;
 
