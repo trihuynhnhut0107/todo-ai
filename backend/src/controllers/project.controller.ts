@@ -1,93 +1,170 @@
-import { Request, Response } from "express";
-import { BaseController } from "./base.controller";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Path,
+  Post,
+  Put,
+  Query,
+  Route,
+  Security,
+  SuccessResponse,
+  Tags,
+  Request,
+} from "tsoa";
+import * as express from "express";
 import { ProjectService } from "../services/project.service";
 import {
   CreateProjectDto,
   UpdateProjectDto,
   ProjectQueryDto,
   AddProjectMembersDto,
-  RemoveProjectMemberDto,
   ReorderProjectsDto,
 } from "../dtos/project.dto";
+import { Project } from "../entities/project.entity";
+import { ApiResponse, PaginatedResponse } from "../types/api-response.types";
+import { getUserId } from "../utils/request.utils";
 
-export class ProjectController extends BaseController {
-  private projectService: ProjectService;
-
-  constructor(projectService: ProjectService) {
-    super();
-    this.projectService = projectService;
-  }
+@Route("api/projects")
+@Tags("Projects")
+export class ProjectController extends Controller {
+  private projectService = new ProjectService();
 
   /**
    * Create a new project
-   * POST /api/projects
+   * @summary Create a project
+   * @example createProjectDto {
+   *   "name": "My Project",
+   *   "description": "Project description",
+   *   "color": "#3B82F6",
+   *   "icon": "📁",
+   *   "isShared": false
+   * }
    */
-  createProject = this.asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user!.userId;
-    const createProjectDto: CreateProjectDto = req.body;
-
-    // Validate required fields
-    if (!createProjectDto.name) {
-      return this.sendValidationError(res, "Project name is required");
-    }
+  @Post()
+  @Security("jwt")
+  @SuccessResponse("201", "Project created successfully")
+  public async createProject(
+    @Body() createProjectDto: CreateProjectDto,
+    @Request() request: express.Request
+  ): Promise<ApiResponse<Project>> {
+    const userId = getUserId(request);
 
     const project = await this.projectService.createProject(
       userId,
       createProjectDto
     );
 
-    return this.sendSuccess(res, project, "Project created successfully", 201);
-  });
+    this.setStatus(201);
+    return {
+      success: true,
+      message: "Project created successfully",
+      data: project,
+      timestamp: new Date().toISOString(),
+    };
+  }
 
   /**
    * Get all projects with filtering and pagination
-   * GET /api/projects
+   * @summary List all projects
    */
-  getProjects = this.asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user!.userId;
-    const query: ProjectQueryDto = req.query;
+  @Get()
+  @Security("jwt")
+  @SuccessResponse("200", "Projects retrieved successfully")
+  public async getProjects(
+    @Request() request: express.Request,
+    @Query() page?: number,
+    @Query() limit?: number,
+    @Query() search?: string,
+    @Query() isArchived?: boolean,
+    @Query() isShared?: boolean,
+    @Query() sortBy?: "name" | "createdAt" | "updatedAt" | "order",
+    @Query() sortOrder?: "ASC" | "DESC"
+  ): Promise<PaginatedResponse<Project[]>> {
+    const userId = request.user!.userId;
+
+    const query: ProjectQueryDto = {
+      page: page || 1,
+      limit: limit || 10,
+      search,
+      isArchived,
+      isShared,
+      sortBy,
+      sortOrder,
+    };
 
     const { projects, total } = await this.projectService.getProjects(
       userId,
       query
     );
 
-    const { page, limit } = this.getPaginationParams(req);
-    const pagination = this.calculatePagination(page, limit, total);
+    const currentPage = query.page || 1;
+    const currentLimit = query.limit || 10;
 
-    return this.sendPaginatedSuccess(
-      res,
-      projects,
-      pagination,
-      "Projects retrieved successfully"
-    );
-  });
+    return {
+      success: true,
+      message: "Projects retrieved successfully",
+      data: projects,
+      pagination: {
+        page: currentPage,
+        limit: currentLimit,
+        total,
+        totalPages: Math.ceil(total / currentLimit),
+      },
+      timestamp: new Date().toISOString(),
+    };
+  }
 
   /**
    * Get a single project by ID
-   * GET /api/projects/:id
+   * @summary Get project by ID
+   * @param id Project ID
    */
-  getProjectById = this.asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user!.userId;
-    const { id } = req.params;
+  @Get("{id}")
+  @Security("jwt")
+  @SuccessResponse("200", "Project retrieved successfully")
+  public async getProjectById(
+    @Path() id: string,
+    @Request() request: express.Request
+  ): Promise<ApiResponse<Project>> {
+    const userId = request.user!.userId;
 
     const project = await this.projectService.getProjectById(id, userId);
 
     if (!project) {
-      return this.sendNotFound(res, "Project");
+      this.setStatus(404);
+      throw new Error("Project not found");
     }
 
-    return this.sendSuccess(res, project, "Project retrieved successfully");
-  });
+    return {
+      success: true,
+      message: "Project retrieved successfully",
+      data: project,
+      timestamp: new Date().toISOString(),
+    };
+  }
 
   /**
    * Update a project
-   * PUT /api/projects/:id
+   * @summary Update project
+   * @param id Project ID
+   * @example updateProjectDto {
+   *   "name": "Updated Project Name",
+   *   "description": "Updated description",
+   *   "color": "#10B981"
+   * }
    */
-  updateProject = this.asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user!.userId;
-    const { id } = req.params;
-    const updateProjectDto: UpdateProjectDto = req.body;
+  @Put("{id}")
+  @Security("jwt")
+  @SuccessResponse("200", "Project updated successfully")
+  public async updateProject(
+    @Path() id: string,
+    @Body() updateProjectDto: UpdateProjectDto,
+    @Request() request: express.Request
+  ): Promise<ApiResponse<Project>> {
+    const userId = request.user!.userId;
 
     try {
       const project = await this.projectService.updateProject(
@@ -97,165 +174,238 @@ export class ProjectController extends BaseController {
       );
 
       if (!project) {
-        return this.sendNotFound(res, "Project");
+        this.setStatus(404);
+        throw new Error("Project not found");
       }
 
-      return this.sendSuccess(res, project, "Project updated successfully");
+      return {
+        success: true,
+        message: "Project updated successfully",
+        data: project,
+        timestamp: new Date().toISOString(),
+      };
     } catch (error) {
       if (
         error instanceof Error &&
         error.message.includes("Only project owner")
       ) {
-        return this.sendForbidden(res, error.message);
+        this.setStatus(403);
+        throw new Error(error.message);
       }
       throw error;
     }
-  });
+  }
 
   /**
    * Delete a project
-   * DELETE /api/projects/:id
+   * @summary Delete project
+   * @param id Project ID
    */
-  deleteProject = this.asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user!.userId;
-    const { id } = req.params;
+  @Delete("{id}")
+  @Security("jwt")
+  @SuccessResponse("200", "Project deleted successfully")
+  public async deleteProject(
+    @Path() id: string,
+    @Request() request: express.Request
+  ): Promise<ApiResponse<null>> {
+    const userId = request.user!.userId;
 
     try {
       const deleted = await this.projectService.deleteProject(id, userId);
 
       if (!deleted) {
-        return this.sendNotFound(res, "Project");
+        this.setStatus(404);
+        throw new Error("Project not found");
       }
 
-      return this.sendSuccess(res, null, "Project deleted successfully");
+      return {
+        success: true,
+        message: "Project deleted successfully",
+        data: null,
+        timestamp: new Date().toISOString(),
+      };
     } catch (error) {
       if (
         error instanceof Error &&
         error.message.includes("Only project owner")
       ) {
-        return this.sendForbidden(res, error.message);
+        this.setStatus(403);
+        throw new Error(error.message);
       }
       throw error;
     }
-  });
+  }
 
   /**
    * Add members to a project
-   * POST /api/projects/:id/members
+   * @summary Add project members
+   * @param id Project ID
+   * @example addMembersDto {
+   *   "userIds": ["123e4567-e89b-12d3-a456-426614174000"]
+   * }
    */
-  addMembers = this.asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user!.userId;
-    const { id } = req.params;
-    const { userIds }: AddProjectMembersDto = req.body;
-
-    if (!userIds || userIds.length === 0) {
-      return this.sendValidationError(res, "User IDs are required");
-    }
+  @Post("{id}/members")
+  @Security("jwt")
+  @SuccessResponse("200", "Members added successfully")
+  public async addMembers(
+    @Path() id: string,
+    @Body() addMembersDto: AddProjectMembersDto,
+    @Request() request: express.Request
+  ): Promise<ApiResponse<Project>> {
+    const userId = request.user!.userId;
 
     try {
-      const project = await this.projectService.addMembers(id, userId, userIds);
+      const project = await this.projectService.addMembers(
+        id,
+        userId,
+        addMembersDto.userIds
+      );
 
       if (!project) {
-        return this.sendNotFound(res, "Project");
+        this.setStatus(404);
+        throw new Error("Project not found");
       }
 
-      return this.sendSuccess(res, project, "Members added successfully");
+      return {
+        success: true,
+        message: "Members added successfully",
+        data: project,
+        timestamp: new Date().toISOString(),
+      };
     } catch (error) {
       if (
         error instanceof Error &&
         error.message.includes("Only project owner")
       ) {
-        return this.sendForbidden(res, error.message);
+        this.setStatus(403);
+        throw new Error(error.message);
       }
       throw error;
     }
-  });
+  }
 
   /**
    * Remove a member from a project
-   * DELETE /api/projects/:id/members/:userId
+   * @summary Remove project member
+   * @param id Project ID
+   * @param userId User ID to remove
    */
-  removeMember = this.asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user!.userId;
-    const { id, userId: memberIdToRemove } = req.params;
+  @Delete("{id}/members/{userId}")
+  @Security("jwt")
+  @SuccessResponse("200", "Member removed successfully")
+  public async removeMember(
+    @Path() id: string,
+    @Path() userId: string,
+    @Request() request: express.Request
+  ): Promise<ApiResponse<Project>> {
+    const currentUserId = request.user!.userId;
 
     try {
       const project = await this.projectService.removeMember(
         id,
-        userId,
-        memberIdToRemove
+        currentUserId,
+        userId
       );
 
       if (!project) {
-        return this.sendNotFound(res, "Project");
+        this.setStatus(404);
+        throw new Error("Project not found");
       }
 
-      return this.sendSuccess(res, project, "Member removed successfully");
+      return {
+        success: true,
+        message: "Member removed successfully",
+        data: project,
+        timestamp: new Date().toISOString(),
+      };
     } catch (error) {
       if (
         error instanceof Error &&
         error.message.includes("Only project owner")
       ) {
-        return this.sendForbidden(res, error.message);
+        this.setStatus(403);
+        throw new Error(error.message);
       }
       throw error;
     }
-  });
+  }
 
   /**
    * Reorder projects
-   * PATCH /api/projects/reorder
+   * @summary Reorder projects
+   * @example reorderDto {
+   *   "projectOrders": [
+   *     { "id": "project-id-1", "order": 0 },
+   *     { "id": "project-id-2", "order": 1 }
+   *   ]
+   * }
    */
-  reorderProjects = this.asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user!.userId;
-    const { projectOrders }: ReorderProjectsDto = req.body;
+  @Patch("reorder")
+  @Security("jwt")
+  @SuccessResponse("200", "Projects reordered successfully")
+  public async reorderProjects(
+    @Body() reorderDto: ReorderProjectsDto,
+    @Request() request: express.Request
+  ): Promise<ApiResponse<null>> {
+    const userId = request.user!.userId;
 
-    if (!projectOrders || projectOrders.length === 0) {
-      return this.sendValidationError(res, "Project orders are required");
-    }
+    await this.projectService.reorderProjects(userId, reorderDto.projectOrders);
 
-    await this.projectService.reorderProjects(userId, projectOrders);
-
-    return this.sendSuccess(res, null, "Projects reordered successfully");
-  });
+    return {
+      success: true,
+      message: "Projects reordered successfully",
+      data: null,
+      timestamp: new Date().toISOString(),
+    };
+  }
 
   /**
-   * Archive/unarchive a project
-   * PATCH /api/projects/:id/archive
+   * Archive or unarchive a project
+   * @summary Toggle project archive status
+   * @param id Project ID
+   * @example archiveDto {
+   *   "isArchived": true
+   * }
    */
-  toggleArchive = this.asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user!.userId;
-    const { id } = req.params;
-    const { isArchived } = req.body;
-
-    if (isArchived === undefined) {
-      return this.sendValidationError(res, "isArchived field is required");
-    }
+  @Patch("{id}/archive")
+  @Security("jwt")
+  @SuccessResponse("200", "Project archive status updated")
+  public async toggleArchive(
+    @Path() id: string,
+    @Body() body: { isArchived: boolean },
+    @Request() request: express.Request
+  ): Promise<ApiResponse<Project>> {
+    const userId = request.user!.userId;
 
     try {
       const project = await this.projectService.toggleArchive(
         id,
         userId,
-        isArchived
+        body.isArchived
       );
 
       if (!project) {
-        return this.sendNotFound(res, "Project");
+        this.setStatus(404);
+        throw new Error("Project not found");
       }
 
-      return this.sendSuccess(
-        res,
-        project,
-        `Project ${isArchived ? "archived" : "unarchived"} successfully`
-      );
+      return {
+        success: true,
+        message: `Project ${
+          body.isArchived ? "archived" : "unarchived"
+        } successfully`,
+        data: project,
+        timestamp: new Date().toISOString(),
+      };
     } catch (error) {
       if (
         error instanceof Error &&
         error.message.includes("Only project owner")
       ) {
-        return this.sendForbidden(res, error.message);
+        this.setStatus(403);
+        throw new Error(error.message);
       }
       throw error;
     }
-  });
+  }
 }
