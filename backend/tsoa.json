@@ -1,0 +1,36 @@
+{
+  "entryFile": "server.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/controllers/*.controller.ts"],
+  "spec": {
+    "outputDirectory": "src/generated",
+    "specVersion": 3,
+    "securityDefinitions": {
+      "jwt": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "name": "Todo AI API",
+    "description": "Auto-generated OpenAPI specification for Todo AI",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support",
+      "email": "support@todoai.com"
+    },
+    "license": "MIT",
+    "tags": [
+      {
+        "name": "Authentication",
+        "description": "User authentication and authorization endpoints"
+      }
+    ]
+  },
+  "routes": {
+    "routesDir": "src/generated",
+    "middleware": "express",
+    "authenticationModule": "./src/middleware/auth.ts"
+  },
+  "ignore": ["**/node_modules/**"]
+}

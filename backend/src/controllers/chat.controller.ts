@@ -1,44 +1,68 @@
-import { Request, Response } from "express";
+import { Body, Controller, Post, Route, SuccessResponse, Tags } from "tsoa";
 import { LanggraphService } from "../services/langgraph.service";
-import { BaseController } from "./base.controller";
+import { LangchainService } from "../services/langchain.service";
+import { ApiResponse } from "../types/api-response.types";
 
-export class ChatController extends BaseController {
-  constructor(private service: LanggraphService) {
-    super();
-  }
+interface ProcessMessageDto {
+  userName: string;
+  messages: string[];
+  blocked?: boolean;
+}
 
-  processMessage = this.asyncHandler(async (req: Request, res: Response) => {
-    const { userName, messages, blocked } = req.body;
+interface ChatResponseDto {
+  userName: string;
+  intent: string;
+  response: string;
+  messages: string[];
+}
 
+@Route("api/chat")
+@Tags("Chat")
+export class ChatController extends Controller {
+  private service = new LanggraphService(new LangchainService());
+
+  /**
+   * Process a chat message through the AI agent
+   * @summary Process chat message
+   * @example requestBody {
+   *   "userName": "John Doe",
+   *   "messages": ["Create a task for tomorrow: Review pull requests"],
+   *   "blocked": false
+   * }
+   */
+  @Post("message")
+  @SuccessResponse("200", "Message processed successfully")
+  public async processMessage(
+    @Body() requestBody: ProcessMessageDto
+  ): Promise<ApiResponse<ChatResponseDto>> {
     // Validate input
-    if (!userName || !messages || !Array.isArray(messages)) {
-      return this.sendValidationError(
-        res,
-        "userName and messages (array) are required"
-      );
+    if (!requestBody.userName || !requestBody.messages) {
+      this.setStatus(400);
+      throw new Error("userName and messages are required");
     }
 
-    if (messages.length === 0) {
-      return this.sendValidationError(res, "messages array cannot be empty");
+    if (!Array.isArray(requestBody.messages)) {
+      this.setStatus(400);
+      throw new Error("messages must be an array");
+    }
+
+    if (requestBody.messages.length === 0) {
+      this.setStatus(400);
+      throw new Error("messages array cannot be empty");
     }
 
     // Call service
     const result = await this.service.processMessage({
-      userName,
-      messages,
-      blocked: blocked ?? false,
+      userName: requestBody.userName,
+      messages: requestBody.messages,
+      blocked: requestBody.blocked ?? false,
     });
 
-    // Send success response using base controller method
-    return this.sendSuccess(
-      res,
-      {
-        userName: result.userName,
-        intent: result.intent,
-        response: result.response,
-        messages: result.messages,
-      },
-      "Message processed successfully"
-    );
-  });
+    return {
+      success: true,
+      message: "Message processed successfully",
+      data: result,
+      timestamp: new Date().toISOString(),
+    };
+  }
 }
