@@ -7,151 +7,13 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
-			"TaskStatus": {
-				"enum": [
-					"pending",
-					"in_progress",
-					"completed",
-					"cancelled"
-				],
-				"type": "string"
-			},
-			"TaskPriority": {
-				"enum": [
-					"low",
-					"medium",
-					"high",
-					"urgent"
-				],
-				"type": "string"
-			},
 			"Record_string.unknown_": {
 				"properties": {},
 				"additionalProperties": {},
 				"type": "object",
 				"description": "Construct a type with a set of properties K of type T"
 			},
-			"User": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"name": {
-						"type": "string"
-					},
-					"email": {
-						"type": "string"
-					},
-					"password": {
-						"type": "string"
-					},
-					"role": {
-						"type": "string"
-					},
-					"createdAt": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"updatedAt": {
-						"type": "string",
-						"format": "date-time"
-					}
-				},
-				"required": [
-					"id",
-					"name",
-					"email",
-					"password",
-					"role",
-					"createdAt",
-					"updatedAt"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"Task": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"title": {
-						"type": "string"
-					},
-					"description": {
-						"type": "string"
-					},
-					"status": {
-						"$ref": "#/components/schemas/TaskStatus"
-					},
-					"priority": {
-						"$ref": "#/components/schemas/TaskPriority"
-					},
-					"dueDate": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"completedAt": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"recurrenceRule": {
-						"type": "string"
-					},
-					"tags": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"metadata": {
-						"$ref": "#/components/schemas/Record_string.unknown_"
-					},
-					"userId": {
-						"type": "string"
-					},
-					"user": {
-						"$ref": "#/components/schemas/User"
-					},
-					"projectId": {
-						"type": "string"
-					},
-					"project": {
-						"$ref": "#/components/schemas/Project"
-					},
-					"assignedToId": {
-						"type": "string"
-					},
-					"assignedTo": {
-						"$ref": "#/components/schemas/User"
-					},
-					"order": {
-						"type": "number",
-						"format": "double"
-					},
-					"createdAt": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"updatedAt": {
-						"type": "string",
-						"format": "date-time"
-					}
-				},
-				"required": [
-					"id",
-					"title",
-					"status",
-					"priority",
-					"userId",
-					"user",
-					"order",
-					"createdAt",
-					"updatedAt"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"Project": {
+			"WorkspaceResponse": {
 				"properties": {
 					"id": {
 						"type": "string"
@@ -160,6 +22,9 @@
 						"type": "string"
 					},
 					"description": {
+						"type": "string"
+					},
+					"timezoneCode": {
 						"type": "string"
 					},
 					"color": {
@@ -167,9 +32,6 @@
 					},
 					"icon": {
 						"type": "string"
-					},
-					"isShared": {
-						"type": "boolean"
 					},
 					"isArchived": {
 						"type": "boolean"
@@ -180,21 +42,6 @@
 					"ownerId": {
 						"type": "string"
 					},
-					"owner": {
-						"$ref": "#/components/schemas/User"
-					},
-					"tasks": {
-						"items": {
-							"$ref": "#/components/schemas/Task"
-						},
-						"type": "array"
-					},
-					"members": {
-						"items": {
-							"$ref": "#/components/schemas/User"
-						},
-						"type": "array"
-					},
 					"order": {
 						"type": "number",
 						"format": "double"
@@ -206,17 +53,23 @@
 					"updatedAt": {
 						"type": "string",
 						"format": "date-time"
+					},
+					"memberCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"eventCount": {
+						"type": "number",
+						"format": "double"
 					}
 				},
 				"required": [
 					"id",
 					"name",
+					"timezoneCode",
 					"color",
-					"isShared",
 					"isArchived",
 					"ownerId",
-					"owner",
-					"tasks",
 					"order",
 					"createdAt",
 					"updatedAt"
@@ -224,7 +77,7 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ApiResponse_Task_": {
+			"ApiResponse_WorkspaceResponse_": {
 				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
@@ -234,7 +87,7 @@
 						"type": "string"
 					},
 					"data": {
-						"$ref": "#/components/schemas/Task"
+						"$ref": "#/components/schemas/WorkspaceResponse"
 					},
 					"timestamp": {
 						"type": "string"
@@ -248,405 +101,35 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"CreateTaskDto": {
-				"properties": {
-					"title": {
-						"type": "string"
-					},
-					"description": {
-						"type": "string"
-					},
-					"status": {
-						"$ref": "#/components/schemas/TaskStatus"
-					},
-					"priority": {
-						"$ref": "#/components/schemas/TaskPriority"
-					},
-					"dueDate": {
-						"anyOf": [
-							{
-								"type": "string",
-								"format": "date-time"
-							},
-							{
-								"type": "string"
-							}
-						]
-					},
-					"projectId": {
-						"type": "string"
-					},
-					"assignedToId": {
-						"type": "string"
-					},
-					"recurrenceRule": {
-						"type": "string"
-					},
-					"tags": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"metadata": {
-						"$ref": "#/components/schemas/Record_string.unknown_"
-					}
-				},
-				"required": [
-					"title"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"PaginatedResponse_Task-Array_": {
-				"description": "Paginated API Response wrapper\nUsed for endpoints that return lists with pagination",
+			"ErrorResponse": {
 				"properties": {
 					"success": {
-						"type": "boolean"
-					},
-					"message": {
-						"type": "string"
-					},
-					"data": {
-						"items": {
-							"$ref": "#/components/schemas/Task"
-						},
-						"type": "array"
-					},
-					"pagination": {
-						"properties": {
-							"totalPages": {
-								"type": "number",
-								"format": "double"
-							},
-							"total": {
-								"type": "number",
-								"format": "double"
-							},
-							"limit": {
-								"type": "number",
-								"format": "double"
-							},
-							"page": {
-								"type": "number",
-								"format": "double"
-							}
-						},
-						"required": [
-							"totalPages",
-							"total",
-							"limit",
-							"page"
-						],
-						"type": "object"
-					},
-					"timestamp": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"success",
-					"message",
-					"data",
-					"pagination",
-					"timestamp"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"TaskStatsDto": {
-				"properties": {
-					"total": {
-						"type": "number",
-						"format": "double"
-					},
-					"pending": {
-						"type": "number",
-						"format": "double"
-					},
-					"inProgress": {
-						"type": "number",
-						"format": "double"
-					},
-					"completed": {
-						"type": "number",
-						"format": "double"
-					},
-					"cancelled": {
-						"type": "number",
-						"format": "double"
-					},
-					"overdue": {
-						"type": "number",
-						"format": "double"
-					},
-					"dueToday": {
-						"type": "number",
-						"format": "double"
-					},
-					"dueSoon": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"required": [
-					"total",
-					"pending",
-					"inProgress",
-					"completed",
-					"cancelled",
-					"overdue",
-					"dueToday",
-					"dueSoon"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ApiResponse_TaskStatsDto_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
-				"properties": {
-					"success": {
-						"type": "boolean"
-					},
-					"message": {
-						"type": "string"
-					},
-					"data": {
-						"$ref": "#/components/schemas/TaskStatsDto"
-					},
-					"timestamp": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"success",
-					"message",
-					"timestamp"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"UpdateTaskDto": {
-				"properties": {
-					"title": {
-						"type": "string"
-					},
-					"description": {
-						"type": "string"
-					},
-					"status": {
-						"$ref": "#/components/schemas/TaskStatus"
-					},
-					"priority": {
-						"$ref": "#/components/schemas/TaskPriority"
-					},
-					"dueDate": {
-						"anyOf": [
-							{
-								"type": "string",
-								"format": "date-time"
-							},
-							{
-								"type": "string"
-							}
-						],
-						"nullable": true
-					},
-					"completedAt": {
-						"anyOf": [
-							{
-								"type": "string",
-								"format": "date-time"
-							},
-							{
-								"type": "string"
-							}
-						],
-						"nullable": true
-					},
-					"projectId": {
-						"type": "string",
-						"nullable": true
-					},
-					"assignedToId": {
-						"type": "string",
-						"nullable": true
-					},
-					"recurrenceRule": {
-						"type": "string",
-						"nullable": true
-					},
-					"tags": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"metadata": {
-						"$ref": "#/components/schemas/Record_string.unknown_"
-					},
-					"order": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ApiResponse_null_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
-				"properties": {
-					"success": {
-						"type": "boolean"
-					},
-					"message": {
-						"type": "string"
-					},
-					"data": {
-						"type": "number",
+						"type": "boolean",
 						"enum": [
-							null
+							false
 						],
-						"nullable": true
-					},
-					"timestamp": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"success",
-					"message",
-					"timestamp"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ApiResponse_Task-Array_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
-				"properties": {
-					"success": {
-						"type": "boolean"
+						"nullable": false
 					},
 					"message": {
 						"type": "string"
-					},
-					"data": {
-						"items": {
-							"$ref": "#/components/schemas/Task"
-						},
-						"type": "array"
-					},
-					"timestamp": {
-						"type": "string"
 					}
 				},
 				"required": [
 					"success",
-					"message",
-					"timestamp"
+					"message"
 				],
 				"type": "object",
 				"additionalProperties": false
 			},
-			"BulkUpdateTasksDto": {
-				"properties": {
-					"taskIds": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"updates": {
-						"properties": {
-							"tags": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							},
-							"assignedToId": {
-								"type": "string",
-								"nullable": true
-							},
-							"projectId": {
-								"type": "string",
-								"nullable": true
-							},
-							"priority": {
-								"$ref": "#/components/schemas/TaskPriority"
-							},
-							"status": {
-								"$ref": "#/components/schemas/TaskStatus"
-							}
-						},
-						"type": "object"
-					}
-				},
-				"required": [
-					"taskIds",
-					"updates"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ReorderTasksDto": {
-				"properties": {
-					"taskOrders": {
-						"items": {
-							"properties": {
-								"order": {
-									"type": "number",
-									"format": "double"
-								},
-								"id": {
-									"type": "string"
-								}
-							},
-							"required": [
-								"order",
-								"id"
-							],
-							"type": "object"
-						},
-						"type": "array"
-					}
-				},
-				"required": [
-					"taskOrders"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ApiResponse_Project_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
-				"properties": {
-					"success": {
-						"type": "boolean"
-					},
-					"message": {
-						"type": "string"
-					},
-					"data": {
-						"$ref": "#/components/schemas/Project"
-					},
-					"timestamp": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"success",
-					"message",
-					"timestamp"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"CreateProjectDto": {
+			"CreateWorkspaceDto": {
 				"properties": {
 					"name": {
 						"type": "string"
 					},
 					"description": {
+						"type": "string"
+					},
+					"timezoneCode": {
 						"type": "string"
 					},
 					"color": {
@@ -655,14 +138,9 @@
 					"icon": {
 						"type": "string"
 					},
-					"isShared": {
-						"type": "boolean"
-					},
-					"memberIds": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
+					"order": {
+						"type": "number",
+						"format": "double"
 					}
 				},
 				"required": [
@@ -671,8 +149,8 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"PaginatedResponse_Project-Array_": {
-				"description": "Paginated API Response wrapper\nUsed for endpoints that return lists with pagination",
+			"ApiResponse_WorkspaceResponse-Array_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -682,36 +160,9 @@
 					},
 					"data": {
 						"items": {
-							"$ref": "#/components/schemas/Project"
+							"$ref": "#/components/schemas/WorkspaceResponse"
 						},
 						"type": "array"
-					},
-					"pagination": {
-						"properties": {
-							"totalPages": {
-								"type": "number",
-								"format": "double"
-							},
-							"total": {
-								"type": "number",
-								"format": "double"
-							},
-							"limit": {
-								"type": "number",
-								"format": "double"
-							},
-							"page": {
-								"type": "number",
-								"format": "double"
-							}
-						},
-						"required": [
-							"totalPages",
-							"total",
-							"limit",
-							"page"
-						],
-						"type": "object"
 					},
 					"timestamp": {
 						"type": "string"
@@ -720,14 +171,12 @@
 				"required": [
 					"success",
 					"message",
-					"data",
-					"pagination",
 					"timestamp"
 				],
 				"type": "object",
 				"additionalProperties": false
 			},
-			"UpdateProjectDto": {
+			"UpdateWorkspaceDto": {
 				"properties": {
 					"name": {
 						"type": "string"
@@ -735,14 +184,14 @@
 					"description": {
 						"type": "string"
 					},
+					"timezoneCode": {
+						"type": "string"
+					},
 					"color": {
 						"type": "string"
 					},
 					"icon": {
 						"type": "string"
-					},
-					"isShared": {
-						"type": "boolean"
 					},
 					"isArchived": {
 						"type": "boolean"
@@ -758,7 +207,29 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"AddProjectMembersDto": {
+			"ApiResponse_void_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddWorkspaceMemberDto": {
 				"properties": {
 					"userIds": {
 						"items": {
@@ -773,21 +244,138 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ReorderProjectsDto": {
+			"RemoveWorkspaceMemberDto": {
 				"properties": {
-					"projectOrders": {
+					"userId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"userId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse__id-string--name-string--email-string--role-string_-Array_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
 						"items": {
 							"properties": {
-								"order": {
-									"type": "number",
-									"format": "double"
+								"role": {
+									"type": "string"
+								},
+								"email": {
+									"type": "string"
+								},
+								"name": {
+									"type": "string"
 								},
 								"id": {
 									"type": "string"
 								}
 							},
 							"required": [
-								"order",
+								"role",
+								"email",
+								"name",
+								"id"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"EventResponse": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"start": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"end": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"status": {
+						"type": "string"
+					},
+					"location": {
+						"type": "string"
+					},
+					"color": {
+						"type": "string"
+					},
+					"isAllDay": {
+						"type": "boolean"
+					},
+					"recurrenceRule": {
+						"type": "string"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"metadata": {
+						"$ref": "#/components/schemas/Record_string.unknown_"
+					},
+					"workspaceId": {
+						"type": "string"
+					},
+					"createdById": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"assignees": {
+						"items": {
+							"properties": {
+								"email": {
+									"type": "string"
+								},
+								"name": {
+									"type": "string"
+								},
+								"id": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"email",
+								"name",
 								"id"
 							],
 							"type": "object"
@@ -796,7 +384,226 @@
 					}
 				},
 				"required": [
-					"projectOrders"
+					"id",
+					"name",
+					"start",
+					"end",
+					"status",
+					"color",
+					"isAllDay",
+					"workspaceId",
+					"createdById",
+					"createdAt",
+					"updatedAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_EventResponse_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"$ref": "#/components/schemas/EventResponse"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateEventDto": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"start": {
+						"anyOf": [
+							{
+								"type": "string",
+								"format": "date-time"
+							},
+							{
+								"type": "string"
+							}
+						]
+					},
+					"end": {
+						"anyOf": [
+							{
+								"type": "string",
+								"format": "date-time"
+							},
+							{
+								"type": "string"
+							}
+						]
+					},
+					"workspaceId": {
+						"type": "string"
+					},
+					"assigneeIds": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"location": {
+						"type": "string"
+					},
+					"color": {
+						"type": "string"
+					},
+					"isAllDay": {
+						"type": "boolean"
+					},
+					"recurrenceRule": {
+						"type": "string"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"name",
+					"start",
+					"end",
+					"workspaceId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_EventResponse-Array_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"items": {
+							"$ref": "#/components/schemas/EventResponse"
+						},
+						"type": "array"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateEventDto": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"start": {
+						"anyOf": [
+							{
+								"type": "string",
+								"format": "date-time"
+							},
+							{
+								"type": "string"
+							}
+						]
+					},
+					"end": {
+						"anyOf": [
+							{
+								"type": "string",
+								"format": "date-time"
+							},
+							{
+								"type": "string"
+							}
+						]
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"scheduled",
+							"in_progress",
+							"completed",
+							"cancelled"
+						]
+					},
+					"location": {
+						"type": "string"
+					},
+					"color": {
+						"type": "string"
+					},
+					"isAllDay": {
+						"type": "boolean"
+					},
+					"recurrenceRule": {
+						"type": "string"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"metadata": {
+						"$ref": "#/components/schemas/Record_string.unknown_"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AssignEventDto": {
+				"properties": {
+					"userIds": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"userIds"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UnassignEventDto": {
+				"properties": {
+					"userId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"userId"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -934,26 +741,6 @@
 					"success",
 					"message",
 					"timestamp"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ErrorResponse": {
-				"properties": {
-					"success": {
-						"type": "boolean",
-						"enum": [
-							false
-						],
-						"nullable": false
-					},
-					"message": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"success",
-					"message"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -1108,25 +895,55 @@
 		}
 	},
 	"paths": {
-		"/api/tasks": {
+		"/api/workspaces": {
 			"post": {
-				"operationId": "CreateTask",
+				"operationId": "CreateWorkspace",
 				"responses": {
 					"201": {
-						"description": "Task created successfully",
+						"description": "Workspace created successfully",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_Task_"
+									"$ref": "#/components/schemas/ApiResponse_WorkspaceResponse_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
 								}
 							}
 						}
 					}
 				},
-				"description": "Create a new task",
-				"summary": "Create a task",
+				"description": "Create a new workspace",
+				"summary": "Create a workspace",
 				"tags": [
-					"Tasks"
+					"Workspaces"
 				],
 				"security": [
 					{
@@ -1135,188 +952,56 @@
 				],
 				"parameters": [],
 				"requestBody": {
+					"description": "Workspace creation details",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/CreateTaskDto"
-							},
-							"example": {
-								"title": "Complete project documentation",
-								"description": "Write comprehensive docs",
-								"status": "pending",
-								"priority": "high",
-								"dueDate": "2025-10-25T10:00:00Z",
-								"projectId": "123e4567-e89b-12d3-a456-426614174000",
-								"tags": [
-									"documentation",
-									"priority"
-								]
+								"$ref": "#/components/schemas/CreateWorkspaceDto",
+								"description": "Workspace creation details"
 							}
 						}
 					}
 				}
 			},
 			"get": {
-				"operationId": "GetTasks",
+				"operationId": "GetUserWorkspaces",
 				"responses": {
 					"200": {
-						"description": "Tasks retrieved successfully",
+						"description": "Workspaces retrieved successfully",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/PaginatedResponse_Task-Array_"
+									"$ref": "#/components/schemas/ApiResponse_WorkspaceResponse-Array_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
 								}
 							}
 						}
 					}
 				},
-				"description": "Get all tasks with filtering and pagination",
-				"summary": "List all tasks",
+				"description": "Get all workspaces for the authenticated user",
+				"summary": "Get user workspaces",
 				"tags": [
-					"Tasks"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "page",
-						"required": false,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "search",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "status",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/TaskStatus"
-						}
-					},
-					{
-						"in": "query",
-						"name": "priority",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/TaskPriority"
-						}
-					},
-					{
-						"in": "query",
-						"name": "projectId",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "assignedToId",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "dueBefore",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "dueAfter",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "tags",
-						"required": false,
-						"schema": {
-							"type": "array",
-							"items": {
-								"type": "string"
-							}
-						}
-					},
-					{
-						"in": "query",
-						"name": "sortBy",
-						"required": false,
-						"schema": {
-							"type": "string",
-							"enum": [
-								"title",
-								"createdAt",
-								"updatedAt",
-								"dueDate",
-								"priority",
-								"order"
-							]
-						}
-					},
-					{
-						"in": "query",
-						"name": "sortOrder",
-						"required": false,
-						"schema": {
-							"type": "string",
-							"enum": [
-								"ASC",
-								"DESC"
-							]
-						}
-					}
-				]
-			}
-		},
-		"/api/tasks/stats": {
-			"get": {
-				"operationId": "GetTaskStats",
-				"responses": {
-					"200": {
-						"description": "Task statistics retrieved successfully",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_TaskStatsDto_"
-								}
-							}
-						}
-					}
-				},
-				"description": "Get task statistics",
-				"summary": "Get task statistics",
-				"tags": [
-					"Tasks"
+					"Workspaces"
 				],
 				"security": [
 					{
@@ -1326,25 +1011,55 @@
 				"parameters": []
 			}
 		},
-		"/api/tasks/{id}": {
+		"/api/workspaces/{workspaceId}": {
 			"get": {
-				"operationId": "GetTaskById",
+				"operationId": "GetWorkspaceById",
 				"responses": {
 					"200": {
-						"description": "Task retrieved successfully",
+						"description": "Workspace retrieved successfully",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_Task_"
+									"$ref": "#/components/schemas/ApiResponse_WorkspaceResponse_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Workspace not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
 								}
 							}
 						}
 					}
 				},
-				"description": "Get a single task by ID",
-				"summary": "Get task by ID",
+				"description": "Get workspace by ID",
+				"summary": "Get workspace details",
 				"tags": [
-					"Tasks"
+					"Workspaces"
 				],
 				"security": [
 					{
@@ -1353,9 +1068,9 @@
 				],
 				"parameters": [
 					{
-						"description": "Task ID",
+						"description": "Workspace ID",
 						"in": "path",
-						"name": "id",
+						"name": "workspaceId",
 						"required": true,
 						"schema": {
 							"type": "string"
@@ -1364,23 +1079,63 @@
 				]
 			},
 			"put": {
-				"operationId": "UpdateTask",
+				"operationId": "UpdateWorkspace",
 				"responses": {
 					"200": {
-						"description": "Task updated successfully",
+						"description": "Workspace updated successfully",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_Task_"
+									"$ref": "#/components/schemas/ApiResponse_WorkspaceResponse_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Workspace not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
 								}
 							}
 						}
 					}
 				},
-				"description": "Update a task",
-				"summary": "Update task",
+				"description": "Update workspace",
+				"summary": "Update workspace",
 				"tags": [
-					"Tasks"
+					"Workspaces"
 				],
 				"security": [
 					{
@@ -1389,9 +1144,9 @@
 				],
 				"parameters": [
 					{
-						"description": "Task ID",
+						"description": "Workspace ID",
 						"in": "path",
-						"name": "id",
+						"name": "workspaceId",
 						"required": true,
 						"schema": {
 							"type": "string"
@@ -1399,39 +1154,66 @@
 					}
 				],
 				"requestBody": {
+					"description": "Workspace update details",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/UpdateTaskDto"
-							},
-							"example": {
-								"title": "Updated task title",
-								"status": "in_progress",
-								"priority": "urgent"
+								"$ref": "#/components/schemas/UpdateWorkspaceDto",
+								"description": "Workspace update details"
 							}
 						}
 					}
 				}
 			},
 			"delete": {
-				"operationId": "DeleteTask",
+				"operationId": "DeleteWorkspace",
 				"responses": {
 					"200": {
-						"description": "Task deleted successfully",
+						"description": "Workspace deleted successfully",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_null_"
+									"$ref": "#/components/schemas/ApiResponse_void_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Workspace not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
 								}
 							}
 						}
 					}
 				},
-				"description": "Delete a task",
-				"summary": "Delete task",
+				"description": "Delete workspace",
+				"summary": "Delete workspace",
 				"tags": [
-					"Tasks"
+					"Workspaces"
 				],
 				"security": [
 					{
@@ -1440,9 +1222,9 @@
 				],
 				"parameters": [
 					{
-						"description": "Task ID",
+						"description": "Workspace ID",
 						"in": "path",
-						"name": "id",
+						"name": "workspaceId",
 						"required": true,
 						"schema": {
 							"type": "string"
@@ -1451,513 +1233,7 @@
 				]
 			}
 		},
-		"/api/tasks/bulk": {
-			"patch": {
-				"operationId": "BulkUpdateTasks",
-				"responses": {
-					"200": {
-						"description": "Tasks updated successfully",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_Task-Array_"
-								}
-							}
-						}
-					}
-				},
-				"description": "Bulk update tasks",
-				"summary": "Bulk update multiple tasks",
-				"tags": [
-					"Tasks"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/BulkUpdateTasksDto"
-							},
-							"example": {
-								"taskIds": [
-									"task-id-1",
-									"task-id-2"
-								],
-								"updates": {
-									"status": "completed",
-									"priority": "low"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/tasks/reorder": {
-			"patch": {
-				"operationId": "ReorderTasks",
-				"responses": {
-					"200": {
-						"description": "Tasks reordered successfully",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_null_"
-								}
-							}
-						}
-					}
-				},
-				"description": "Reorder tasks",
-				"summary": "Reorder tasks",
-				"tags": [
-					"Tasks"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/ReorderTasksDto"
-							},
-							"example": {
-								"taskOrders": [
-									{
-										"id": "task-id-1",
-										"order": 0
-									},
-									{
-										"id": "task-id-2",
-										"order": 1
-									}
-								]
-							}
-						}
-					}
-				}
-			}
-		},
-		"/projects/{projectId}/tasks": {
-			"get": {
-				"operationId": "GetTasksByProject",
-				"responses": {
-					"200": {
-						"description": "Tasks retrieved successfully",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/PaginatedResponse_Task-Array_"
-								}
-							}
-						}
-					}
-				},
-				"description": "Get tasks by project",
-				"summary": "Get all tasks in a project",
-				"tags": [
-					"Tasks"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"description": "Project ID",
-						"in": "path",
-						"name": "projectId",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "page",
-						"required": false,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "search",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "status",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/TaskStatus"
-						}
-					},
-					{
-						"in": "query",
-						"name": "priority",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/TaskPriority"
-						}
-					},
-					{
-						"in": "query",
-						"name": "assignedToId",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "dueBefore",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "dueAfter",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "tags",
-						"required": false,
-						"schema": {
-							"type": "array",
-							"items": {
-								"type": "string"
-							}
-						}
-					},
-					{
-						"in": "query",
-						"name": "sortBy",
-						"required": false,
-						"schema": {
-							"type": "string",
-							"enum": [
-								"title",
-								"createdAt",
-								"updatedAt",
-								"dueDate",
-								"priority",
-								"order"
-							]
-						}
-					},
-					{
-						"in": "query",
-						"name": "sortOrder",
-						"required": false,
-						"schema": {
-							"type": "string",
-							"enum": [
-								"ASC",
-								"DESC"
-							]
-						}
-					}
-				]
-			}
-		},
-		"/api/projects": {
-			"post": {
-				"operationId": "CreateProject",
-				"responses": {
-					"201": {
-						"description": "Project created successfully",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_Project_"
-								}
-							}
-						}
-					}
-				},
-				"description": "Create a new project",
-				"summary": "Create a project",
-				"tags": [
-					"Projects"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/CreateProjectDto"
-							},
-							"example": {
-								"name": "My Project",
-								"description": "Project description",
-								"color": "#3B82F6",
-								"icon": "📁",
-								"isShared": false
-							}
-						}
-					}
-				}
-			},
-			"get": {
-				"operationId": "GetProjects",
-				"responses": {
-					"200": {
-						"description": "Projects retrieved successfully",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/PaginatedResponse_Project-Array_"
-								}
-							}
-						}
-					}
-				},
-				"description": "Get all projects with filtering and pagination",
-				"summary": "List all projects",
-				"tags": [
-					"Projects"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "page",
-						"required": false,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "search",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "isArchived",
-						"required": false,
-						"schema": {
-							"type": "boolean"
-						}
-					},
-					{
-						"in": "query",
-						"name": "isShared",
-						"required": false,
-						"schema": {
-							"type": "boolean"
-						}
-					},
-					{
-						"in": "query",
-						"name": "sortBy",
-						"required": false,
-						"schema": {
-							"type": "string",
-							"enum": [
-								"name",
-								"createdAt",
-								"updatedAt",
-								"order"
-							]
-						}
-					},
-					{
-						"in": "query",
-						"name": "sortOrder",
-						"required": false,
-						"schema": {
-							"type": "string",
-							"enum": [
-								"ASC",
-								"DESC"
-							]
-						}
-					}
-				]
-			}
-		},
-		"/api/projects/{id}": {
-			"get": {
-				"operationId": "GetProjectById",
-				"responses": {
-					"200": {
-						"description": "Project retrieved successfully",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_Project_"
-								}
-							}
-						}
-					}
-				},
-				"description": "Get a single project by ID",
-				"summary": "Get project by ID",
-				"tags": [
-					"Projects"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"description": "Project ID",
-						"in": "path",
-						"name": "id",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			},
-			"put": {
-				"operationId": "UpdateProject",
-				"responses": {
-					"200": {
-						"description": "Project updated successfully",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_Project_"
-								}
-							}
-						}
-					}
-				},
-				"description": "Update a project",
-				"summary": "Update project",
-				"tags": [
-					"Projects"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"description": "Project ID",
-						"in": "path",
-						"name": "id",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/UpdateProjectDto"
-							},
-							"example": {
-								"name": "Updated Project Name",
-								"description": "Updated description",
-								"color": "#10B981"
-							}
-						}
-					}
-				}
-			},
-			"delete": {
-				"operationId": "DeleteProject",
-				"responses": {
-					"200": {
-						"description": "Project deleted successfully",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_null_"
-								}
-							}
-						}
-					}
-				},
-				"description": "Delete a project",
-				"summary": "Delete project",
-				"tags": [
-					"Projects"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"description": "Project ID",
-						"in": "path",
-						"name": "id",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/projects/{id}/members": {
+		"/api/workspaces/{workspaceId}/members": {
 			"post": {
 				"operationId": "AddMembers",
 				"responses": {
@@ -1966,16 +1242,56 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_Project_"
+									"$ref": "#/components/schemas/ApiResponse_WorkspaceResponse_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Workspace or users not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
 								}
 							}
 						}
 					}
 				},
-				"description": "Add members to a project",
-				"summary": "Add project members",
+				"description": "Add members to workspace",
+				"summary": "Add workspace members",
 				"tags": [
-					"Projects"
+					"Workspaces"
 				],
 				"security": [
 					{
@@ -1984,9 +1300,9 @@
 				],
 				"parameters": [
 					{
-						"description": "Project ID",
+						"description": "Workspace ID",
 						"in": "path",
-						"name": "id",
+						"name": "workspaceId",
 						"required": true,
 						"schema": {
 							"type": "string"
@@ -1994,23 +1310,18 @@
 					}
 				],
 				"requestBody": {
+					"description": "User IDs to add",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/AddProjectMembersDto"
-							},
-							"example": {
-								"userIds": [
-									"123e4567-e89b-12d3-a456-426614174000"
-								]
+								"$ref": "#/components/schemas/AddWorkspaceMemberDto",
+								"description": "User IDs to add"
 							}
 						}
 					}
 				}
-			}
-		},
-		"/api/projects/{id}/members/{userId}": {
+			},
 			"delete": {
 				"operationId": "RemoveMember",
 				"responses": {
@@ -2019,16 +1330,56 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_Project_"
+									"$ref": "#/components/schemas/ApiResponse_WorkspaceResponse_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Workspace not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
 								}
 							}
 						}
 					}
 				},
-				"description": "Remove a member from a project",
-				"summary": "Remove project member",
+				"description": "Remove member from workspace",
+				"summary": "Remove workspace member",
 				"tags": [
-					"Projects"
+					"Workspaces"
 				],
 				"security": [
 					{
@@ -2037,18 +1388,87 @@
 				],
 				"parameters": [
 					{
-						"description": "Project ID",
+						"description": "Workspace ID",
 						"in": "path",
-						"name": "id",
+						"name": "workspaceId",
 						"required": true,
 						"schema": {
 							"type": "string"
 						}
+					}
+				],
+				"requestBody": {
+					"description": "User ID to remove",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RemoveWorkspaceMemberDto",
+								"description": "User ID to remove"
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "GetWorkspaceMembers",
+				"responses": {
+					"200": {
+						"description": "Members retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__id-string--name-string--email-string--role-string_-Array_"
+								}
+							}
+						}
 					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Workspace not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get workspace members",
+				"summary": "Get workspace members",
+				"tags": [
+					"Workspaces"
+				],
+				"security": [
 					{
-						"description": "User ID to remove",
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "Workspace ID",
 						"in": "path",
-						"name": "userId",
+						"name": "workspaceId",
 						"required": true,
 						"schema": {
 							"type": "string"
@@ -2057,25 +1477,65 @@
 				]
 			}
 		},
-		"/api/projects/reorder": {
-			"patch": {
-				"operationId": "ReorderProjects",
+		"/api/events": {
+			"post": {
+				"operationId": "CreateEvent",
 				"responses": {
-					"200": {
-						"description": "Projects reordered successfully",
+					"201": {
+						"description": "Event created successfully",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_null_"
+									"$ref": "#/components/schemas/ApiResponse_EventResponse_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Workspace not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
 								}
 							}
 						}
 					}
 				},
-				"description": "Reorder projects",
-				"summary": "Reorder projects",
+				"description": "Create a new event",
+				"summary": "Create an event",
 				"tags": [
-					"Projects"
+					"Events"
 				],
 				"security": [
 					{
@@ -2084,48 +1544,56 @@
 				],
 				"parameters": [],
 				"requestBody": {
+					"description": "Event creation details",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/ReorderProjectsDto"
-							},
-							"example": {
-								"projectOrders": [
-									{
-										"id": "project-id-1",
-										"order": 0
-									},
-									{
-										"id": "project-id-2",
-										"order": 1
-									}
-								]
+								"$ref": "#/components/schemas/CreateEventDto",
+								"description": "Event creation details"
 							}
 						}
 					}
 				}
-			}
-		},
-		"/api/projects/{id}/archive": {
-			"patch": {
-				"operationId": "ToggleArchive",
+			},
+			"get": {
+				"operationId": "GetEvents",
 				"responses": {
 					"200": {
-						"description": "Project archive status updated",
+						"description": "Events retrieved successfully",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_Project_"
+									"$ref": "#/components/schemas/ApiResponse_EventResponse-Array_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
 								}
 							}
 						}
 					}
 				},
-				"description": "Archive or unarchive a project",
-				"summary": "Toggle project archive status",
+				"description": "Get events with optional filters",
+				"summary": "Get events",
 				"tags": [
-					"Projects"
+					"Events"
 				],
 				"security": [
 					{
@@ -2134,9 +1602,199 @@
 				],
 				"parameters": [
 					{
-						"description": "Project ID",
+						"description": "Filter by workspace ID",
+						"in": "query",
+						"name": "workspaceId",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter events starting from this date",
+						"in": "query",
+						"name": "startDate",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter events ending before this date",
+						"in": "query",
+						"name": "endDate",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by event status",
+						"in": "query",
+						"name": "status",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by assignee user ID",
+						"in": "query",
+						"name": "assigneeId",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/events/{eventId}": {
+			"get": {
+				"operationId": "GetEventById",
+				"responses": {
+					"200": {
+						"description": "Event retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_EventResponse_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Event not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get event by ID",
+				"summary": "Get event details",
+				"tags": [
+					"Events"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "Event ID",
 						"in": "path",
-						"name": "id",
+						"name": "eventId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdateEvent",
+				"responses": {
+					"200": {
+						"description": "Event updated successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_EventResponse_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Access denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Event not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Update event",
+				"summary": "Update event",
+				"tags": [
+					"Events"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "Event ID",
+						"in": "path",
+						"name": "eventId",
 						"required": true,
 						"schema": {
 							"type": "string"
@@ -2144,19 +1802,287 @@
 					}
 				],
 				"requestBody": {
+					"description": "Event update details",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
-								"properties": {
-									"isArchived": {
-										"type": "boolean"
-									}
-								},
-								"required": [
-									"isArchived"
-								],
-								"type": "object"
+								"$ref": "#/components/schemas/UpdateEventDto",
+								"description": "Event update details"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteEvent",
+				"responses": {
+					"200": {
+						"description": "Event deleted successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_void_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Access denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Event not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Delete event",
+				"summary": "Delete event",
+				"tags": [
+					"Events"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "Event ID",
+						"in": "path",
+						"name": "eventId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/events/{eventId}/assignees": {
+			"post": {
+				"operationId": "AssignUsers",
+				"responses": {
+					"200": {
+						"description": "Users assigned successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_EventResponse_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Access denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Event or users not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Assign users to event",
+				"summary": "Assign users to event",
+				"tags": [
+					"Events"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "Event ID",
+						"in": "path",
+						"name": "eventId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "User IDs to assign",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AssignEventDto",
+								"description": "User IDs to assign"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "UnassignUser",
+				"responses": {
+					"200": {
+						"description": "User unassigned successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_EventResponse_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Access denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Event not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Unassign user from event",
+				"summary": "Unassign user from event",
+				"tags": [
+					"Events"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "Event ID",
+						"in": "path",
+						"name": "eventId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "User ID to unassign",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UnassignEventDto",
+								"description": "User ID to unassign"
 							}
 						}
 					}
@@ -2470,14 +2396,6 @@
 		{
 			"name": "Authentication",
 			"description": "User authentication and authorization endpoints"
-		},
-		{
-			"name": "Tasks",
-			"description": "Task management endpoints"
-		},
-		{
-			"name": "Projects",
-			"description": "Project management endpoints"
 		}
 	]
 }

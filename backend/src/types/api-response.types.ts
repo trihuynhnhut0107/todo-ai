@@ -25,3 +25,7 @@ export interface PaginatedResponse<T = any> {
   };
   timestamp: string;
 }
+export interface ErrorResponse {
+  success: false;
+  message: string;
+}

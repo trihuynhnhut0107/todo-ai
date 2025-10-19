@@ -17,12 +17,7 @@ import {
   RefreshTokenDto,
   AuthResponse,
 } from "../dtos/auth.dto";
-import { ApiResponse } from "../types/api-response.types";
-
-interface ErrorResponse {
-  success: false;
-  message: string;
-}
+import { ApiResponse, ErrorResponse } from "../types/api-response.types";
 
 interface UserResponse {
   id: string;
