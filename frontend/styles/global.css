@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  /* Loại bỏ margin mặc định */
+  margin: 0;
+
+  /* Đảm bảo background bao phủ toàn bộ màn hình */
+  min-height: 100vh;
+
+  /* 1. Màu nền cơ bản (màu xám nhạt ở dưới cùng) */
+  background-color: #f2f2f7;
+
+  /* 2. Xếp chồng các lớp gradient lên trên */
+  background-image: 
+                /* Lớp 1: Vầng sáng màu cam chính ở trên cùng */
+    radial-gradient(
+      ellipse 80% 70% at 50% 0%,
+      /* Hình elip, căn ở giữa-trên */ rgba(255, 120, 70, 0.5),
+      /* Màu cam-đỏ, mờ 50% */ transparent 70% /* Mờ dần về trong suốt */
+    ),
+    /* Lớp 2: Thêm một vầng sáng hồng/đỏ nhẹ ở trên-phải */
+      radial-gradient(
+        ellipse 50% 50% at 90% 10%,
+        /* Elip nhỏ hơn, ở góc trên-phải */ rgba(255, 100, 100, 0.4),
+        /* Màu đỏ nhạt, mờ 40% */ transparent 70%
+      );
+
+  /* Đảm bảo gradient không lặp lại */
+  background-repeat: no-repeat;
+
+  /* Giữ background cố định khi cuộn trang (quan trọng) */
+  background-attachment: fixed;
+}
