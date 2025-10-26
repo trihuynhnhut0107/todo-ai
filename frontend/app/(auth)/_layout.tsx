@@ -35,7 +35,7 @@ export const modalContext = createContext<{
 const AuthLayout = () => {
   const sheetRef = useRef<BottomSheetModal>(null);
   const { isAuthenticated, fetchAuthenticatedUser, logout } = useAuthStore();
-  const [isOpen, setOpen] = useState(true);
+  const [isOpen, setOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
