@@ -98,14 +98,16 @@ const TabLayout = () => {
         options={{
           title: "",
           tabBarIcon: ({ focused }) => (
-            <Pressable  
-              className="absolute border-2 bg-white border-red-400 w-16 h-16 rounded-full items-center justify-center "
-              onPress={() => {
-                navigate("/(main)/chat"); // programmatic navigation
-              }}
-            >
-              <Ionicons name="sparkles-sharp" size={32} color="#FF6347" />
-            </Pressable>
+            <View className="absolute rounded-full p-2 bg-white">
+              <Pressable
+                className="bg-orange-400 w-16 h-16 rounded-full items-center justify-center "
+                onPress={() => {
+                  navigate("/(main)/chat"); // programmatic navigation
+                }}
+              >
+                <Ionicons name="sparkles-sharp" size={32} color="white" />
+              </Pressable>
+            </View>
           ),
         }}
       />
