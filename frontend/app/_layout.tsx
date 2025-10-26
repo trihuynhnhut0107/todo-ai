@@ -8,6 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from "react-native";
 export default function RootLayout() {
   const { isLoading, fetchAuthenticatedUser } = useAuthStore();
+  
   useEffect(() => {
     fetchAuthenticatedUser();
   }, []);
