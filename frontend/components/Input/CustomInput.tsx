@@ -8,8 +8,8 @@ const CustomInput = ({ label, ...rest }: CustomInputProps) => {
     <View className="w-full">
       <Text
         className={cn(
-          "label",
-          isFocused && "text-primary font-bold"
+          "text-base text-start w-full font-quicksand-medium text-gray-500 pl-2",
+          isFocused && "text-orange-500 font-bold"
         )}
       >
         {label}
@@ -22,8 +22,8 @@ const CustomInput = ({ label, ...rest }: CustomInputProps) => {
         onBlur={() => setIsFocused(false)}
         placeholderTextColor="#888"
         className={cn(
-          "input",
-          isFocused ? "border-primary" : "border-gray-300"
+          "rounded-lg p-3 w-full text-base border-2 leading-5",
+          isFocused ? "border-orange-500" : "border-gray-300"
         )}
       />
     </View>

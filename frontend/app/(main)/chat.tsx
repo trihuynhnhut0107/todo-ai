@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { Link, useRouter } from "expo-router";
 import React from "react";
 import {
   ScrollView,
@@ -8,38 +9,22 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const ChatScreen = () => {
+  const router = useRouter();
   return (
-    <View className="flex-1 bg-white p-5">
-      <LinearGradient
-        // Bắt đầu bằng màu cam MỜ, mờ dần sang TRONG SUỐT
-        colors={["rgba(255, 120, 70, 0.5)", "rgba(255, 120, 70, 0.1)"]}
-        style={StyleSheet.absoluteFillObject}
-        // Vị trí: 0% là màu, 60% là trong suốt
-        locations={[0, 0.6]}
-        // Hướng: Từ trên (y: 0) xuống dưới (y: 0.8)
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 0.8 }}
-      />
-
-      {/* Lớp 2: Vầng sáng hồng nhẹ ở trên-phải */}
-      <LinearGradient
-        // Bắt đầu bằng màu hồng MỜ, mờ dần sang TRONG SUỐT
-        colors={["rgba(255, 100, 100, 0.3)", "transparent"]}
-        style={StyleSheet.absoluteFillObject}
-        locations={[0, 1]} // Mờ nhanh hơn
-        // Hướng: Từ trên-phải (x: 0.8) chéo xuống
-        start={{ x: 0.8, y: 0 }}
-        end={{ x: 0.5, y: 0.7 }}
-      />
-
-      <TouchableOpacity className="absolute left-6 bg-black/20 rounded-full p-2 z-10">
+    <SafeAreaView className="flex-1 bg-transparent p-5">
+      <TouchableOpacity
+        onPress={() => router.back()} className="absolute left-6 bg-black/20 rounded-full p-2 z-10">
         <Ionicons name="close" size={22} color="white" />
       </TouchableOpacity>
 
       {/* Logo */}
-      <View className="bg-white rounded-full w-14 h-14 items-center justify-center mt-20 mb-3  shadow-md">
+
+      <View
+        className="bg-white rounded-full w-14 h-14 items-center justify-center mt-20 mb-3  shadow-md"
+      >
         {/* Thay bằng logo của bạn, ở đây dùng icon sparkles */}
         <Ionicons name="sparkles-sharp" size={32} color="#FF6347" />
       </View>
@@ -105,7 +90,7 @@ const ChatScreen = () => {
       </ScrollView>
 
       {/* 3. THANH BOTTOM BAR (NỔI) */}
-      <View className="absolute bottom-0 left-0 right-0 px-6 py-4 bg-transparent">
+      <View className="absolute bottom-10 left-0 right-0 px-6 py-4 bg-transparent">
         <View
           className="bg-white rounded-full flex-row items-center p-2 shadow-2xl shadow-black/20"
           style={{ elevation: 10 }} // Shadow mạnh cho Android
@@ -118,7 +103,7 @@ const ChatScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

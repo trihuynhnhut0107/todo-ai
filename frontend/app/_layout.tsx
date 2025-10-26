@@ -1,14 +1,14 @@
 import { Stack } from "expo-router";
 import "@/styles/global.css";
-import useAuthStore from "@/store/auth.store";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-// import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from "react-native";
+import useAuthStore from "@/store/auth.store";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+
 export default function RootLayout() {
   const { isLoading, fetchAuthenticatedUser } = useAuthStore();
-  
   useEffect(() => {
     fetchAuthenticatedUser();
   }, []);
@@ -21,9 +21,9 @@ export default function RootLayout() {
     );
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      {/* <BottomSheetModalProvider> */}
+      <BottomSheetModalProvider>
         <Stack screenOptions={{ headerShown: false }} />
-      {/* </BottomSheetModalProvider> */}
-    </GestureHandlerRootView>
+      </BottomSheetModalProvider>
+     </GestureHandlerRootView>
   );
 }

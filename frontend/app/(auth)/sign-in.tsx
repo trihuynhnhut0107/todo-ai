@@ -1,4 +1,3 @@
-import CustomButton from "@/components/CustomButton";
 
 import { signIn } from "@/services/auth";
 import useAuthStore from "@/store/auth.store";
@@ -7,7 +6,8 @@ import { Link } from "expo-router";
 import React, { useContext, useState } from "react";
 import { Alert, Text, View } from "react-native";
 import { modalContext } from "./_layout";
-import CustomInput from "@/components/CustomInput";
+import CustomInput from "@/components/Input/CustomInput";
+import CustomButton from "@/components/Input/CustomButton";
 
 const SignIn = () => {
   const { setOpen } = useContext(modalContext);
@@ -31,7 +31,7 @@ const SignIn = () => {
     }
   }
   return (
-    <View className="gap-10 rounded-lg px-5 ">
+    <View className="gap-5 rounded-lg px-5 bg-white backdrop:blur-sm p-4 ">
       <CustomInput
         label="Email"
         value={form.email}
@@ -49,9 +49,9 @@ const SignIn = () => {
       />
       <CustomButton title="Sign in" isLoading={loading} onPress={Submit} />
 
-      <Text className="base-regular text-gray-100 text-center">
+      <Text className="base-regular text-center">
         Don't have an account?{" "}
-        <Link href={"/sign-up"} className="base-bold text-primary">
+        <Link href={"/sign-up"} className="base-bold text-primary text-orange-500">
           Sign up
         </Link>
       </Text>

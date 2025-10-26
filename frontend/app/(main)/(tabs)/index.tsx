@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome6, Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Header = () => (
   <View className="flex-row justify-between items-center p-5 ">
@@ -44,10 +45,10 @@ const SearchBar = () => (
 );
 // ------------------------------------
 
-export default function HomeScreen() {
+export default function Index() {
   return (
     // 1. View gốc có MÀU NỀN CỨNG (màu xám nhạt ở dưới)
-    <View className="flex-1 bg-gray-50 ">
+    <View className="flex-1 bg-gray-50 -mb-10 ">
       <StatusBar barStyle="light-content" />
 
       {/* === PHẦN NỀN "GIẢ LẬP" MỜ NHÒE (MỚI) === */}
@@ -86,14 +87,18 @@ export default function HomeScreen() {
 
       {/* PHẦN 2: NỘI DUNG TRẮNG BÊN DƯỚI */}
       <ScrollView
-        className="flex-1 p-6 -mt-6"
+        className="flex-1 p-6 -mt-6 "
         // 4. Thêm style này để đảm bảo ScrollView trong suốt
-        style={{ backgroundColor: "transparent" }}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        // style={{ backgroundColor: "tran" }}
+        contentContainerStyle={{ paddingBottom: 0 }}
       >
         {/* Mood Card (Simplified) */}
         <View className="bg-white p-4 rounded-xl shadow-sm mb-3 flex-row items-center gap-4">
-          <FontAwesome6 name="face-smile-beam" size={30} color="rgba(255, 120, 70, 1)" />
+          <FontAwesome6
+            name="face-smile-beam"
+            size={30}
+            color="rgba(255, 120, 70, 1)"
+          />
           <View>
             <Text className="text-lg font-bold">Your mood</Text>
             <Text className="text-gray-600 mt-1">
@@ -159,10 +164,6 @@ export default function HomeScreen() {
           </View>
         </View>
       </ScrollView>
-
-      <TouchableOpacity className="absolute bottom-8 right-6 border-2 border-red-400 w-16 h-16 rounded-full items-center justify-center ">
-        <Ionicons name="sparkles-sharp" size={32} color="#FF6347" />
-      </TouchableOpacity>
     </View>
   );
 }

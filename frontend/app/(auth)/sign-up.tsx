@@ -5,8 +5,8 @@ import { Link } from "expo-router";
 import React, { useContext, useState } from "react";
 import { Alert, Text, View } from "react-native";
 import { modalContext } from "./_layout";
-import CustomButton from "@/components/CustomButton";
-import CustomInput from "@/components/CustomInput";
+import CustomButton from "@/components/Input/CustomButton";
+import CustomInput from "@/components/Input/CustomInput";
 
 const SignUp = () => {
   const { setOpen } = useContext(modalContext);
@@ -30,7 +30,7 @@ const SignUp = () => {
     }
   }
   return (
-    <View className="gap-10 rounded-lg px-5 ">
+    <View className="gap-5 rounded-lg px-5 bg-white backdrop:blur-sm p-4 ">
       <CustomInput
         label="Full Name"
         value={form.name}
@@ -54,9 +54,9 @@ const SignUp = () => {
       />
       <CustomButton title="Sign up" isLoading={loading} onPress={Submit} />
 
-      <Text className="base-regular text-gray-100 text-center">
+      <Text className="base-regular text-center">
         Already have an account?{" "}
-        <Link href={"/sign-in"} className="base-bold text-primary">
+        <Link href={"/sign-in"} className="base-bold text-orange-500">
           Sign in
         </Link>
       </Text>
