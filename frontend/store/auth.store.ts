@@ -28,7 +28,7 @@ const useAuthStore = create<AuthState>((set) => ({
       set({ user: null, isAuthenticated: false });
       await signOut();
     } catch (error) {
-      console.log(error)
+      console.log('Logout failed:', error);
     }
   },
 
