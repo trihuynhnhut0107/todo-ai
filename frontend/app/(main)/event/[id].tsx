@@ -5,14 +5,19 @@ import { Ionicons } from "@expo/vector-icons";
 
 const eventDetail = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   return (
-    <View className="flex-1 p-4 pb-32 bg-white">
-      <Link href="/(main)/(tabs)/calendar">
-        <TouchableOpacity className=" bg-black/20 rounded-full p-2 z-10">
-          <Ionicons name="calendar" size={22} color="white" />
-        </TouchableOpacity>
-      </Link>
-      <Text>eventDetail</Text>
+    <View className="flex-1 items-start p-4 pb-32 ">
+      <TouchableOpacity
+        onPress={() => router.push("/(main)/(tabs)/calendar")}
+        className=" bg-white/30 rounded-full p-2 z-10 flex-row items-center gap-2"
+      >
+        <Ionicons name="calendar" size={22} color="white" />
+        <Text className="text-white/70">Calendar</Text>
+      </TouchableOpacity>
+
+      <Text className="text-3xl font-bold text-white">Event Name</Text>
+
     </View>
   );
 };

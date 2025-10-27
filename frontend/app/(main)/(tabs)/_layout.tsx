@@ -25,9 +25,9 @@ const TabBarIcon = ({
 }: TabBarIconProps) => (
   <View className={"flex items-center  w-[100px]"}>
     {focused ? (
-      <Ionicons name={acactive_icon} size={24} color="orange" />
+      <Ionicons name={acactive_icon} size={28} color="orange" />
     ) : (
-      <Ionicons name={icon} size={24} color="orange" />
+      <Ionicons name={icon} size={28} color="orange" />
     )}
 
     {/* <Text className={cn("text-xs", focused ? "text-orange-400" : "")}>
@@ -42,8 +42,8 @@ const TabLayout = () => {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        sceneStyle:{
-          backgroundColor:'transparent',
+        sceneStyle: {
+          backgroundColor: "transparent",
         },
         tabBarStyle: {
           //   borderRadius: 20,
@@ -150,6 +150,12 @@ const TabLayout = () => {
               focused={focused}
             />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="edit_profile"
+        options={{
+          href: null,
         }}
       />
     </Tabs>
