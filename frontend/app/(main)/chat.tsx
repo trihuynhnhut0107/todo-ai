@@ -16,7 +16,7 @@ const ChatScreen = () => {
   return (
     <SafeAreaView className="flex-1 bg-transparent p-5">
       <TouchableOpacity
-        onPress={() => router.back()} className="absolute left-6 bg-black/20 rounded-full p-2 z-10">
+        onPress={() => router.back()} className="absolute left-6 bg-black/70 rounded-full p-2 z-10">
         <Ionicons name="close" size={22} color="white" />
       </TouchableOpacity>
 
