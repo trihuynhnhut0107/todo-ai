@@ -38,7 +38,7 @@ const calendar = () => {
   const [selected, setSelected] = useState(
     new Date().toISOString().split("T")[0]
   );
-  const [loading, setLaoding] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [isOpen, setOpen] = useState(false);
 
   useEffect(() => {
