@@ -23,16 +23,16 @@ const TabBarIcon = ({
   acactive_icon,
   title,
 }: TabBarIconProps) => (
-  <View className={"flex items-center mt-4 w-[100px]"}>
+  <View className={"flex items-center  w-[100px]"}>
     {focused ? (
-      <Ionicons name={acactive_icon} size={24} color="orangered" />
+      <Ionicons name={acactive_icon} size={24} color="orange" />
     ) : (
-      <Ionicons name={icon} size={24} color="black" />
+      <Ionicons name={icon} size={24} color="orange" />
     )}
 
-    <Text className={cn("text-xs", focused ? "text-orange-500" : "")}>
+    {/* <Text className={cn("text-xs", focused ? "text-orange-400" : "")}>
       {title}
-    </Text>
+    </Text> */}
   </View>
 );
 
@@ -42,11 +42,14 @@ const TabLayout = () => {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
+        sceneStyle:{
+          backgroundColor:'transparent',
+        },
         tabBarStyle: {
           //   borderRadius: 20,
           //   overflow: "hidden",
           //   marginHorizontal: 20,
-          height: 100,
+          //   height: 100,
           //   position: "absolute",
           //   bottom: 40,
           //   backgroundColor: "rgba(255,255,255,0.6)",
@@ -98,7 +101,7 @@ const TabLayout = () => {
         options={{
           title: "",
           tabBarIcon: ({ focused }) => (
-            <View className="absolute rounded-full p-2 bg-white">
+            <View className="absolute rounded-full p-2 mb-4 bg-white">
               <Pressable
                 className="bg-orange-400 w-16 h-16 rounded-full items-center justify-center "
                 onPress={() => {

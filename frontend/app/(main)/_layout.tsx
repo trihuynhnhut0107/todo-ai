@@ -32,7 +32,7 @@ const mainLayout = () => {
       {/* Lớp 2: Vầng sáng hồng nhẹ ở trên-phải */}
       <LinearGradient
         // Bắt đầu bằng màu hồng MỜ, mờ dần sang TRONG SUỐT
-        colors={["rgba(255, 100, 100, 0.3)", "transparent"]}
+        colors={["rgba(255, 100, 100, 0.3)", "white"]}
         style={StyleSheet.absoluteFill}
         locations={[0, 1]} // Mờ nhanh hơn
         // Hướng: Từ trên-phải (x: 0.8) chéo xuống

@@ -110,7 +110,7 @@ const calendar = () => {
     <View className="flex-1">
       <CalendarContainer
         theme={{
-          headerBackgroundColor:'transparent',
+          headerBackgroundColor: "transparent",
         }}
         ref={calendarRef}
         allowPinchToZoom
@@ -138,12 +138,6 @@ const calendar = () => {
           renderEvent={(e) => <EventCard event={e} onPress={deleteEvent} />}
         />
       </CalendarContainer>
-      <TouchableOpacity
-        onPress={() => setOpen(true)}
-        className="absolute right-5 bottom-5 flex-row items-center p-3 bg-orange-400 rounded-full shadow "
-      >
-        <Ionicons name="calendar" size={32} color="white" />
-      </TouchableOpacity>
 
       <BottomSheetModal
         onDismiss={() => setOpen(false)}
@@ -206,6 +200,13 @@ const calendar = () => {
           />
         </BottomSheetView>
       </BottomSheetModal>
+
+      <TouchableOpacity
+        onPress={() => setOpen(true)}
+        className="absolute right-5 bottom-5 flex-row items-center p-3 bg-orange-400 rounded-full"
+      >
+        <Ionicons name="calendar" size={32} color="white" />
+      </TouchableOpacity>
     </View>
   );
 };
