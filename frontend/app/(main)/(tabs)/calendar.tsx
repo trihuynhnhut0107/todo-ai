@@ -29,7 +29,6 @@ import {
 } from "react-native";
 import { Calendar, CalendarList } from "react-native-calendars";
 import { FlatList } from "react-native-gesture-handler";
-import { endEvent } from "react-native/Libraries/Performance/Systrace";
 
 const calendar = () => {
   const sheetRef = useRef<BottomSheetModal>(null);
