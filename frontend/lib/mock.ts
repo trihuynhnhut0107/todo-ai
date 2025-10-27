@@ -22,8 +22,8 @@ export const mockEvent = [
   {
     id: "3",
     title: "Lunch with Sarah",
-    start: { dateTime: "2025-10-26T12:00:00Z" },
-    end: { dateTime: "2025-10-26T12:30:00Z" },
+    start: { dateTime: "2025-10-27T12:00:00Z" },
+    end: { dateTime: "2025-10-27T12:30:00Z" },
     color: "blue",
     data: {
       member: [{ username: "SARAH SMITH" }],

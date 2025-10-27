@@ -17,6 +17,7 @@ import {
   Dimensions,
   Image,
   ImageBackground,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -38,6 +39,7 @@ const AuthLayout = () => {
   const [isOpen, setOpen] = useState(false);
 
   useEffect(() => {
+    Keyboard.dismiss();
     if (isOpen) {
       sheetRef.current?.present();
     } else {
@@ -122,7 +124,9 @@ const AuthLayout = () => {
               className="size-16 m-auto"
               resizeMode="contain"
             />
-            <Text className="font-bold text-center text-xl text-green-500">Login Successful</Text>
+            <Text className="font-bold text-center text-xl text-green-500">
+              Login Successful
+            </Text>
             <Text className="text-center">
               You’re all set to continue where you left off.
             </Text>
@@ -136,7 +140,7 @@ const AuthLayout = () => {
               textStyle="!text-orange-500"
               onPress={async () => {
                 await logout();
-                sheetRef.current?.dismiss();
+                setOpen(false);
               }}
             />
           </BottomSheetView>

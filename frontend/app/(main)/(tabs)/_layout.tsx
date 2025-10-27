@@ -46,7 +46,7 @@ const TabLayout = () => {
           //   borderRadius: 20,
           //   overflow: "hidden",
           //   marginHorizontal: 20,
-          //   height: 80,
+          height: 100,
           //   position: "absolute",
           //   bottom: 40,
           //   backgroundColor: "rgba(255,255,255,0.6)",

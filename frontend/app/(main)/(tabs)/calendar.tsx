@@ -1,67 +1,65 @@
+import AgendaHeader from "@/components/UI/Calendar/AgendaHeaderItem";
+import EventCard from "@/components/UI/EventCard";
 import { images } from "@/lib/image";
 import { mockEvent } from "@/lib/mock";
 import { Ionicons } from "@expo/vector-icons";
+import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import {
   CalendarBody,
   CalendarContainer,
   CalendarHeader,
   CalendarKitHandle,
   EventItem,
+  HeaderItemProps,
   OnCreateEventResponse,
   OnEventResponse,
   PackedEvent,
 } from "@howljs/calendar-kit";
+import { BlurView } from "expo-blur";
+import { Link } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import {
+  Dimensions,
+  Image,
+  Keyboard,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Calendar, CalendarList } from "react-native-calendars";
+import { FlatList } from "react-native-gesture-handler";
+import { endEvent } from "react-native/Libraries/Performance/Systrace";
 
 const calendar = () => {
+  const sheetRef = useRef<BottomSheetModal>(null);
   const calendarRef = useRef<CalendarKitHandle>(null);
   const [events, setEvents] = useState<EventItem[]>(mockEvent);
-  const [selected, setSelected] = useState("");
-  const [loading, setLaoding] = useState(false);
-  useEffect(() => {
-
-    calendarRef.current&&calendarRef.current?.goToDate({
-      date: new Date(selected).toISOString(),
-      animatedDate: true,
-      hourScroll: true,
-      animatedHour: true,
-    });
-  }, [selected]);
-  const renderEvent = useCallback(
-    (event: PackedEvent) => (
-      <View
-        className="flex-row items-start"
-        style={{
-          width: "100%",
-          height: "100%",
-          padding: 4,
-        }}
-      >
-        <View className="flex-1">
-          <View className="flex-row relative">
-            {event.data.member?.map((m: any, idx: number) => (
-              <Image
-                key={idx}
-                source={images.john_doe}
-                className="rounded-full size-4"
-                resizeMode="cover"
-              />
-            ))}
-          </View>
-          <Text style={{ color: "white", fontSize: 10 }}>{event.title}</Text>
-        </View>
-        <Pressable
-          className="rounded-full p-2 z-10"
-          onPress={() => deleteEvent(event.id)}
-        >
-          <Ionicons name="close" size={22} color="white" />
-        </Pressable>
-      </View>
-    ),
-    []
+  const [selected, setSelected] = useState(
+    new Date().toISOString().split("T")[0]
   );
+  const [loading, setLaoding] = useState(false);
+  const [isOpen, setOpen] = useState(false);
+
+  useEffect(() => {
+    Keyboard.dismiss();
+    if (isOpen) {
+      sheetRef.current?.present();
+    } else {
+      sheetRef.current?.dismiss();
+    }
+  }, [isOpen]);
+  useEffect(() => {
+    if (selected) {
+      calendarRef.current &&
+        calendarRef.current?.goToDate({
+          date: new Date(selected).toISOString(),
+          animatedDate: true,
+          hourScroll: true,
+          animatedHour: true,
+        });
+    }
+  }, [selected]);
 
   const handleDragCreateStart = (start: OnCreateEventResponse) => {
     console.log("Started creating event at:", start);
@@ -110,55 +108,104 @@ const calendar = () => {
 
   return (
     <View className="flex-1">
-      <CalendarList
-        horizontal={!!selected}
-        calendarHeight={200}
-        pagingEnabled={true}
+      <CalendarContainer
         theme={{
-          backgroundColor: "orange",
-          calendarBackground: "orange",
-          textSectionTitleColor: "white",
-          selectedDayBackgroundColor: "white",
-          selectedDayTextColor: "orange",
-          todayTextColor: "red",
-          dayTextColor: "white",
-          textDisabledColor: "green",
+          headerBackgroundColor:'transparent',
         }}
-        onDayPress={(day) => {
-          console.log(day);
-          setSelected(day.dateString);
+        ref={calendarRef}
+        allowPinchToZoom
+        allowDragToCreate
+        allowDragToEdit
+        onDragCreateEventStart={handleDragCreateStart}
+        onDragCreateEventEnd={handleDragCreateEnd}
+        onDragEventStart={handleDragStart}
+        onDragEventEnd={handleDragEnd}
+        events={events}
+        onPressEvent={(event) => {
+          console.log("Event pressed:", event);
         }}
-        markedDates={{
-          [selected]: {
-            selected: true,
-            disableTouchEvent: true,
-            // selectedDotColor: "orange",
-          },
-        }}
-      />
-      {selected && (
-        <CalendarContainer
-          ref={calendarRef}
-          allowPinchToZoom={true}
-          // isLoading={true}
-          allowDragToCreate={true}
-          allowDragToEdit={true}
-          onDragCreateEventStart={handleDragCreateStart}
-          onDragCreateEventEnd={handleDragCreateEnd}
-          onDragEventStart={handleDragStart}
-          onDragEventEnd={handleDragEnd}
-          events={events}
-          onPressEvent={(event) => {
-            console.log("Event pressed:", event);
-          }}
-          useHaptic={true}
-          scrollByDay={true}
-          numberOfDays={1}
-        >
-          <CalendarHeader />
-          <CalendarBody renderEvent={renderEvent} />
-        </CalendarContainer>
-      )}
+        useHaptic={true}
+        scrollByDay={true}
+        numberOfDays={1}
+      >
+        <CalendarHeader
+          headerBottomHeight={120}
+          renderHeaderItem={(props) => (
+            <AgendaHeader props={props} onSelect={setSelected} />
+          )}
+        />
+        <CalendarBody
+          renderEvent={(e) => <EventCard event={e} onPress={deleteEvent} />}
+        />
+      </CalendarContainer>
+      <TouchableOpacity
+        onPress={() => setOpen(true)}
+        className="absolute right-5 bottom-5 flex-row items-center p-3 bg-orange-400 rounded-full shadow "
+      >
+        <Ionicons name="calendar" size={32} color="white" />
+      </TouchableOpacity>
+
+      <BottomSheetModal
+        onDismiss={() => setOpen(false)}
+        ref={sheetRef}
+        // snapPoints={snapPoints}
+        enablePanDownToClose
+        backgroundComponent={() => (
+          <View className=" absolute top-0 left-0 right-0 bottom-0 bg-orange-500/80 shadow-xl rounded-t-3xl"></View>
+        )}
+        backdropComponent={() => (
+          <BlurView
+            intensity={20} // adjust for more/less blur
+            tint="light" // or "light"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: Dimensions.get("window").width,
+              height: Dimensions.get("window").height,
+            }}
+          />
+        )}
+      >
+        <BottomSheetView className="gap-4">
+          <CalendarList
+            // pastScrollRange={0}
+            // futureScrollRange={0}
+            hideExtraDays
+            horizontal
+            pagingEnabled
+            style={{
+              flex: 1,
+              paddingBottom: 32,
+            }}
+            headerStyle={{}}
+            theme={{
+              calendarBackground: "transparent",
+              textSectionTitleColor: "yellow",
+              selectedDayBackgroundColor: "white",
+              monthTextColor: "yellow",
+              selectedDayTextColor: "orange",
+              todayTextColor: "yellow",
+              dayTextColor: "white",
+              textDisabledColor: "green",
+
+              textMonthFontWeight: "bold",
+              textMonthFontSize: 32,
+            }}
+            onDayPress={(day) => setSelected(day.dateString)}
+            markedDates={{
+              "2025-10-28": {
+                selected: true,
+                disableTouchEvent: true,
+              },
+              [selected]: {
+                selected: true,
+                disableTouchEvent: true,
+              },
+            }}
+          />
+        </BottomSheetView>
+      </BottomSheetModal>
     </View>
   );
 };
