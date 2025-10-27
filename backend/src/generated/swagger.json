@@ -78,7 +78,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_WorkspaceResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -150,7 +150,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_WorkspaceResponse-Array_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -208,7 +208,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_void_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -257,7 +257,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse__id-string--name-string--email-string--role-string_-Array_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -400,7 +400,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_EventResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -491,7 +491,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_EventResponse-Array_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -608,8 +608,35 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ApiResponse__threadId-string--status-string--message-string-or-null--intent_63_-string--currentWorkflow_63_-string--interrupt_63__58__type-collect_info-or-confirm-or-conflict_resolution--payload-unknown_--missingFields_63_-string-Array--suggestedResponses_63_-string-Array--data_63_-unknown--error_63_-string__": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+			"ChatResponseDto": {
+				"properties": {
+					"userName": {
+						"type": "string"
+					},
+					"intent": {
+						"type": "string"
+					},
+					"response": {
+						"type": "string"
+					},
+					"messages": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"userName",
+					"intent",
+					"response",
+					"messages"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_ChatResponseDto_": {
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -618,64 +645,7 @@
 						"type": "string"
 					},
 					"data": {
-						"properties": {
-							"error": {
-								"type": "string"
-							},
-							"data": {},
-							"suggestedResponses": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							},
-							"missingFields": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							},
-							"interrupt": {
-								"properties": {
-									"payload": {},
-									"type": {
-										"type": "string",
-										"enum": [
-											"collect_info",
-											"confirm",
-											"conflict_resolution"
-										]
-									}
-								},
-								"required": [
-									"payload",
-									"type"
-								],
-								"type": "object"
-							},
-							"currentWorkflow": {
-								"type": "string"
-							},
-							"intent": {
-								"type": "string"
-							},
-							"message": {
-								"type": "string",
-								"nullable": true
-							},
-							"status": {
-								"type": "string"
-							},
-							"threadId": {
-								"type": "string"
-							}
-						},
-						"required": [
-							"message",
-							"status",
-							"threadId"
-						],
-						"type": "object"
+						"$ref": "#/components/schemas/ChatResponseDto"
 					},
 					"timestamp": {
 						"type": "string"
@@ -689,119 +659,24 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ChatMessageDto": {
-				"description": "Request DTO for chat message processing\nHandles both new conversations and interrupt resumptions",
+			"ProcessMessageDto": {
 				"properties": {
-					"message": {
-						"type": "string"
-					},
 					"userName": {
 						"type": "string"
 					},
-					"workspaceId": {
-						"type": "string"
-					},
-					"threadId": {
-						"type": "string"
-					},
-					"response": {
-						"anyOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
+					"messages": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					},
 					"blocked": {
 						"type": "boolean"
-					},
-					"simulateConflict": {
-						"type": "boolean"
-					}
-				},
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ApiResponse__threadId-string--status-string--message-string-or-null--intent_63_-string--currentWorkflow_63_-string--interrupt_63__58__type-collect_info-or-confirm-or-conflict_resolution--payload-unknown_--missingFields_63_-string-Array--suggestedResponses_63_-string-Array--data_63_-unknown--error_63_-string_-or-null_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
-				"properties": {
-					"success": {
-						"type": "boolean"
-					},
-					"message": {
-						"type": "string"
-					},
-					"data": {
-						"properties": {
-							"error": {
-								"type": "string"
-							},
-							"data": {},
-							"suggestedResponses": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							},
-							"missingFields": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							},
-							"interrupt": {
-								"properties": {
-									"payload": {},
-									"type": {
-										"type": "string",
-										"enum": [
-											"collect_info",
-											"confirm",
-											"conflict_resolution"
-										]
-									}
-								},
-								"required": [
-									"payload",
-									"type"
-								],
-								"type": "object"
-							},
-							"currentWorkflow": {
-								"type": "string"
-							},
-							"intent": {
-								"type": "string"
-							},
-							"message": {
-								"type": "string",
-								"nullable": true
-							},
-							"status": {
-								"type": "string"
-							},
-							"threadId": {
-								"type": "string"
-							}
-						},
-						"required": [
-							"message",
-							"status",
-							"threadId"
-						],
-						"type": "object",
-						"nullable": true
-					},
-					"timestamp": {
-						"type": "string"
 					}
 				},
 				"required": [
-					"success",
-					"message",
-					"timestamp"
+					"userName",
+					"messages"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -847,7 +722,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_AuthResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -907,7 +782,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse__accessToken-string__": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -975,7 +850,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_UserResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -2223,80 +2098,32 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse__threadId-string--status-string--message-string-or-null--intent_63_-string--currentWorkflow_63_-string--interrupt_63__58__type-collect_info-or-confirm-or-conflict_resolution--payload-unknown_--missingFields_63_-string-Array--suggestedResponses_63_-string-Array--data_63_-unknown--error_63_-string__"
+									"$ref": "#/components/schemas/ApiResponse_ChatResponseDto_"
 								}
 							}
 						}
 					}
 				},
-				"description": "Process a chat message (new or resume)",
-				"summary": "Unified chat endpoint for all workflows",
+				"description": "Process a chat message through the AI agent",
+				"summary": "Process chat message",
 				"tags": [
 					"Chat"
 				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
+				"security": [],
 				"parameters": [],
 				"requestBody": {
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/ChatMessageDto"
+								"$ref": "#/components/schemas/ProcessMessageDto"
 							},
 							"example": {
-								"message": "Create a meeting tomorrow at 2pm",
 								"userName": "John Doe",
-								"workspaceId": "workspace-123"
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/chat/status": {
-			"post": {
-				"operationId": "GetChatStatus",
-				"responses": {
-					"200": {
-						"description": "Status retrieved successfully",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ApiResponse__threadId-string--status-string--message-string-or-null--intent_63_-string--currentWorkflow_63_-string--interrupt_63__58__type-collect_info-or-confirm-or-conflict_resolution--payload-unknown_--missingFields_63_-string-Array--suggestedResponses_63_-string-Array--data_63_-unknown--error_63_-string_-or-null_"
-								}
-							}
-						}
-					}
-				},
-				"description": "Get current status of a chat session",
-				"summary": "Check conversation state",
-				"tags": [
-					"Chat"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"properties": {
-									"threadId": {
-										"type": "string"
-									}
-								},
-								"required": [
-									"threadId"
+								"messages": [
+									"Create a task for tomorrow: Review pull requests"
 								],
-								"type": "object"
+								"blocked": false
 							}
 						}
 					}
