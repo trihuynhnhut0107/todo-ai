@@ -1,13 +1,13 @@
 export async function signUp(name: string, email: string, password: string) {
-  return { name: "user", email: "user@gmail.com", avatar: "" };
+  throw new Error("signUp not implemented");
 }
 
 export async function signIn(email: string, password: string) {
-  return { name: "user", email: "user@gmail.com", avatar: "" };
+  throw new Error("signIn not implemented");
 }
 
 export async function getUser() {
-  return { name: "user", email: "user@gmail.com", avatar: "" };
+  throw new Error("getUser not implemented");
 }
 
 export async function signOut() {
