@@ -608,34 +608,7 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ChatResponseDto": {
-				"properties": {
-					"userName": {
-						"type": "string"
-					},
-					"intent": {
-						"type": "string"
-					},
-					"response": {
-						"type": "string"
-					},
-					"messages": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					}
-				},
-				"required": [
-					"userName",
-					"intent",
-					"response",
-					"messages"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ApiResponse_ChatResponseDto_": {
+			"ApiResponse__threadId-string--status-string--message-string-or-null--intent_63_-string--currentWorkflow_63_-string--interrupt_63__58__type-collect_info-or-confirm-or-conflict_resolution--payload-unknown_--missingFields_63_-string-Array--suggestedResponses_63_-string-Array--data_63_-unknown--error_63_-string__": {
 				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
@@ -645,7 +618,64 @@
 						"type": "string"
 					},
 					"data": {
-						"$ref": "#/components/schemas/ChatResponseDto"
+						"properties": {
+							"error": {
+								"type": "string"
+							},
+							"data": {},
+							"suggestedResponses": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"missingFields": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"interrupt": {
+								"properties": {
+									"payload": {},
+									"type": {
+										"type": "string",
+										"enum": [
+											"collect_info",
+											"confirm",
+											"conflict_resolution"
+										]
+									}
+								},
+								"required": [
+									"payload",
+									"type"
+								],
+								"type": "object"
+							},
+							"currentWorkflow": {
+								"type": "string"
+							},
+							"intent": {
+								"type": "string"
+							},
+							"message": {
+								"type": "string",
+								"nullable": true
+							},
+							"status": {
+								"type": "string"
+							},
+							"threadId": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"message",
+							"status",
+							"threadId"
+						],
+						"type": "object"
 					},
 					"timestamp": {
 						"type": "string"
@@ -659,24 +689,119 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ProcessMessageDto": {
+			"ChatMessageDto": {
+				"description": "Request DTO for chat message processing\nHandles both new conversations and interrupt resumptions",
 				"properties": {
+					"message": {
+						"type": "string"
+					},
 					"userName": {
 						"type": "string"
 					},
-					"messages": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
+					"workspaceId": {
+						"type": "string"
+					},
+					"threadId": {
+						"type": "string"
+					},
+					"response": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"blocked": {
 						"type": "boolean"
+					},
+					"simulateConflict": {
+						"type": "boolean"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse__threadId-string--status-string--message-string-or-null--intent_63_-string--currentWorkflow_63_-string--interrupt_63__58__type-collect_info-or-confirm-or-conflict_resolution--payload-unknown_--missingFields_63_-string-Array--suggestedResponses_63_-string-Array--data_63_-unknown--error_63_-string_-or-null_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"properties": {
+							"error": {
+								"type": "string"
+							},
+							"data": {},
+							"suggestedResponses": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"missingFields": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"interrupt": {
+								"properties": {
+									"payload": {},
+									"type": {
+										"type": "string",
+										"enum": [
+											"collect_info",
+											"confirm",
+											"conflict_resolution"
+										]
+									}
+								},
+								"required": [
+									"payload",
+									"type"
+								],
+								"type": "object"
+							},
+							"currentWorkflow": {
+								"type": "string"
+							},
+							"intent": {
+								"type": "string"
+							},
+							"message": {
+								"type": "string",
+								"nullable": true
+							},
+							"status": {
+								"type": "string"
+							},
+							"threadId": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"message",
+							"status",
+							"threadId"
+						],
+						"type": "object",
+						"nullable": true
+					},
+					"timestamp": {
+						"type": "string"
 					}
 				},
 				"required": [
-					"userName",
-					"messages"
+					"success",
+					"message",
+					"timestamp"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -2098,32 +2223,80 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_ChatResponseDto_"
+									"$ref": "#/components/schemas/ApiResponse__threadId-string--status-string--message-string-or-null--intent_63_-string--currentWorkflow_63_-string--interrupt_63__58__type-collect_info-or-confirm-or-conflict_resolution--payload-unknown_--missingFields_63_-string-Array--suggestedResponses_63_-string-Array--data_63_-unknown--error_63_-string__"
 								}
 							}
 						}
 					}
 				},
-				"description": "Process a chat message through the AI agent",
-				"summary": "Process chat message",
+				"description": "Process a chat message (new or resume)",
+				"summary": "Unified chat endpoint for all workflows",
 				"tags": [
 					"Chat"
 				],
-				"security": [],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
 				"parameters": [],
 				"requestBody": {
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/ProcessMessageDto"
+								"$ref": "#/components/schemas/ChatMessageDto"
 							},
 							"example": {
+								"message": "Create a meeting tomorrow at 2pm",
 								"userName": "John Doe",
-								"messages": [
-									"Create a task for tomorrow: Review pull requests"
+								"workspaceId": "workspace-123"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/chat/status": {
+			"post": {
+				"operationId": "GetChatStatus",
+				"responses": {
+					"200": {
+						"description": "Status retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__threadId-string--status-string--message-string-or-null--intent_63_-string--currentWorkflow_63_-string--interrupt_63__58__type-collect_info-or-confirm-or-conflict_resolution--payload-unknown_--missingFields_63_-string-Array--suggestedResponses_63_-string-Array--data_63_-unknown--error_63_-string_-or-null_"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get current status of a chat session",
+				"summary": "Check conversation state",
+				"tags": [
+					"Chat"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"threadId": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"threadId"
 								],
-								"blocked": false
+								"type": "object"
 							}
 						}
 					}
