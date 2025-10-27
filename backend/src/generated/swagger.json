@@ -78,7 +78,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_WorkspaceResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -150,7 +150,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_WorkspaceResponse-Array_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -208,7 +208,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_void_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -257,7 +257,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse__id-string--name-string--email-string--role-string_-Array_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -400,7 +400,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_EventResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -491,7 +491,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_EventResponse-Array_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -636,7 +636,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_ChatResponseDto_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -722,7 +722,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_AuthResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -782,7 +782,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse__accessToken-string__": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -850,7 +850,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_UserResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
