@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome6, Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 const Header = () => (
   <View className="flex-row justify-between items-center p-5 ">
@@ -39,59 +40,41 @@ const Header = () => (
 );
 const SearchBar = () => (
   <View className="bg-white/95 flex-row justify-between items-center p-4 rounded-full mx-5 my-4 shadow-sm">
-    <Text className="text-gray-600">Ask anything about your health?</Text>
+    <Text className="text-gray-600">Ask anything</Text>
   </View>
 );
 // ------------------------------------
 
 export default function HomeScreen() {
+  const router = useRouter();
   return (
-    // 1. View gốc có MÀU NỀN CỨNG (màu xám nhạt ở dưới)
     <View className="flex-1 bg-gray-50 ">
       <StatusBar barStyle="light-content" />
-
-      {/* === PHẦN NỀN "GIẢ LẬP" MỜ NHÒE (MỚI) === */}
-
-      {/* Lớp 1: Vầng sáng cam-đỏ chính */}
+      
       <LinearGradient
-        // Bắt đầu bằng màu cam MỜ, mờ dần sang TRONG SUỐT
         colors={["rgba(255, 120, 70, 0.5)", "rgba(255, 120, 70, 0.1)"]}
         style={StyleSheet.absoluteFill}
-        // Vị trí: 0% là màu, 60% là trong suốt
         locations={[0, 0.6]}
-        // Hướng: Từ trên (y: 0) xuống dưới (y: 0.8)
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 0.8 }}
       />
-
-      {/* Lớp 2: Vầng sáng hồng nhẹ ở trên-phải */}
       <LinearGradient
-        // Bắt đầu bằng màu hồng MỜ, mờ dần sang TRONG SUỐT
         colors={["rgba(255, 100, 100, 0.3)", "transparent"]}
         style={StyleSheet.absoluteFill}
-        locations={[0, 1]} // Mờ nhanh hơn
-        // Hướng: Từ trên-phải (x: 0.8) chéo xuống
+        locations={[0, 1]}
         start={{ x: 0.8, y: 0 }}
         end={{ x: 0.5, y: 0.7 }}
       />
-      {/* === KẾT THÚC PHẦN NỀN === */}
-
-      {/* PHẦN 1: HEADER, SEARCH, TABS */}
-      {/* Các component này phải đặt SAU các gradient
-          để nó nằm BÊN TRÊN gradient */}
+      
       <View className="pb-6">
         <Header />
         <SearchBar />
       </View>
-
-      {/* PHẦN 2: NỘI DUNG TRẮNG BÊN DƯỚI */}
       <ScrollView
         className="flex-1 p-6 -mt-6"
-        // 4. Thêm style này để đảm bảo ScrollView trong suốt
         style={{ backgroundColor: "transparent" }}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        {/* Mood Card (Simplified) */}
         <View className="bg-white p-4 rounded-xl shadow-sm mb-3 flex-row items-center gap-4">
           <FontAwesome6 name="face-smile-beam" size={30} color="rgba(255, 120, 70, 1)" />
           <View>
@@ -101,8 +84,6 @@ export default function HomeScreen() {
             </Text>
           </View>
         </View>
-
-        {/* Meds Card */}
         <View className="flex-1 bg-white p-4 rounded-xl shadow-sm mb-3">
           <Text className="font-semibold text-gray-500">Reminder</Text>
           <Text className="font-bold text-lg text-gray-800 mt-2">Học bài</Text>
@@ -122,8 +103,6 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Appointment Card */}
         <View className="flex-1 bg-white p-4 rounded-xl shadow-sm mb-3">
           <Text className="font-semibold text-gray-500">Appointment</Text>
           <Text className="font-bold text-lg text-gray-800 mt-2">
@@ -137,8 +116,6 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-
-        {/* To-do List */}
         <View className=" bg-white p-4 rounded-xl shadow-sm ">
           <View className="flex-row justify-between items-center">
             <Text className="text-lg font-bold">To-do list</Text>
@@ -160,7 +137,10 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      <TouchableOpacity className="absolute bottom-8 right-6 border-2 border-red-400 w-16 h-16 rounded-full items-center justify-center ">
+      <TouchableOpacity 
+        className="absolute bottom-8 right-6 bg-white border-2 border-red-400 w-16 h-16 rounded-full items-center justify-center shadow-lg"
+        onPress={() => router.push("/chatbox/page")}
+      >
         <Ionicons name="sparkles-sharp" size={32} color="#FF6347" />
       </TouchableOpacity>
     </View>

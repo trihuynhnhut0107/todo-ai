@@ -1,123 +1,223 @@
+import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
-  ScrollView,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform, // Thêm StatusBar
+  ScrollView, // Thêm SafeAreaView
+  StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
+  FlatList,
 } from "react-native";
 
-const ChatScreen = () => {
+// --- (Component BubbleMessage của bạn giữ nguyên) ---
+const BubbleMessage: React.FC<{ author: string; message: string }> = ({
+  author,
+  message,
+}) => {
   return (
-    <View className="flex-1 bg-white p-5">
+    <View
+      className={`max-w-[70%] mb-3 p-3 rounded-lg ${
+        author === "user"
+          ? "bg-orange-500 self-end rounded-br-none"
+          : "bg-gray-200 self-start rounded-bl-none"
+      }`}
+    >
+      <Text className={`${author === "user" ? "text-white" : "text-gray-800"}`}>
+        {message}
+      </Text>
+    </View>
+  );
+};
+
+const ChatScreen = () => {
+  const inputRef = React.useRef<TextInput>(null);
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<
+    { author: string; message: string }[]
+  >([]);
+
+  // useEffect của bạn để theo dõi keyboard (isKeyboardVisible) không cần thiết
+  // vì KeyboardAvoidingView sẽ tự xử lý, nhưng cứ để đó nếu bạn cần
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", () => {});
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {});
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  const handleSendMessage = () => {
+    if (message.trim() === "") return;
+    setMessages((prev) => [
+      ...prev,
+      { author: "user", message: message.trim() },
+    ]);
+    setMessage("");
+  };
+
+  return (
+    <View className="flex-1 bg-white">
+      <StatusBar barStyle="light-content" />
       <LinearGradient
-        // Bắt đầu bằng màu cam MỜ, mờ dần sang TRONG SUỐT
+        pointerEvents="none"
         colors={["rgba(255, 120, 70, 0.5)", "rgba(255, 120, 70, 0.1)"]}
         style={StyleSheet.absoluteFillObject}
-        // Vị trí: 0% là màu, 60% là trong suốt
         locations={[0, 0.6]}
-        // Hướng: Từ trên (y: 0) xuống dưới (y: 0.8)
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 0.8 }}
       />
-
-      {/* Lớp 2: Vầng sáng hồng nhẹ ở trên-phải */}
       <LinearGradient
-        // Bắt đầu bằng màu hồng MỜ, mờ dần sang TRONG SUỐT
+        pointerEvents="none"
         colors={["rgba(255, 100, 100, 0.3)", "transparent"]}
         style={StyleSheet.absoluteFillObject}
-        locations={[0, 1]} // Mờ nhanh hơn
-        // Hướng: Từ trên-phải (x: 0.8) chéo xuống
+        locations={[0, 1]}
         start={{ x: 0.8, y: 0 }}
         end={{ x: 0.5, y: 0.7 }}
       />
+      {/* KAV là cha bọc toàn bộ nội dung cần điều chỉnh */}
+      <KeyboardAvoidingView
+        className="flex-1"
+        // SỬA LỖI 1: Chỉ định behavior cho Android
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        // SỬA LỖI 2: Bỏ keyboardVerticalOffset={500}
+        // Thêm offset nếu có header CỐ ĐỊNH, ở đây header cuộn theo nên không cần
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+      >
+        {/* View này chứa toàn bộ nội dung (header, list, input) */}
+        <View className="flex-1 p-5">
+          {/* Nền Gradient (vẫn dùng absolute) */}
 
-      <TouchableOpacity className="absolute left-6 bg-black/20 rounded-full p-2 z-10">
-        <Ionicons name="close" size={22} color="white" />
-      </TouchableOpacity>
+          {/* Nút Close (vẫn dùng absolute, điều chỉnh top) */}
+          <Link
+            href={"/chat/page"}
+            push
+            className="absolute bg-black/20 left-6 rounded-full p-2 z-10 top-14"
+          >
+            <Ionicons name="close" size={22} color="white" />
+          </Link>
 
-      {/* Logo */}
-      <View className="bg-white rounded-full w-14 h-14 items-center justify-center mt-20 mb-3  shadow-md">
-        {/* Thay bằng logo của bạn, ở đây dùng icon sparkles */}
-        <Ionicons name="sparkles-sharp" size={32} color="#FF6347" />
-      </View>
+          {messages.length === 0 && (
+            <View className="flex-1">
+              <View className="items-center justify-center mt-12 mb-4">
+                <View className="bg-white rounded-full w-14 h-14 items-center justify-center mb-3 shadow-md">
+                  <Ionicons name="sparkles-sharp" size={32} color="#FF6347" />
+                </View>
+                <Text className="text-4xl font-bold text-white">Hey, Eva!</Text>
+                <Text className="text-4xl font-bold text-white ">
+                  How can I <Text className="text-red-500">help you?</Text>
+                </Text>
+              </View>
 
-      {/* Chữ chào mừng */}
-      <Text className="text-4xl font-bold text-white">Hey, Eva!</Text>
-      <Text className="text-4xl font-bold text-white ">
-        How can I <Text className="text-red-500">help you?</Text>
-      </Text>
+              <ScrollView className="pt-6" showsVerticalScrollIndicator={false}>
+                {/* Thẻ 1: Appointment book */}
+                <TouchableOpacity
+                  className="bg-white p-4 rounded-2xl flex-row items-center mb-4 shadow-sm shadow-black/10"
+                  style={{ elevation: 3 }} // elevation cho shadow Android
+                >
+                  <View className="bg-purple-100 p-3 rounded-lg mr-4">
+                    <Ionicons
+                      name="calendar-outline"
+                      size={24}
+                      color="#8A2BE2"
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="font-bold text-base">
+                      Appointment book
+                    </Text>
+                    <Text className="text-gray-500 text-sm">
+                      Book an appointment with ease & stay organized
+                    </Text>
+                  </View>
+                </TouchableOpacity>
 
-      {/* 2. PHẦN NỘI DUNG (CÁC THẺ) */}
-      <ScrollView className="pt-6" showsVerticalScrollIndicator={false}>
-        {/* Thẻ 1: Appointment book */}
-        <TouchableOpacity
-          className="bg-white p-4 rounded-2xl flex-row items-center mb-4 shadow-sm shadow-black/10"
-          style={{ elevation: 3 }} // elevation cho shadow Android
-        >
-          <View className="bg-purple-100 p-3 rounded-lg mr-4">
-            <Ionicons name="calendar-outline" size={24} color="#8A2BE2" />
+                {/* Thẻ 2: Meds reminder */}
+                <TouchableOpacity
+                  className="bg-white p-4 rounded-2xl flex-row items-center mb-4 shadow-sm shadow-black/10"
+                  style={{ elevation: 3 }}
+                >
+                  <View className="bg-purple-100 p-3 rounded-lg mr-4">
+                    <Ionicons name="alarm-outline" size={24} color="#8A2BE2" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="font-bold text-base">Meds reminder</Text>
+                    <Text className="text-gray-500 text-sm">
+                      Set timely reminders to take your medication
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                {/* Thẻ 3: Add to to-do list */}
+                <TouchableOpacity
+                  className="bg-white p-4 rounded-2xl flex-row items-center mb-4 shadow-sm shadow-black/10"
+                  style={{ elevation: 3 }}
+                >
+                  <View className="bg-blue-100 p-3 rounded-lg mr-4">
+                    <Ionicons name="list-outline" size={24} color="#007AFF" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="font-bold text-base">
+                      Add to to-do list
+                    </Text>
+                    <Text className="text-gray-500 text-sm">
+                      Quickly add tasks to your to-do list
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+          )}
+
+          {messages.length > 0 && (
+            <FlatList
+              data={messages}
+              renderItem={({ item }) => (
+                <BubbleMessage author={item.author} message={item.message} />
+              )}
+              keyExtractor={(_, index) => index.toString()}
+              className="flex-1 mt-24" // SỬA LỖI 3: Thêm flex-1 để lấp đầy không gian
+              showsVerticalScrollIndicator={false}
+              inverted // Bỏ comment dòng này để chat hiển thị từ dưới lên (khuyến nghị)
+            />
+          )}
+
+          {/* Thanh Input (nằm ở cuối KAV) */}
+          <View className="bg-transparent mt-2">
+            <View
+              className="bg-white rounded-full flex-row items-center p-2 shadow-2xl shadow-black/20"
+              style={{ elevation: 10 }}
+            >
+              <TextInput
+                ref={inputRef}
+                className="flex-1 text-gray-800 pl-4 text-base"
+                placeholder="Type a message..."
+                placeholderTextColor="#9CA3AF"
+                value={message}
+                onChangeText={setMessage}
+                returnKeyType="send"
+              />
+              <TouchableOpacity
+                className="bg-red-500 rounded-full w-10 h-10 items-center justify-center"
+                onPress={() => handleSendMessage()}
+              >
+                {message.trim() === "" ? (
+                  <Ionicons name="mic-outline" size={22} color="white" />
+                ) : (
+                  <Ionicons name="send" size={20} color="white" />
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
-          <View className="flex-1">
-            <Text className="font-bold text-base">Appointment book</Text>
-            <Text className="text-gray-500 text-sm">
-              Book an appointment with ease & stay organized
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Thẻ 2: Meds reminder */}
-        <TouchableOpacity
-          className="bg-white p-4 rounded-2xl flex-row items-center mb-4 shadow-sm shadow-black/10"
-          style={{ elevation: 3 }}
-        >
-          <View className="bg-purple-100 p-3 rounded-lg mr-4">
-            <Ionicons name="alarm-outline" size={24} color="#8A2BE2" />
-          </View>
-          <View className="flex-1">
-            <Text className="font-bold text-base">Meds reminder</Text>
-            <Text className="text-gray-500 text-sm">
-              Set timely reminders to take your medication
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Thẻ 3: Add to to-do list */}
-        <TouchableOpacity
-          className="bg-white p-4 rounded-2xl flex-row items-center mb-4 shadow-sm shadow-black/10"
-          style={{ elevation: 3 }}
-        >
-          <View className="bg-blue-100 p-3 rounded-lg mr-4">
-            <Ionicons name="list-outline" size={24} color="#007AFF" />
-          </View>
-          <View className="flex-1">
-            <Text className="font-bold text-base">Add to to-do list</Text>
-            <Text className="text-gray-500 text-sm">
-              Quickly add tasks to your to-do list
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Khoảng trống ảo để cuộn không bị che bởi thanh bottom bar */}
-        <View className="h-24" />
-      </ScrollView>
-
-      {/* 3. THANH BOTTOM BAR (NỔI) */}
-      <View className="absolute bottom-0 left-0 right-0 px-6 py-4 bg-transparent">
-        <View
-          className="bg-white rounded-full flex-row items-center p-2 shadow-2xl shadow-black/20"
-          style={{ elevation: 10 }} // Shadow mạnh cho Android
-        >
-          <Text className="flex-1 text-gray-400 pl-4 text-base">
-            Ask anything about your health?
-          </Text>
-          <TouchableOpacity className="bg-red-500 rounded-full w-10 h-10 items-center justify-center">
-            <Ionicons name="mic" size={24} color="white" />
-          </TouchableOpacity>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </View>
   );
 };
