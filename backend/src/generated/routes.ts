@@ -242,34 +242,138 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ChatResponseDto": {
+    "BotResponseDto": {
         "dataType": "refObject",
         "properties": {
-            "userName": {"dataType":"string","required":true},
-            "intent": {"dataType":"string","required":true},
             "response": {"dataType":"string","required":true},
-            "messages": {"dataType":"array","array":{"dataType":"string"},"required":true},
+            "intent": {"dataType":"nestedObjectLiteral","nestedProperties":{"confidence":{"dataType":"double","required":true},"intent":{"dataType":"string","required":true}},"required":true},
         },
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ApiResponse_ChatResponseDto_": {
+    "ApiResponse_BotResponseDto_": {
         "dataType": "refObject",
         "properties": {
             "success": {"dataType":"boolean","required":true},
             "message": {"dataType":"string","required":true},
-            "data": {"ref":"ChatResponseDto"},
+            "data": {"ref":"BotResponseDto"},
             "timestamp": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ProcessMessageDto": {
+    "BotInputDto": {
         "dataType": "refObject",
         "properties": {
-            "userName": {"dataType":"string","required":true},
-            "messages": {"dataType":"array","array":{"dataType":"string"},"required":true},
-            "blocked": {"dataType":"boolean"},
+            "message": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SenderType": {
+        "dataType": "refEnum",
+        "enums": ["user","bot"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MessageResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "sessionId": {"dataType":"string","required":true},
+            "senderId": {"dataType":"string","required":true},
+            "content": {"dataType":"string","required":true},
+            "senderType": {"ref":"SenderType","required":true},
+            "metadata": {"ref":"Record_string.unknown_"},
+            "createdAt": {"dataType":"datetime","required":true},
+            "updatedAt": {"dataType":"datetime","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SessionResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "messageCount": {"dataType":"double","required":true},
+            "createdAt": {"dataType":"datetime","required":true},
+            "updatedAt": {"dataType":"datetime","required":true},
+            "messages": {"dataType":"array","array":{"dataType":"refObject","ref":"MessageResponse"}},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse_SessionResponse_": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "message": {"dataType":"string","required":true},
+            "data": {"ref":"SessionResponse"},
+            "timestamp": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse__sessions-SessionResponse-Array--total-number__": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "message": {"dataType":"string","required":true},
+            "data": {"dataType":"nestedObjectLiteral","nestedProperties":{"total":{"dataType":"double","required":true},"sessions":{"dataType":"array","array":{"dataType":"refObject","ref":"SessionResponse"},"required":true}}},
+            "timestamp": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse_MessageResponse_": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "message": {"dataType":"string","required":true},
+            "data": {"ref":"MessageResponse"},
+            "timestamp": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CreateMessageDto": {
+        "dataType": "refObject",
+        "properties": {
+            "sessionId": {"dataType":"string","required":true},
+            "senderId": {"dataType":"string","required":true},
+            "content": {"dataType":"string","required":true},
+            "senderType": {"ref":"SenderType","required":true},
+            "metadata": {"ref":"Record_string.unknown_"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse__messages-MessageResponse-Array--total-number__": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "message": {"dataType":"string","required":true},
+            "data": {"dataType":"nestedObjectLiteral","nestedProperties":{"total":{"dataType":"double","required":true},"messages":{"dataType":"array","array":{"dataType":"refObject","ref":"MessageResponse"},"required":true}}},
+            "timestamp": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "UpdateMessageDto": {
+        "dataType": "refObject",
+        "properties": {
+            "content": {"dataType":"string"},
+            "metadata": {"ref":"Record_string.unknown_"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse_MessageResponse-Array_": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "message": {"dataType":"string","required":true},
+            "data": {"dataType":"array","array":{"dataType":"refObject","ref":"MessageResponse"}},
+            "timestamp": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -861,25 +965,363 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsChatController_processMessage: Record<string, TsoaRoute.ParameterSchema> = {
-                requestBody: {"in":"body","name":"requestBody","required":true,"ref":"ProcessMessageDto"},
+        const argsChatController_testBotResponse: Record<string, TsoaRoute.ParameterSchema> = {
+                input: {"in":"body","name":"input","required":true,"ref":"BotInputDto"},
         };
-        app.post('/api/chat/message',
+        app.post('/api/chat/bot',
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
-            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.processMessage)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.testBotResponse)),
 
-            async function ChatController_processMessage(request: ExRequest, response: ExResponse, next: any) {
+            async function ChatController_testBotResponse(request: ExRequest, response: ExResponse, next: any) {
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
             let validatedArgs: any[] = [];
             try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_processMessage, request, response });
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_testBotResponse, request, response });
 
                 const controller = new ChatController();
 
               await templateService.apiHandler({
-                methodName: 'processMessage',
+                methodName: 'testBotResponse',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsChatController_createSession: Record<string, TsoaRoute.ParameterSchema> = {
+        };
+        app.post('/api/chat/sessions',
+            ...(fetchMiddlewares<RequestHandler>(ChatController)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.createSession)),
+
+            async function ChatController_createSession(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_createSession, request, response });
+
+                const controller = new ChatController();
+
+              await templateService.apiHandler({
+                methodName: 'createSession',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 201,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsChatController_getAllSessions: Record<string, TsoaRoute.ParameterSchema> = {
+                limit: {"in":"query","name":"limit","dataType":"double"},
+                offset: {"in":"query","name":"offset","dataType":"double"},
+        };
+        app.get('/api/chat/sessions',
+            ...(fetchMiddlewares<RequestHandler>(ChatController)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.getAllSessions)),
+
+            async function ChatController_getAllSessions(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_getAllSessions, request, response });
+
+                const controller = new ChatController();
+
+              await templateService.apiHandler({
+                methodName: 'getAllSessions',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsChatController_getSessionById: Record<string, TsoaRoute.ParameterSchema> = {
+                sessionId: {"in":"path","name":"sessionId","required":true,"dataType":"string"},
+                includeMessages: {"in":"query","name":"includeMessages","dataType":"boolean"},
+        };
+        app.get('/api/chat/sessions/:sessionId',
+            ...(fetchMiddlewares<RequestHandler>(ChatController)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.getSessionById)),
+
+            async function ChatController_getSessionById(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_getSessionById, request, response });
+
+                const controller = new ChatController();
+
+              await templateService.apiHandler({
+                methodName: 'getSessionById',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsChatController_deleteSession: Record<string, TsoaRoute.ParameterSchema> = {
+                sessionId: {"in":"path","name":"sessionId","required":true,"dataType":"string"},
+        };
+        app.delete('/api/chat/sessions/:sessionId',
+            ...(fetchMiddlewares<RequestHandler>(ChatController)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.deleteSession)),
+
+            async function ChatController_deleteSession(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_deleteSession, request, response });
+
+                const controller = new ChatController();
+
+              await templateService.apiHandler({
+                methodName: 'deleteSession',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsChatController_createMessage: Record<string, TsoaRoute.ParameterSchema> = {
+                sessionId: {"in":"path","name":"sessionId","required":true,"dataType":"string"},
+                createDto: {"in":"body","name":"createDto","required":true,"ref":"CreateMessageDto"},
+        };
+        app.post('/api/chat/sessions/:sessionId/messages',
+            ...(fetchMiddlewares<RequestHandler>(ChatController)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.createMessage)),
+
+            async function ChatController_createMessage(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_createMessage, request, response });
+
+                const controller = new ChatController();
+
+              await templateService.apiHandler({
+                methodName: 'createMessage',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 201,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsChatController_getSessionMessages: Record<string, TsoaRoute.ParameterSchema> = {
+                sessionId: {"in":"path","name":"sessionId","required":true,"dataType":"string"},
+                limit: {"in":"query","name":"limit","dataType":"double"},
+                offset: {"in":"query","name":"offset","dataType":"double"},
+                orderBy: {"in":"query","name":"orderBy","dataType":"union","subSchemas":[{"dataType":"enum","enums":["asc"]},{"dataType":"enum","enums":["desc"]}]},
+        };
+        app.get('/api/chat/sessions/:sessionId/messages',
+            ...(fetchMiddlewares<RequestHandler>(ChatController)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.getSessionMessages)),
+
+            async function ChatController_getSessionMessages(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_getSessionMessages, request, response });
+
+                const controller = new ChatController();
+
+              await templateService.apiHandler({
+                methodName: 'getSessionMessages',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsChatController_getMessageById: Record<string, TsoaRoute.ParameterSchema> = {
+                messageId: {"in":"path","name":"messageId","required":true,"dataType":"string"},
+        };
+        app.get('/api/chat/messages/:messageId',
+            ...(fetchMiddlewares<RequestHandler>(ChatController)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.getMessageById)),
+
+            async function ChatController_getMessageById(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_getMessageById, request, response });
+
+                const controller = new ChatController();
+
+              await templateService.apiHandler({
+                methodName: 'getMessageById',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsChatController_updateMessage: Record<string, TsoaRoute.ParameterSchema> = {
+                messageId: {"in":"path","name":"messageId","required":true,"dataType":"string"},
+                updateDto: {"in":"body","name":"updateDto","required":true,"ref":"UpdateMessageDto"},
+        };
+        app.put('/api/chat/messages/:messageId',
+            ...(fetchMiddlewares<RequestHandler>(ChatController)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.updateMessage)),
+
+            async function ChatController_updateMessage(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_updateMessage, request, response });
+
+                const controller = new ChatController();
+
+              await templateService.apiHandler({
+                methodName: 'updateMessage',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsChatController_deleteMessage: Record<string, TsoaRoute.ParameterSchema> = {
+                messageId: {"in":"path","name":"messageId","required":true,"dataType":"string"},
+        };
+        app.delete('/api/chat/messages/:messageId',
+            ...(fetchMiddlewares<RequestHandler>(ChatController)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.deleteMessage)),
+
+            async function ChatController_deleteMessage(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_deleteMessage, request, response });
+
+                const controller = new ChatController();
+
+              await templateService.apiHandler({
+                methodName: 'deleteMessage',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsChatController_searchMessages: Record<string, TsoaRoute.ParameterSchema> = {
+                sessionId: {"in":"path","name":"sessionId","required":true,"dataType":"string"},
+                searchTerm: {"in":"query","name":"searchTerm","dataType":"string"},
+                limit: {"in":"query","name":"limit","dataType":"double"},
+        };
+        app.get('/api/chat/sessions/:sessionId/messages/search',
+            ...(fetchMiddlewares<RequestHandler>(ChatController)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.searchMessages)),
+
+            async function ChatController_searchMessages(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_searchMessages, request, response });
+
+                const controller = new ChatController();
+
+              await templateService.apiHandler({
+                methodName: 'searchMessages',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsChatController_clearSessionMessages: Record<string, TsoaRoute.ParameterSchema> = {
+                sessionId: {"in":"path","name":"sessionId","required":true,"dataType":"string"},
+        };
+        app.delete('/api/chat/sessions/:sessionId/messages',
+            ...(fetchMiddlewares<RequestHandler>(ChatController)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.clearSessionMessages)),
+
+            async function ChatController_clearSessionMessages(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_clearSessionMessages, request, response });
+
+                const controller = new ChatController();
+
+              await templateService.apiHandler({
+                methodName: 'clearSessionMessages',
                 controller,
                 response,
                 next,

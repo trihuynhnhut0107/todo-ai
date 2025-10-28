@@ -78,7 +78,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_WorkspaceResponse_": {
-				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -150,7 +150,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_WorkspaceResponse-Array_": {
-				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -208,7 +208,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_void_": {
-				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -257,7 +257,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse__id-string--name-string--email-string--role-string_-Array_": {
-				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -400,7 +400,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_EventResponse_": {
-				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -491,7 +491,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_EventResponse-Array_": {
-				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -608,35 +608,37 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ChatResponseDto": {
+			"BotResponseDto": {
 				"properties": {
-					"userName": {
-						"type": "string"
-					},
-					"intent": {
-						"type": "string"
-					},
 					"response": {
 						"type": "string"
 					},
-					"messages": {
-						"items": {
-							"type": "string"
+					"intent": {
+						"properties": {
+							"confidence": {
+								"type": "number",
+								"format": "double"
+							},
+							"intent": {
+								"type": "string"
+							}
 						},
-						"type": "array"
+						"required": [
+							"confidence",
+							"intent"
+						],
+						"type": "object"
 					}
 				},
 				"required": [
-					"userName",
-					"intent",
 					"response",
-					"messages"
+					"intent"
 				],
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ApiResponse_ChatResponseDto_": {
-				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
+			"ApiResponse_BotResponseDto_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -645,7 +647,7 @@
 						"type": "string"
 					},
 					"data": {
-						"$ref": "#/components/schemas/ChatResponseDto"
+						"$ref": "#/components/schemas/BotResponseDto"
 					},
 					"timestamp": {
 						"type": "string"
@@ -659,24 +661,289 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ProcessMessageDto": {
+			"BotInputDto": {
 				"properties": {
-					"userName": {
+					"message": {
 						"type": "string"
-					},
-					"messages": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"blocked": {
-						"type": "boolean"
 					}
 				},
 				"required": [
-					"userName",
-					"messages"
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SenderType": {
+				"enum": [
+					"user",
+					"bot"
+				],
+				"type": "string"
+			},
+			"MessageResponse": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"sessionId": {
+						"type": "string"
+					},
+					"senderId": {
+						"type": "string"
+					},
+					"content": {
+						"type": "string"
+					},
+					"senderType": {
+						"$ref": "#/components/schemas/SenderType"
+					},
+					"metadata": {
+						"$ref": "#/components/schemas/Record_string.unknown_"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"sessionId",
+					"senderId",
+					"content",
+					"senderType",
+					"createdAt",
+					"updatedAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SessionResponse": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"messageCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"messages": {
+						"items": {
+							"$ref": "#/components/schemas/MessageResponse"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"id",
+					"messageCount",
+					"createdAt",
+					"updatedAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_SessionResponse_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"$ref": "#/components/schemas/SessionResponse"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse__sessions-SessionResponse-Array--total-number__": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"properties": {
+							"total": {
+								"type": "number",
+								"format": "double"
+							},
+							"sessions": {
+								"items": {
+									"$ref": "#/components/schemas/SessionResponse"
+								},
+								"type": "array"
+							}
+						},
+						"required": [
+							"total",
+							"sessions"
+						],
+						"type": "object"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_MessageResponse_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"$ref": "#/components/schemas/MessageResponse"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateMessageDto": {
+				"properties": {
+					"sessionId": {
+						"type": "string"
+					},
+					"senderId": {
+						"type": "string"
+					},
+					"content": {
+						"type": "string"
+					},
+					"senderType": {
+						"$ref": "#/components/schemas/SenderType"
+					},
+					"metadata": {
+						"$ref": "#/components/schemas/Record_string.unknown_"
+					}
+				},
+				"required": [
+					"sessionId",
+					"senderId",
+					"content",
+					"senderType"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse__messages-MessageResponse-Array--total-number__": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"properties": {
+							"total": {
+								"type": "number",
+								"format": "double"
+							},
+							"messages": {
+								"items": {
+									"$ref": "#/components/schemas/MessageResponse"
+								},
+								"type": "array"
+							}
+						},
+						"required": [
+							"total",
+							"messages"
+						],
+						"type": "object"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateMessageDto": {
+				"properties": {
+					"content": {
+						"type": "string"
+					},
+					"metadata": {
+						"$ref": "#/components/schemas/Record_string.unknown_"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_MessageResponse-Array_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"items": {
+							"$ref": "#/components/schemas/MessageResponse"
+						},
+						"type": "array"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -722,7 +989,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_AuthResponse_": {
-				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -782,7 +1049,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse__accessToken-string__": {
-				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -850,7 +1117,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_UserResponse_": {
-				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -2089,45 +2356,738 @@
 				}
 			}
 		},
-		"/api/chat/message": {
+		"/api/chat/bot": {
 			"post": {
-				"operationId": "ProcessMessage",
+				"operationId": "TestBotResponse",
 				"responses": {
 					"200": {
-						"description": "Message processed successfully",
+						"description": "Bot response generated successfully",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_ChatResponseDto_"
+									"$ref": "#/components/schemas/ApiResponse_BotResponseDto_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
 								}
 							}
 						}
 					}
 				},
-				"description": "Process a chat message through the AI agent",
-				"summary": "Process chat message",
+				"description": "Test bot response with intent detection",
+				"summary": "Test chatbot response and intent detection",
 				"tags": [
 					"Chat"
 				],
 				"security": [],
 				"parameters": [],
 				"requestBody": {
+					"description": "Bot input with user message",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/ProcessMessageDto"
-							},
-							"example": {
-								"userName": "John Doe",
-								"messages": [
-									"Create a task for tomorrow: Review pull requests"
-								],
-								"blocked": false
+								"$ref": "#/components/schemas/BotInputDto",
+								"description": "Bot input with user message"
 							}
 						}
 					}
 				}
+			}
+		},
+		"/api/chat/sessions": {
+			"post": {
+				"operationId": "CreateSession",
+				"responses": {
+					"201": {
+						"description": "Session created successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_SessionResponse_"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create a new chat session",
+				"summary": "Create a new session",
+				"tags": [
+					"Chat"
+				],
+				"security": [],
+				"parameters": []
+			},
+			"get": {
+				"operationId": "GetAllSessions",
+				"responses": {
+					"200": {
+						"description": "Sessions retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__sessions-SessionResponse-Array--total-number__"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get all chat sessions",
+				"summary": "Get all sessions with pagination",
+				"tags": [
+					"Chat"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Number of sessions per page (default: 10)",
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Number of sessions to skip (default: 0)",
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/chat/sessions/{sessionId}": {
+			"get": {
+				"operationId": "GetSessionById",
+				"responses": {
+					"200": {
+						"description": "Session retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_SessionResponse_"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Session not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get session by ID",
+				"summary": "Get session details",
+				"tags": [
+					"Chat"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Session ID",
+						"in": "path",
+						"name": "sessionId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Include messages in response (default: false)",
+						"in": "query",
+						"name": "includeMessages",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					}
+				]
+			},
+			"delete": {
+				"operationId": "DeleteSession",
+				"responses": {
+					"200": {
+						"description": "Session deleted successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_void_"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Session not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Delete session",
+				"summary": "Delete session and all associated messages",
+				"tags": [
+					"Chat"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Session ID",
+						"in": "path",
+						"name": "sessionId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/chat/sessions/{sessionId}/messages": {
+			"post": {
+				"operationId": "CreateMessage",
+				"responses": {
+					"201": {
+						"description": "Message created successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_MessageResponse_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Session not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create a new message in a session",
+				"summary": "Create message",
+				"tags": [
+					"Chat"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Session ID",
+						"in": "path",
+						"name": "sessionId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "Message creation details",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateMessageDto",
+								"description": "Message creation details"
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "GetSessionMessages",
+				"responses": {
+					"200": {
+						"description": "Messages retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__messages-MessageResponse-Array--total-number__"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Session not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get messages from a session",
+				"summary": "Get session messages",
+				"tags": [
+					"Chat"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Session ID",
+						"in": "path",
+						"name": "sessionId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Number of messages per page (default: 50)",
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Number of messages to skip (default: 0)",
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Sort order: asc or desc (default: asc)",
+						"in": "query",
+						"name": "orderBy",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"asc",
+								"desc"
+							]
+						}
+					}
+				]
+			},
+			"delete": {
+				"operationId": "ClearSessionMessages",
+				"responses": {
+					"200": {
+						"description": "Messages cleared successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_void_"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Session not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Clear all messages in a session",
+				"summary": "Clear session messages",
+				"tags": [
+					"Chat"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Session ID",
+						"in": "path",
+						"name": "sessionId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/chat/messages/{messageId}": {
+			"get": {
+				"operationId": "GetMessageById",
+				"responses": {
+					"200": {
+						"description": "Message retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_MessageResponse_"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Message not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get message by ID",
+				"summary": "Get message details",
+				"tags": [
+					"Chat"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Message ID",
+						"in": "path",
+						"name": "messageId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdateMessage",
+				"responses": {
+					"200": {
+						"description": "Message updated successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_MessageResponse_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Message not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Update message",
+				"summary": "Update message",
+				"tags": [
+					"Chat"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Message ID",
+						"in": "path",
+						"name": "messageId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "Message update details",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateMessageDto",
+								"description": "Message update details"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteMessage",
+				"responses": {
+					"200": {
+						"description": "Message deleted successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_void_"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Message not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Delete message",
+				"summary": "Delete message",
+				"tags": [
+					"Chat"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Message ID",
+						"in": "path",
+						"name": "messageId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/chat/sessions/{sessionId}/messages/search": {
+			"get": {
+				"operationId": "SearchMessages",
+				"responses": {
+					"200": {
+						"description": "Messages searched successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_MessageResponse-Array_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Session not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Search messages in a session",
+				"summary": "Search messages",
+				"tags": [
+					"Chat"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Session ID",
+						"in": "path",
+						"name": "sessionId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Search term",
+						"in": "query",
+						"name": "searchTerm",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Maximum results (default: 50)",
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
 			}
 		},
 		"/api/auth/register": {
