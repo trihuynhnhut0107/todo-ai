@@ -1,52 +1,36 @@
-import { View, Text, TouchableOpacity } from "react-native";
-import React from "react";
-import { HeaderItemProps } from "@howljs/calendar-kit";
-import { FlatList } from "react-native-gesture-handler";
-import AgendaHeaderSubItem from "./AgendaHeaderISubItem";
+import { View, Text } from "react-native";
+import React, { useMemo } from "react";
 
 const AgendaHeaderItem = ({
-  props,
-  onSelect,
+  date,
+  active,
 }: {
-  props: HeaderItemProps;
-  onSelect: any;
+  date: string;
+  active: boolean;
 }) => {
-  const { extra, startUnix } = props;
-
-  const currentDate = new Date(startUnix);
-
-  // Convert timestamp to start and end of the week
-  const startOfWeek = new Date(currentDate);
-  startOfWeek.setDate(currentDate.getDate() - currentDate.getDay()); // Sunday
-  startOfWeek.setHours(0, 0, 0, 0);
-
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
-  endOfWeek.setHours(23, 59, 59, 999);
-
-  // Filter only dates within the same week
-  const visibleDates = (extra?.visibleDatesArray || []).filter(
-    (dateStr: string) => {
-      const date = new Date(dateStr);
-      return date >= startOfWeek && date <= endOfWeek;
-    }
-  );
-
+  const today = useMemo(() => {
+    const now = new Date();
+    const target = new Date(date);
+    return (
+      now.getFullYear() === target.getFullYear() &&
+      now.getMonth() === target.getMonth() &&
+      now.getDate() === target.getDate()
+    );
+  }, [date]);
   return (
-    <View className="p-2">
-      <Text className="text-orange-500 font-semibold text-3xl">
-        {currentDate.toLocaleDateString("en-UK", {
-          month: "long",
-          year: "numeric",
-        })}
+    <View className="items-center gap-2 min-w-[50px]">
+      <Text>
+        {new Date(date).toLocaleDateString("en-UK", { weekday: "short" })}
       </Text>
-      <View className="flex-row gap-2 mt-2 justify-evenly w-full">
-        {visibleDates.map((item: string) => (
-          <TouchableOpacity key={item} onPress={() => onSelect(item)}>
-            <AgendaHeaderSubItem date={item} active={item == startUnix.toString()} />
-          </TouchableOpacity>
-        ))}
-      </View>
+      <Text
+        className="rounded-full p-2"
+        style={{
+          color: today ? "orangered" : active? "white": "black",
+          backgroundColor: active ? "orange" : "",
+        }}
+      >
+        {new Date(date).toLocaleDateString("en-UK", { day: "2-digit" })}
+      </Text>
     </View>
   );
 };

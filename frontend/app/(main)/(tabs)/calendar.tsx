@@ -1,4 +1,4 @@
-import AgendaHeader from "@/components/UI/Calendar/AgendaHeaderItem";
+import AgendaHeader from "@/components/UI/Calendar/AgendaHeader";
 import EventCard from "@/components/UI/EventCard";
 import { images } from "@/lib/image";
 import { mockEvent } from "@/lib/mock";
@@ -38,7 +38,6 @@ const calendar = () => {
   const [selected, setSelected] = useState(
     new Date().toISOString().split("T")[0]
   );
-  const [loading, setLaoding] = useState(false);
   const [isOpen, setOpen] = useState(false);
 
   useEffect(() => {
@@ -49,17 +48,29 @@ const calendar = () => {
       sheetRef.current?.dismiss();
     }
   }, [isOpen]);
-  useEffect(() => {
-    if (selected) {
-      calendarRef.current &&
-        calendarRef.current?.goToDate({
-          date: new Date(selected).toISOString(),
-          animatedDate: true,
-          hourScroll: true,
-          animatedHour: true,
-        });
-    }
-  }, [selected]);
+
+  const handleGoToDate = (date: string) => {
+    const [year, month, day] = date.split("-").map(Number);
+    const localDate = new Date(year, month - 1, day); // local date
+    console.log("goto", localDate);
+    calendarRef.current?.goToDate({
+      date: localDate,
+      animatedDate: true,
+      hourScroll: true,
+      animatedHour: true,
+    });
+  };
+
+  const handleDateChanged = (d: string) => {
+    const newDate = new Date(d);
+    newDate.setDate(newDate.getDate() + 1);
+    setSelected(newDate.toISOString().split("T")[0]);
+  };
+
+  const handleSelectDate = (d: string | Date) => {
+    setSelected((prev) => new Date(d).toISOString().split("T")[0]);
+    handleGoToDate(new Date(d).toISOString().split("T")[0]);
+  };
 
   const handleDragCreateStart = (start: OnCreateEventResponse) => {
     console.log("Started creating event at:", start);
@@ -110,12 +121,16 @@ const calendar = () => {
     <View className="flex-1">
       <CalendarContainer
         theme={{
-          headerBackgroundColor: "transparent",
+          colors:  {
+            background:"transparent",
+            surface:"white"
+          }
         }}
         ref={calendarRef}
         allowPinchToZoom
         allowDragToCreate
         allowDragToEdit
+        onDateChanged={handleDateChanged}
         onDragCreateEventStart={handleDragCreateStart}
         onDragCreateEventEnd={handleDragCreateEnd}
         onDragEventStart={handleDragStart}
@@ -128,12 +143,8 @@ const calendar = () => {
         scrollByDay={true}
         numberOfDays={1}
       >
-        <CalendarHeader
-          headerBottomHeight={120}
-          renderHeaderItem={(props) => (
-            <AgendaHeader props={props} onSelect={setSelected} />
-          )}
-        />
+        {/* <CalendarHeader /> */}
+        <AgendaHeader selected={selected} onSelect={handleSelectDate} />
         <CalendarBody
           renderEvent={(e) => <EventCard event={e} onPress={deleteEvent} />}
         />
@@ -186,7 +197,9 @@ const calendar = () => {
               textMonthFontWeight: "bold",
               textMonthFontSize: 32,
             }}
-            onDayPress={(day) => setSelected(day.dateString)}
+            onDayPress={(day) => {
+              handleSelectDate(day.dateString);
+            }}
             markedDates={{
               "2025-10-28": {
                 selected: true,
@@ -203,7 +216,7 @@ const calendar = () => {
 
       <TouchableOpacity
         onPress={() => setOpen(true)}
-        className="absolute right-5 bottom-5 flex-row items-center p-3 bg-orange-400 rounded-full"
+        className="absolute right-5 bottom-5 flex-row items-center p-3 bg-orange-400 rounded-full "
       >
         <Ionicons name="calendar" size={32} color="white" />
       </TouchableOpacity>
