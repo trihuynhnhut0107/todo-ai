@@ -9,7 +9,7 @@ const eventDetail = () => {
   return (
     <View className="flex-1 items-start p-4 pb-32 ">
       <TouchableOpacity
-        onPress={() => router.push("/(main)/(tabs)/calendar")}
+        onPress={() => router.back()}
         className=" bg-white/30 rounded-full p-2 z-10 flex-row items-center gap-2"
       >
         <Ionicons name="calendar" size={22} color="white" />

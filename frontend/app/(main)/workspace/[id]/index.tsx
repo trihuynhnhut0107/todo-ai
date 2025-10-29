@@ -1,7 +1,10 @@
 import AgendaHeader from "@/components/UI/Calendar/AgendaHeader";
-import EventCard from "@/components/UI/EventCard";
+import EventCard from "@/components/UI/Calendar/EventCard";
 import { images } from "@/lib/image";
-import { mockEvent } from "@/lib/mock";
+import { mockEvents } from "@/lib/mock/event";
+import { createEvent, getEvents } from "@/services/event";
+import { getWorkspace } from "@/services/workspace";
+import { Event, Workspace } from "@/type";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import {
@@ -16,8 +19,8 @@ import {
   PackedEvent,
 } from "@howljs/calendar-kit";
 import { BlurView } from "expo-blur";
-import { Link } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useLocalSearchParams } from "expo-router";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   Image,
@@ -29,16 +32,35 @@ import {
 } from "react-native";
 import { Calendar, CalendarList } from "react-native-calendars";
 import { FlatList } from "react-native-gesture-handler";
-import { endEvent } from "react-native/Libraries/Performance/Systrace";
+import { create } from "zustand";
 
-const calendar = () => {
+const workspace = () => {
+  const { id } = useLocalSearchParams<{ id: string }>();
   const sheetRef = useRef<BottomSheetModal>(null);
   const calendarRef = useRef<CalendarKitHandle>(null);
-  const [events, setEvents] = useState<EventItem[]>(mockEvent);
+  const [events, setEvents] = useState<Event[]>();
   const [selected, setSelected] = useState(
     new Date().toISOString().split("T")[0]
   );
   const [isOpen, setOpen] = useState(false);
+  const [workspace, setWorkspace] = useState<Workspace>();
+
+  useEffect(() => {
+    // Fetch workspace details
+    fetchWorkspace();
+    // Fetch events for the workspace
+    fetchEvents();
+  }, [id]);
+  const fetchWorkspace = () => {
+    getWorkspace(id).then((data) => {
+      setWorkspace(data);
+    });
+  };
+  const fetchEvents = () => {
+    getEvents(id).then((data) => {
+      setEvents(data);
+    });
+  };
 
   useEffect(() => {
     Keyboard.dismiss();
@@ -78,20 +100,9 @@ const calendar = () => {
   };
 
   const handleDragCreateEnd = (event: OnCreateEventResponse) => {
-    console.log("New event:", event);
-    setEvents([
-      ...events,
-      {
-        id: new Date().getTime().toString(),
-        title: "New Event",
-        start: event.start,
-        end: event.end,
-        color: "orange",
-        data: {
-          member: [{ username: "LE VAN D" }, { username: "NGUYEN VAN E" }],
-        },
-      },
-    ]);
+    createEvent(event.start, event.end).then((newEvent) => {
+      setEvents((prev) => [...prev, newEvent]);
+    });
   };
   const handleDragStart = (event: OnEventResponse) => {
     console.log("Started editing event:", event);
@@ -101,7 +112,7 @@ const calendar = () => {
   const handleDragEnd = (event: OnEventResponse) => {
     console.log("Event edited:", event);
 
-    const newEvents: EventItem[] = events?.map((e) => {
+    const newEvents: Event[] = events?.map((e) => {
       if (e.id === event.id) {
         return { ...e, start: event.start, end: event.end };
       } else {
@@ -121,10 +132,10 @@ const calendar = () => {
     <View className="flex-1">
       <CalendarContainer
         theme={{
-          colors:  {
-            background:"transparent",
-            surface:"white"
-          }
+          colors: {
+            // background:"transparent",
+            // surface:"white"
+          },
         }}
         ref={calendarRef}
         allowPinchToZoom
@@ -135,7 +146,11 @@ const calendar = () => {
         onDragCreateEventEnd={handleDragCreateEnd}
         onDragEventStart={handleDragStart}
         onDragEventEnd={handleDragEnd}
-        events={events}
+        events={events?.map((e) => ({
+          ...e,
+          start: { dateTime: e.start },
+          end: { dateTime: e.end },
+        }))}
         onPressEvent={(event) => {
           console.log("Event pressed:", event);
         }}
@@ -144,7 +159,12 @@ const calendar = () => {
         numberOfDays={1}
       >
         {/* <CalendarHeader /> */}
-        <AgendaHeader selected={selected} onSelect={handleSelectDate} />
+        <AgendaHeader
+          workspace={workspace}
+          events={events}
+          selected={selected}
+          onSelect={handleSelectDate}
+        />
         <CalendarBody
           renderEvent={(e) => <EventCard event={e} onPress={deleteEvent} />}
         />
@@ -186,11 +206,11 @@ const calendar = () => {
             headerStyle={{}}
             theme={{
               calendarBackground: "transparent",
-              textSectionTitleColor: "yellow",
+              textSectionTitleColor: "white",
               selectedDayBackgroundColor: "white",
-              monthTextColor: "yellow",
+              monthTextColor: "white",
               selectedDayTextColor: "orange",
-              todayTextColor: "yellow",
+              todayTextColor: "white",
               dayTextColor: "white",
               textDisabledColor: "green",
 
@@ -201,10 +221,6 @@ const calendar = () => {
               handleSelectDate(day.dateString);
             }}
             markedDates={{
-              "2025-10-28": {
-                selected: true,
-                disableTouchEvent: true,
-              },
               [selected]: {
                 selected: true,
                 disableTouchEvent: true,
@@ -224,4 +240,4 @@ const calendar = () => {
   );
 };
 
-export default calendar;
+export default workspace;
