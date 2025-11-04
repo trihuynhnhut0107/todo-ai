@@ -8,18 +8,18 @@ const SearchInput = (props: TextInputProps) => {
   return (
     <View
       className={cn(
-        "bg-white/95 flex-row justify-between items-center p-4 rounded-full shadow-sm",
+        "bg-white/95 flex-row justify-between items-center p-4 rounded-full shadow-sm",props.className,
         isFocused ? "border-orange-500" : ""
       )}
     >
       <TextInput
         autoCapitalize="none"
         autoComplete="off"
-        {...props}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         placeholderTextColor="#888"
-        className="grow overflow-hidden"
+        {...props}
+        className={cn("grow overflow-hidden")}
       />
       <Ionicons name="search" size={24} color="black" />
     </View>

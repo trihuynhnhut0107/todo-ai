@@ -4,7 +4,7 @@ import { Link } from "expo-router";
 import { images } from "@/lib/image";
 import { Ionicons } from "@expo/vector-icons";
 import { PackedEvent } from "@howljs/calendar-kit";
-import { Event, EventCardProps } from "@/type";
+import { EventCardProps } from "@/type";
 
 const EventCard = ({
   event,

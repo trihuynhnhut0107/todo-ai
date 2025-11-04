@@ -14,7 +14,7 @@ const AgendaHeaderItem = ({ date }: { date: DateWithEvents }) => {
   }, [date]);
   return (
     <View
-      className="items-center gap-2 p-2 rounded-lg min-w-[50px]"
+      className="items-center gap-2 p-2 rounded-lg min-w-[50px] max-w-[50px]"
       style={{
         backgroundColor: date.active ? "orange" : "",
       }}
@@ -23,14 +23,26 @@ const AgendaHeaderItem = ({ date }: { date: DateWithEvents }) => {
         {new Date(date.date).toLocaleDateString("en-UK", { weekday: "short" })}
       </Text>
       <Text
-        className="rounded-full p-2"
+        className="rounded-full p-2 "
         style={{
           color: date.active ? "white" : today ? "orangered" : "black",
         }}
       >
         {new Date(date.date).toLocaleDateString("en-UK", { day: "2-digit" })}
       </Text>
-      <Text>{date.eventList.length?date.eventList.length:null}</Text>
+      <View className="gap-1 flex-row flex-wrap">
+        {date.eventList?.map((e, idx) => (
+          <View
+            key={idx}
+            style={{
+              width: 5,
+              height: 5,
+              borderRadius: "50%",
+              backgroundColor: e.color,
+            }}
+          ></View>
+        ))}
+      </View>
     </View>
   );
 };

@@ -15,6 +15,7 @@ const AgendaHeader = ({
   const listRef = useRef<FlatList<DateWithEvents>>(null);
   const [loaded, setLoaded] = useState(false);
   // Generate array of all days in the same month as `selected`
+
   const monthDates: DateWithEvents[] = useMemo(() => {
     const selectedDate = new Date(selected);
     const year = selectedDate.getFullYear();
@@ -24,25 +25,29 @@ const AgendaHeader = ({
     const dates: DateWithEvents[] = [];
 
     for (let i = 1; i <= daysInMonth; i++) {
-      const d = new Date(year, month, i);
+      const d = new Date(Date.UTC(year, month, i));
       const isoDate = d.toISOString().split("T")[0];
 
       // Count events that start or span this date
-      const eventList = events
-        .filter((e) => {
-          const start = new Date(e.start).toISOString().split("T")[0];
-          const end = new Date(e.end).toISOString().split("T")[0];
-          return isoDate >= start && isoDate <= end;
-        })
-        .map(({ color, start, end }) => ({
-          color,
-          start,
-          end,
-        }));
+      const eventList =
+        events
+          ?.filter((e) => {
+            const start = new Date(e.start.toString())
+              .toISOString()
+              .split("T")[0];
+            const end = new Date(e.end.toString()).toISOString().split("T")[0];
+            return isoDate >= start && isoDate <= end;
+          })
+          ?.map(({ color, start, end }) => ({
+            color,
+            start,
+            end,
+          })) ?? [];
 
       dates.push({ date: isoDate, eventList, active: isoDate === selected });
     }
 
+    // console.log(dates);
     return dates;
   }, [selected, events]);
 
@@ -64,21 +69,21 @@ const AgendaHeader = ({
   }, [selected, monthDates]);
 
   return (
-    <View className="border-b-[1px] bg-transparent">
+    <View className="border-b-[1px] bg-white">
       <View className="p-2">
         <View className="flex-row items-center justify-between">
           <TouchableOpacity
             onPress={() => router.push("/(main)/(tabs)/workspace")}
             className="justify-center rounded-md p-2 z-10 flex-row items-center gap-2"
           >
-            <Ionicons name="calendar-clear" size={22} color="orange" />
+            <Ionicons name="list" size={22} color="orange" />
           </TouchableOpacity>
 
           <View className="flex-row items-center gap-2">
-            <Text className="text-orange-500">{workspace.name}</Text>
+            <Text className="text-orange-500">{workspace?.name}</Text>
             <TouchableOpacity
               onPress={() =>
-                router.push(`/(main)/workspace/${workspace.id}/setting`)
+                router.push(`/(main)/workspace/${workspace?.id}/setting`)
               }
               className=" justify-center rounded-md p-2 z-10 flex-row items-center gap-2"
             >

@@ -1,0 +1,67 @@
+import {
+  createEvent,
+  deleteEvent,
+  getEvents,
+  updateEvent,
+} from "@/services/event";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+export const useEvents = (wp_id: string) =>
+  useQuery({
+    placeholderData: [],
+    queryKey: ["workspace", wp_id, "events"],
+    queryFn: () => getEvents(wp_id),
+    enabled: !!wp_id,
+  });
+
+export const useEventById = (wp_id: string, id: string) => {};
+
+export const useCreateEvent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createEvent,
+    onSuccess: (_, { wp_id }) => {
+      queryClient.invalidateQueries({
+        queryKey: ["workspace", wp_id, "events"],
+      });
+    },
+    onError: (error: any) => {
+      console.error(error);
+    },
+  });
+};
+
+export const useUpdateEvent = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateEvent,
+
+    // optional: automatically refetch workspace list after creation
+    onSuccess: (_, { wp_id }) => {
+      queryClient.invalidateQueries({
+        queryKey: ["workspace", wp_id, "events"],
+      });
+    },
+    onError: (error: any) => {
+      console.log(error);
+    },
+  });
+};
+
+export const useDeleteEvent = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteEvent,
+
+    // optional: automatically refetch workspace list after creation
+    onSuccess: (_, { wp_id }) => {
+      queryClient.invalidateQueries({
+        queryKey: ["workspace", wp_id, "events"],
+      });
+    },
+    onError: (error: any) => {
+      console.log(error);
+    },
+  });
+};

@@ -1,5 +1,6 @@
 import { mockWorkspaces } from "@/lib/mock/workspace";
-import { Event, Workspace } from "@/type";
+import { Workspace } from "@/types/workspace";
+
 import { DateTimeType } from "@howljs/calendar-kit";
 
 export const getWorkspaces = async (): Promise<Workspace[]> => {

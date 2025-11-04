@@ -1,5 +1,6 @@
 import { getUser, signOut } from "@/services/auth";
-import { User } from "@/type";
+import { User } from "@/types/auth";
+
 import { create } from "zustand";
 type AuthState = {
   isAuthenticated: boolean;

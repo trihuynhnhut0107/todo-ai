@@ -1,5 +1,6 @@
 import { mockUser } from "@/lib/mock/auth";
-import { User } from "@/type";
+import { User } from "@/types/auth";
+
 
 export async function signUp(name: string, email: string, password: string) {
   throw new Error("signUp not implemented");

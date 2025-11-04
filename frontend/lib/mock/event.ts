@@ -1,4 +1,5 @@
-import { Event, Workspace, User, Assignee } from "@/type";
+import { Assignee, Event } from "@/types/event";
+import { getColorFromString } from "../utils";
 
 // Utility: Add hours to a date and return ISO string
 const addHours = (date: Date, hours: number) =>
@@ -74,14 +75,14 @@ const workspaceTimezones = [
 ];
 
 // === MOCK EVENT GENERATOR ===
-export const createMockEvents = (count = randomInt(5, 15)): Event[] => {
+export const createMockEvents = (count = randomInt(10, 15)): Event[] => {
   const now = new Date();
   const events: Event[] = [];
 
   for (let i = 0; i < count; i++) {
     const baseDate = new Date(now.getTime() + i * 1000 * 60 * 60 * 6);
     const start = addHours(baseDate, 0);
-    const end = addHours(baseDate, randomInt(1, 3));
+    const end = addHours(baseDate, randomInt(6, 10));
 
     // Random tags (1–3)
     const tags = Array.from({ length: randomInt(1, 3) }, () =>
@@ -92,16 +93,16 @@ export const createMockEvents = (count = randomInt(5, 15)): Event[] => {
     const assignees = Array.from({ length: randomInt(1, 3) }, () =>
       randomFrom(assigneePool)
     );
-
+    const name = randomFrom(eventNames);
     events.push({
       id: idFrom("ev"),
-      name: randomFrom(eventNames),
+      name,
       description: randomFrom(descriptionPool),
       start,
       end,
       status: "confirmed",
       location: randomFrom(locationPool),
-      color: randomFrom(colorPool),
+      color: getColorFromString(name),
       isAllDay: Math.random() < 0.2,
       recurrenceRule: "",
       tags,
