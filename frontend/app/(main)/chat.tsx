@@ -14,7 +14,9 @@ import {
   TouchableOpacity,
   View,
   FlatList,
+  Animated,
 } from "react-native";
+import { getAIMessage } from "@/services/chat";
 
 // --- (Component BubbleMessage của bạn giữ nguyên) ---
 const BubbleMessage: React.FC<{ author: string; message: string }> = ({
@@ -36,8 +38,60 @@ const BubbleMessage: React.FC<{ author: string; message: string }> = ({
   );
 };
 
+const TypingBubble: React.FC = () => {
+  const dot1 = React.useRef(new Animated.Value(0.3)).current;
+  const dot2 = React.useRef(new Animated.Value(0.3)).current;
+  const dot3 = React.useRef(new Animated.Value(0.3)).current;
+
+  useEffect(() => {
+    const a1 = Animated.loop(
+      Animated.sequence([
+        Animated.timing(dot1, { toValue: 1, duration: 350, useNativeDriver: true }),
+        Animated.timing(dot1, { toValue: 0.3, duration: 350, useNativeDriver: true }),
+      ])
+    );
+    const a2 = Animated.loop(
+      Animated.sequence([
+        Animated.delay(150),
+        Animated.timing(dot2, { toValue: 1, duration: 350, useNativeDriver: true }),
+        Animated.timing(dot2, { toValue: 0.3, duration: 350, useNativeDriver: true }),
+      ])
+    );
+    const a3 = Animated.loop(
+      Animated.sequence([
+        Animated.delay(300),
+        Animated.timing(dot3, { toValue: 1, duration: 350, useNativeDriver: true }),
+        Animated.timing(dot3, { toValue: 0.3, duration: 350, useNativeDriver: true }),
+      ])
+    );
+
+    a1.start();
+    a2.start();
+    a3.start();
+
+    return () => {
+      a1.stop();
+      a2.stop();
+      a3.stop();
+    };
+  }, [dot1, dot2, dot3]);
+
+  return (
+    <View
+      className={`max-w-[70%] mb-3 p-3 rounded-lg bg-gray-200 self-start rounded-bl-none`}
+    >
+      <View style={{ flexDirection: "row", width: 36, justifyContent: "space-between", alignItems: "center" }}>
+        <Animated.View style={{ width: 6, height: 6, borderRadius: 6, backgroundColor: "#374151", opacity: dot1 }} />
+        <Animated.View style={{ width: 6, height: 6, borderRadius: 6, backgroundColor:"#374151", opacity: dot2 }} />
+        <Animated.View style={{ width: 6, height: 6, borderRadius: 6, backgroundColor:"#374151", opacity: dot3 }} />
+      </View>
+    </View>
+  );
+};
+
 const ChatScreen = () => {
   const inputRef = React.useRef<TextInput>(null);
+  const [isResponding, setIsResponding] = useState(false);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<
     { author: string; message: string }[]
@@ -56,10 +110,15 @@ const ChatScreen = () => {
 
   const handleSendMessage = () => {
     if (message.trim() === "") return;
+    setIsResponding(true);
     setMessages((prev) => [
       ...prev,
       { author: "user", message: message.trim() },
     ]);
+    getAIMessage(message.trim()).then((response) => {
+      setMessages((prev) => [...prev, { author: "ai", message: response }]);
+      setIsResponding(false);
+    });
     setMessage("");
   };
 
@@ -185,7 +244,8 @@ const ChatScreen = () => {
               keyExtractor={(_, index) => index.toString()}
               className="flex-1 mt-24" // SỬA LỖI 3: Thêm flex-1 để lấp đầy không gian
               showsVerticalScrollIndicator={false}
-              inverted // Bỏ comment dòng này để chat hiển thị từ dưới lên (khuyến nghị)
+              extraData={isResponding}
+              ListFooterComponent={() => (isResponding ? <TypingBubble /> : null)}
             />
           )}
 
