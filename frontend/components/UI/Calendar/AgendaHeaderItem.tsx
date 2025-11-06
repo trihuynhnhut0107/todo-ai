@@ -1,6 +1,7 @@
-import { View, Text } from "react-native";
-import React, { useMemo } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import React, { useContext, useMemo } from "react";
 import { DateWithEvents } from "@/type";
+import { selectedDateContext } from "@/app/(main)/workspace/[id]";
 
 const AgendaHeaderItem = ({ date }: { date: DateWithEvents }) => {
   const today = useMemo(() => {
@@ -20,7 +21,9 @@ const AgendaHeaderItem = ({ date }: { date: DateWithEvents }) => {
       }}
     >
       <Text>
-        {new Date(date.date).toLocaleDateString("en-UK", { weekday: "short" })}
+        {new Date(date.date).toLocaleDateString("en-UK", {
+          weekday: "short",
+        })}
       </Text>
       <Text
         className="rounded-full p-2 "

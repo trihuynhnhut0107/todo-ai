@@ -3,7 +3,6 @@ import React from "react";
 import { Link } from "expo-router";
 import { images } from "@/lib/image";
 import { Ionicons } from "@expo/vector-icons";
-import { PackedEvent } from "@howljs/calendar-kit";
 import { EventCardProps } from "@/type";
 
 const EventCard = ({
@@ -16,11 +15,10 @@ const EventCard = ({
   return (
     <Link href={`/(main)/event/${event.id}`}>
       <View
-        className="flex-row items-start"
+        className="flex-row items-start p-3"
         style={{
           width: "100%",
           height: "100%",
-          padding: 4,
         }}
       >
         <View className="flex-1">
@@ -35,6 +33,12 @@ const EventCard = ({
             ))}
           </View>
           <Text style={{ color: "white", fontSize: 10 }}>{event.name}</Text>
+          <Text style={{ color: "white", fontSize: 10 }}>
+            {new Date(event.start.dateTime).toLocaleString()}
+          </Text>
+          <Text style={{ color: "white", fontSize: 10 }}>
+            {new Date(event.end.dateTime).toLocaleString()}
+          </Text>
         </View>
         <Pressable
           className="rounded-full p-2 z-10"

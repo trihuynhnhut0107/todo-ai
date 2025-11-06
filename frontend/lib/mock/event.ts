@@ -77,10 +77,13 @@ const workspaceTimezones = [
 // === MOCK EVENT GENERATOR ===
 export const createMockEvents = (count = randomInt(10, 15)): Event[] => {
   const now = new Date();
+  const UTC_OFFSET_HOURS = 7;
   const events: Event[] = [];
 
   for (let i = 0; i < count; i++) {
-    const baseDate = new Date(now.getTime() + i * 1000 * 60 * 60 * 6);
+    const baseDate = new Date(
+      now.getTime() + i * 1000 * 60 * 60 * 6
+    );
     const start = addHours(baseDate, 0);
     const end = addHours(baseDate, randomInt(6, 10));
 

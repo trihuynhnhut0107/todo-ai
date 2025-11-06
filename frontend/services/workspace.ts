@@ -1,18 +1,25 @@
+import api from "@/lib/api";
 import { mockWorkspaces } from "@/lib/mock/workspace";
 import { Workspace } from "@/types/workspace";
 
 import { DateTimeType } from "@howljs/calendar-kit";
 
 export const getWorkspaces = async (): Promise<Workspace[]> => {
-  return new Promise((resolve) => {
-    resolve(mockWorkspaces);
-  });
+  try {
+    return await api.get(`api/workspaces`);
+  } catch (error) {
+    return mockWorkspaces;
+  }
 };
 
-export const getWorkspace = async (id: string): Promise<Workspace> => {
-  return new Promise((resolve) => {
-    resolve(mockWorkspaces.find((wp) => wp.id === id)!);
-  });
+export const getWorkspace = async (
+  id: string
+): Promise<Workspace | undefined> => {
+  try {
+    return await api.get(`api/workspaces/${id}`);
+  } catch (error) {
+    return mockWorkspaces.find((wp) => wp.id === id);
+  }
 };
 
 // export const createEvent = async (

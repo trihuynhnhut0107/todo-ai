@@ -28,12 +28,10 @@ export type EventCardProps = Event | PackedEvent;
 export interface AgendaHeaderProps {
   workspace: Workspace | undefined;
   events: Event[] | undefined;
-  selected: string;
-  onSelect: (date: string) => void;
 }
 
 export interface DateWithEvents {
-  date: string;
+  date: string | Date;
   eventList: {
     color: string;
     start: string | DateTimeType;

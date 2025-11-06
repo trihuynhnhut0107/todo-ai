@@ -1,4 +1,4 @@
-import { DateTimeType, EventItem } from "@howljs/calendar-kit";
+import { DateOrDateTime, DateTimeType, EventItem } from "@howljs/calendar-kit";
 
 export interface Assignee {
   email: string;
@@ -6,13 +6,12 @@ export interface Assignee {
   id: string;
 }
 
-
 export interface Event extends EventItem {
   id: string;
   name: string;
   description: string;
-  start: string | DateTimeType;
-  end: string | DateTimeType;
+  start: string | DateTimeType | any;
+  end: string | DateTimeType | any;
   status: string;
   location: string;
   color: string;

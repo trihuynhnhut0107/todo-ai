@@ -1,17 +1,13 @@
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import AgendaHeaderItem from "./AgendaHeaderItem";
 import { AgendaHeaderProps, DateWithEvents } from "@/type";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import workspace from "@/app/(main)/workspace/[id]";
+import workspace, { selectedDateContext } from "@/app/(main)/workspace/[id]";
 
-const AgendaHeader = ({
-  workspace,
-  events,
-  selected,
-  onSelect,
-}: AgendaHeaderProps) => {
+const AgendaHeader = ({ workspace, events }: AgendaHeaderProps) => {
+  const { selectDate, selected } = useContext(selectedDateContext);
   const listRef = useRef<FlatList<DateWithEvents>>(null);
   const [loaded, setLoaded] = useState(false);
   // Generate array of all days in the same month as `selected`
@@ -25,18 +21,19 @@ const AgendaHeader = ({
     const dates: DateWithEvents[] = [];
 
     for (let i = 1; i <= daysInMonth; i++) {
-      const d = new Date(Date.UTC(year, month, i));
-      const isoDate = d.toISOString().split("T")[0];
+      const date = new Date(Date.UTC(year, month, i));
+      const dayStart = new Date(year, month, i, 0, 0, 0, 0); // Start of day
+      const dayEnd = new Date(year, month, i, 23, 59, 59, 999); // End of day
 
       // Count events that start or span this date
       const eventList =
         events
           ?.filter((e) => {
-            const start = new Date(e.start.toString())
-              .toISOString()
-              .split("T")[0];
-            const end = new Date(e.end.toString()).toISOString().split("T")[0];
-            return isoDate >= start && isoDate <= end;
+            const eventStart = new Date(e.start.toString());
+            const eventEnd = new Date(e.end.toString());
+            // Event overlaps with this day if:
+            // event starts before day ends AND event ends after day starts
+            return eventStart <= dayEnd && eventEnd >= dayStart;
           })
           ?.map(({ color, start, end }) => ({
             color,
@@ -44,15 +41,18 @@ const AgendaHeader = ({
             end,
           })) ?? [];
 
-      dates.push({ date: isoDate, eventList, active: isoDate === selected });
+      dates.push({
+        date,
+        eventList,
+        active: date.toISOString().split("T")[0] === selected,
+      });
     }
 
-    // console.log(dates);
     return dates;
   }, [selected, events]);
 
   useEffect(() => {
-    const index = monthDates.findIndex((e) => e.date === selected);
+    const index = monthDates.findIndex((e) => e.active);
     if (index !== -1 && listRef.current) {
       setTimeout(
         () => {
@@ -69,7 +69,7 @@ const AgendaHeader = ({
   }, [selected, monthDates]);
 
   return (
-    <View className="border-b-[1px] bg-white">
+    <View className="border-b-[1px] bg-white z-50">
       <View className="p-2">
         <View className="flex-row items-center justify-between">
           <TouchableOpacity
@@ -110,19 +110,24 @@ const AgendaHeader = ({
       <FlatList
         ref={listRef}
         data={monthDates}
-        keyExtractor={(item) => item.date}
+        keyExtractor={(item) => item.date.toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerClassName="p-2"
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => onSelect(item.date)}>
+          <TouchableOpacity
+            onPress={() => {
+              console.log("clicked");
+              selectDate(item.date as string);
+            }}
+          >
             <AgendaHeaderItem date={item} />
           </TouchableOpacity>
         )}
       />
 
       <Text className="text-center text-sm pb-2">
-        {new Date(selected).toLocaleDateString("vi-VN", {
+        {new Date(selected).toLocaleDateString("en-UK", {
           weekday: "long",
           day: "2-digit",
           month: "long",
