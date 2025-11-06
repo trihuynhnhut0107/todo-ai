@@ -1,33 +1,21 @@
-
 const BASE_URL = "https://your-api-domain.com/api";
 
-export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+import axios from "axios";
 
-export async function apiCall<T>(
-  endpoint: string,
-  method: HttpMethod = "GET",
-  body?: unknown,
-  token?: string
-): Promise<T> {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
+const api = axios.create({
+  baseURL: BASE_URL, // replace with your actual base URL
+  timeout: 10000,
+});
 
-  if (token) headers.Authorization = `Bearer ${token}`;
+// Optional: Add interceptors
+api.interceptors.request.use(
+  (config) => {
+    // Add auth token or headers
+    // const token = 'yourAuthToken';
+    // config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-  const options: RequestInit = {
-    method,
-    headers,
-  };
-
-  if (body) options.body = JSON.stringify(body);
-
-  const res = await fetch(`${BASE_URL}${endpoint}`, options);
-
-  if (!res.ok) {
-    const errorData = await res.text();
-    throw new Error(errorData || `Request failed: ${res.status}`);
-  }
-
-  return res.json() as Promise<T>;
-}
+export default api;

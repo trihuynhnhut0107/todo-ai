@@ -83,12 +83,12 @@ const TabLayout = () => {
         }}
       />
       <Tabs.Screen
-        name="calendar"
+        name="workspace"
         options={{
-          title: "Calendar",
+          title: "Workspaces",
           tabBarIcon: ({ focused }) => (
             <TabBarIcon
-              title="Calendar"
+              title="Workspaces"
               icon="calendar-clear-outline"
               acactive_icon="calendar-clear"
               focused={focused}

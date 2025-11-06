@@ -17,7 +17,6 @@ const CustomInput = ({ label, ...rest }: CustomInputProps) => {
       <TextInput
         autoCapitalize="none"
         autoComplete="off"
-        {...rest}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         placeholderTextColor="#888"
@@ -25,6 +24,7 @@ const CustomInput = ({ label, ...rest }: CustomInputProps) => {
           "rounded-lg p-3 w-full text-base border-2 leading-5",
           isFocused ? "border-orange-500" : "border-gray-300"
         )}
+        {...rest}
       />
     </View>
   );

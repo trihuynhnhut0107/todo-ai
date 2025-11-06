@@ -4,12 +4,13 @@ import { Link } from "expo-router";
 import { images } from "@/lib/image";
 import { Ionicons } from "@expo/vector-icons";
 import { PackedEvent } from "@howljs/calendar-kit";
+import { EventCardProps } from "@/type";
 
 const EventCard = ({
   event,
   onPress,
 }: {
-  event: PackedEvent;
+  event: EventCardProps;
   onPress: (id: string) => void;
 }) => {
   return (
@@ -24,7 +25,7 @@ const EventCard = ({
       >
         <View className="flex-1">
           <View className="flex-row relative">
-            {event.data.member?.map((m: any, idx: number) => (
+            {event.assignees?.map((m: any, idx: number) => (
               <Image
                 key={idx}
                 source={images.john_doe}
@@ -33,7 +34,7 @@ const EventCard = ({
               />
             ))}
           </View>
-          <Text style={{ color: "white", fontSize: 10 }}>{event.title}</Text>
+          <Text style={{ color: "white", fontSize: 10 }}>{event.name}</Text>
         </View>
         <Pressable
           className="rounded-full p-2 z-10"

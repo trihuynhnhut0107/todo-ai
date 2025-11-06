@@ -1,5 +1,6 @@
 import { getUser, signOut } from "@/services/auth";
-import { User } from "@/type";
+import { User } from "@/types/auth";
+
 import { create } from "zustand";
 type AuthState = {
   isAuthenticated: boolean;
@@ -28,7 +29,7 @@ const useAuthStore = create<AuthState>((set) => ({
       set({ user: null, isAuthenticated: false });
       await signOut();
     } catch (error) {
-      console.log(error)
+      console.log('Logout failed:', error);
     }
   },
 
