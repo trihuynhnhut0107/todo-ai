@@ -103,8 +103,8 @@ export class LangchainService {
         reasoning: parsedResult.reasoning,
       };
     } catch (error) {
-      console.error("Error detecting intent:", error);
-      throw new Error("Failed to detect user intent");
+      console.error("Error detecting intent in detectIntent method. Input messages:", messages, "\nError details:", error);
+      throw new Error("Failed to detect user intent", { cause: error });
     }
   }
 }
