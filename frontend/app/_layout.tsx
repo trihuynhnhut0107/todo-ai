@@ -5,6 +5,17 @@ import { useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from "react-native";
 import useAuthStore from "@/store/auth.store";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 1000 * 60 * 5, // cache for 5 minutes
+    },
+  },
+});
 
 export default function RootLayout() {
   const { isLoading, fetchAuthenticatedUser } = useAuthStore();
@@ -19,10 +30,12 @@ export default function RootLayout() {
       </SafeAreaView>
     );
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      {/* <BottomSheetModalProvider> */}
-      <Stack screenOptions={{ headerShown: false }} />
-      {/* </BottomSheetModalProvider> */}
-    </GestureHandlerRootView>
+    <QueryClientProvider client={queryClient}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <BottomSheetModalProvider>
+          <Stack screenOptions={{ headerShown: false }} />
+        </BottomSheetModalProvider>
+      </GestureHandlerRootView>
+    </QueryClientProvider>
   );
 }

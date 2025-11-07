@@ -1,9 +1,7 @@
+import { DateTimeType, EventItem, PackedEvent } from "@howljs/calendar-kit";
 import { TextInputProps } from "react-native";
-export interface User {
-  name: string;
-  email: string;
-  avatar: string;
-}
+import { Workspace } from "./types/workspace";
+import { Event } from "./types/event";
 
 export interface TabBarIconProps {
   focused: boolean;
@@ -23,4 +21,23 @@ export interface CustomButtonProps {
 
 export interface CustomInputProps extends TextInputProps {
   label?: string;
+}
+
+export type EventCardProps = Event | PackedEvent;
+
+export interface AgendaHeaderProps {
+  workspace: Workspace | undefined;
+  events: Event[] | undefined;
+  selected: string;
+  onSelect: (date: string) => void;
+}
+
+export interface DateWithEvents {
+  date: string;
+  eventList: {
+    color: string;
+    start: string | DateTimeType;
+    end: string | DateTimeType;
+  }[];
+  active?: boolean;
 }
