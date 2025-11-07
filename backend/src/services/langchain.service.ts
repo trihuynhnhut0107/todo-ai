@@ -1,6 +1,5 @@
 require("dotenv").config();
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { createEventPromptTemplate } from "../prompts/create-events.prompt";
 import { DetectIntentPromptTemplate } from "../prompts/detect-intent.prompt";
 import {
   BaseMessage,
