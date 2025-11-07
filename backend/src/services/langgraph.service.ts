@@ -49,7 +49,7 @@ const StateAnnotation = Annotation.Root({
     default: () => [],
   }),
   optionalFieldsMissing: Annotation<string[]>({
-    reducer: (left, right) => [...(left || []), ...(right || [])],
+    reducer: (left, right) => Array.from(new Set([...(left || []), ...(right || [])])),
     default: () => [],
   }),
   // Validation state
