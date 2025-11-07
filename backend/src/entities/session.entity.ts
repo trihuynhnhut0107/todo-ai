@@ -24,7 +24,7 @@ export class Session {
   user: User;
 
   @Column({ nullable: false })
-  userId: string;
+  userId!: string;
 
   @CreateDateColumn()
   createdAt!: Date;
