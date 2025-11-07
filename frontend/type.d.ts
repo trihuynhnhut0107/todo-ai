@@ -2,6 +2,7 @@ import { DateTimeType, EventItem, PackedEvent } from "@howljs/calendar-kit";
 import { TextInputProps } from "react-native";
 import { Workspace } from "./types/workspace";
 import { Event } from "./types/event";
+import { BaseProps } from "@react-native-community/datetimepicker";
 
 export interface TabBarIconProps {
   focused: boolean;
@@ -10,6 +11,13 @@ export interface TabBarIconProps {
   title: string;
 }
 
+export interface ErrorControl {
+  error?: boolean;
+}
+
+export interface MyCustomInput {
+  label: string;
+}
 export interface CustomButtonProps {
   onPress?: () => void;
   title?: string;
@@ -19,10 +27,17 @@ export interface CustomButtonProps {
   isLoading?: boolean;
 }
 
-export interface CustomInputProps extends TextInputProps {
-  label?: string;
-}
+export interface CustomInputProps
+  extends TextInputProps,
+    ErrorControl,
+    MyCustomInput {}
 
+export interface CustomDateTimePickerProps
+  extends BaseProps,
+    ErrorControl,
+    MyCustomInput {
+  onChange: (d: Date) => void;
+}
 export type EventCardProps = Event | PackedEvent;
 
 export interface AgendaHeaderProps {

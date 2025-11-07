@@ -1,6 +1,7 @@
 import {
   createEvent,
   deleteEvent,
+  getEvent,
   getEvents,
   updateEvent,
 } from "@/services/event";
@@ -14,7 +15,12 @@ export const useEvents = (wp_id: string) =>
     enabled: !!wp_id,
   });
 
-export const useEventById = (wp_id: string, id: string) => {};
+export const useEventById = (id: string) =>
+  useQuery({
+    queryKey: ["event", id],
+    queryFn: () => getEvent(id),
+    enabled: !!id && id !=="create",
+  });
 
 export const useCreateEvent = () => {
   const queryClient = useQueryClient();

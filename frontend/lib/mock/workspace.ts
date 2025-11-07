@@ -1,4 +1,5 @@
-import { Workspace } from "@/type";
+import { Workspace } from "@/types/workspace";
+
 
 const sampleColors = [
   "#EF4444", // red

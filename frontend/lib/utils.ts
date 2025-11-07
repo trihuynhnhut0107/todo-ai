@@ -18,7 +18,6 @@ export function getColorFromString(str: string): string {
 
 export function getDatesBetween(start: Date | string, end: Date | string) {
   const dates = [];
-  console.log(start + " " + end);
 
   const current = new Date(start.toString().split("/").reverse().join("-"));
   const last = new Date(end.toString().split("/").reverse().join("-"));

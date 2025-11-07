@@ -1,7 +1,6 @@
 import AgendaHeader from "@/components/UI/Calendar/AgendaHeader";
 import EventCard from "@/components/UI/Calendar/EventCard";
-import { images } from "@/lib/image";
-import { mockEvents } from "@/lib/mock/event";
+import { SelectedDateContext } from "@/context/selectedDate";
 import { getDatesBetween } from "@/lib/utils";
 import {
   useCreateEvent,
@@ -10,8 +9,7 @@ import {
   useUpdateEvent,
 } from "@/query/event.query";
 import { useWorkSpaceById } from "@/query/workspace.query";
-import { createEvent, getEvents, updateEvent } from "@/services/event";
-import { getWorkspace } from "@/services/workspace";
+import { EventPayload } from "@/types/event";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import {
@@ -27,16 +25,8 @@ import {
   PackedEvent,
 } from "@howljs/calendar-kit";
 import { BlurView } from "expo-blur";
-import { Link, useLocalSearchParams } from "expo-router";
-import {
-  createContext,
-  use,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Link, router, useLocalSearchParams } from "expo-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -53,16 +43,7 @@ import {
   RefreshControl,
   ScrollView,
 } from "react-native-gesture-handler";
-import { create } from "zustand";
 
-interface ActiveDateContextProps {
-  selected: string;
-  selectDate: (date: string) => void;
-}
-export const selectedDateContext = createContext<ActiveDateContextProps>({
-  selected: "",
-  selectDate: () => {},
-});
 const workspaceDetail = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const sheetRef = useRef<BottomSheetModal>(null);
@@ -119,7 +100,6 @@ const workspaceDetail = () => {
   };
 
   const handleSelectDate = (d: string | Date) => {
-    console.log(d);
     selectDate(new Date(d).toISOString().split("T")[0]);
     handleGoToDate(new Date(d).toISOString().split("T")[0]);
   };
@@ -130,7 +110,23 @@ const workspaceDetail = () => {
   };
 
   const handleDragCreateEnd = (event: OnCreateEventResponse) => {
-    const payload = { wp_id: id, start: event.start, end: event.end };
+    const payload: EventPayload = {
+      name: "New Event",
+      description: "",
+      start: event.start.toString(),
+      end: event.end.toString(),
+      status: "",
+      location: "",
+      color: "blue",
+      isAllDay: false,
+      recurrenceRule: "",
+      tags: [],
+      metadata: {},
+
+      workspaceId: id,
+      assigneeIds: [],
+    };
+
     createEvent(payload);
   };
   const handleDragStart = (event: OnEventResponse) => {
@@ -139,13 +135,16 @@ const workspaceDetail = () => {
   };
 
   const handleDragEnd = (event: OnEventResponse) => {
-    const payload = {
-      wp_id: id,
-      id: event.id,
-      start: event.start,
-      end: event.end,
+    const payload: EventPayload = {
+      workspaceId:event.workspaceId,
+      start: event.start.toString(),
+      end: event.end.toString(),
     };
-    updateEvent(payload);
+  
+    updateEvent({
+    id: event.id,
+    payload
+});
   };
 
   const handleDeleteEvent = (e_id: string) => {
@@ -185,84 +184,84 @@ const workspaceDetail = () => {
     });
 
     // highlight selected date if exists
-    if (selected && eventLog[selected]) {
-      eventLog[selected].selected = true;
+    if (!eventLog[selected]) {
+      eventLog[selected] = {
+        dots: [],
+      };
     }
+    eventLog[selected].selected = true;
 
     return eventLog;
   }, [events, selected]);
 
   return (
-    <selectedDateContext.Provider
+    <SelectedDateContext.Provider
       value={{ selected, selectDate: handleSelectDate }}
     >
-      <View className="flex-1">
-        <ScrollView
-          className="flex-1"
-          contentContainerStyle={{ flexGrow: 1 }}
-          refreshControl={
-            <RefreshControl
-              refreshing={pendingEvents && pendingWorkspace}
-              onRefresh={onRefresh}
-            />
-          }
-          stickyHeaderIndices={[0]}
-        >
-          <AgendaHeader workspace={workspace} events={events} />
-
-          <View className="flex-1">
-            <View
-              className="flex-1 absolute size-full items-center justify-center bg-white"
-              style={{
-                display: !pendingEvents && calendarLoaded ? "none" : "flex",
-              }}
-            >
-              <ActivityIndicator size={"large"} color={"black"} />
-            </View>
-            <CalendarContainer
-              onLoad={() => setCalendarLoaded(true)}
-              theme={{
-                colors: {
-                  // background:"transparent",
-                  // surface:"white"
-                },
-                eventContainerStyle: {
-                  borderRadius: 12,
-                },
-              }}
-              ref={calendarRef}
-              allowPinchToZoom
-              allowDragToCreate
-              allowDragToEdit
-              onDateChanged={handleDateChanged}
-              onDragCreateEventStart={handleDragCreateStart}
-              onDragCreateEventEnd={handleDragCreateEnd}
-              onDragEventStart={handleDragStart}
-              onDragEventEnd={handleDragEnd}
-              events={
-                events?.map((e) => ({
-                  ...e,
-                  start: { dateTime: e.start },
-                  end: { dateTime: e.end },
-                })) as EventItem[]
-              }
-              onPressEvent={(event) => {
-                console.log("Event pressed:", event);
-              }}
-              useHaptic={true}
-              scrollByDay={true}
-              numberOfDays={1}
-            >
-              {/* <CalendarHeader /> */}
-
-              <CalendarBody
-                renderEvent={(e: any) => (
-                  <EventCard event={e} onPress={handleDeleteEvent} />
-                )}
+      <View className="flex-1 ">
+        <View className="overflow-display">
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 0, backgroundColor: "white" }}
+            refreshControl={
+              <RefreshControl
+                refreshing={pendingEvents && pendingWorkspace}
+                onRefresh={onRefresh}
               />
-            </CalendarContainer>
+            }
+          >
+            <AgendaHeader workspace={workspace} events={events} />
+          </ScrollView>
+        </View>
+
+        <View className="flex-1">
+          <View
+            className="flex-1 absolute size-full items-center justify-center bg-white"
+            style={{
+              display: !pendingEvents && calendarLoaded ? "none" : "flex",
+            }}
+          >
+            <ActivityIndicator size={"large"} color={"black"} />
           </View>
-        </ScrollView>
+          <CalendarContainer
+            onLoad={() => setCalendarLoaded(true)}
+            theme={{
+              colors: {
+                // background:"transparent",
+                // surface:"white"
+              },
+              eventContainerStyle: {
+                backgroundColor:"transparent",
+              },
+            }}
+            ref={calendarRef}
+            allowPinchToZoom
+            allowDragToCreate
+            allowDragToEdit
+            onDateChanged={handleDateChanged}
+            onDragCreateEventStart={handleDragCreateStart}
+            onDragCreateEventEnd={handleDragCreateEnd}
+            onDragEventStart={handleDragStart}
+            onDragEventEnd={handleDragEnd}
+            events={
+              events?.map((e) => ({
+                ...e,
+                start: { dateTime: e.start },
+                end: { dateTime: e.end },
+              })) as EventItem[]
+            }
+            useHaptic={true}
+            scrollByDay={true}
+            numberOfDays={1}
+          >
+            {/* <CalendarHeader /> */}
+
+            <CalendarBody
+              renderEvent={(e: any) => (
+                <EventCard event={e} />
+              )}
+            />
+          </CalendarContainer>
+        </View>
         <BottomSheetModal
           name="calendar"
           onDismiss={() => setOpen(false)}
@@ -319,9 +318,16 @@ const workspaceDetail = () => {
             />
           </BottomSheetView>
         </BottomSheetModal>
-        <TouchableOpacity className="absolute left-5 bottom-5 flex-row items-center p-3 bg-orange-400 rounded-full ">
+
+        <TouchableOpacity
+          onPress={() =>
+            router.push(`/(main)/workspace/${id}/event_form/create`)
+          }
+          className="absolute left-5 bottom-5 flex-row items-center p-3 bg-orange-400 rounded-full "
+        >
           <Ionicons name="add" size={32} color="white" />
         </TouchableOpacity>
+
         <TouchableOpacity
           onPress={() => setOpen(true)}
           className="absolute right-5 bottom-5 flex-row items-center p-3 bg-orange-400 rounded-full "
@@ -329,7 +335,7 @@ const workspaceDetail = () => {
           <Ionicons name="calendar" size={32} color="white" />
         </TouchableOpacity>
       </View>
-    </selectedDateContext.Provider>
+    </SelectedDateContext.Provider>
   );
 };
 

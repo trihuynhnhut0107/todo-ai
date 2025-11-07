@@ -1,7 +1,8 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import React, { useContext, useMemo } from "react";
 import { DateWithEvents } from "@/type";
-import { selectedDateContext } from "@/app/(main)/workspace/[id]";
+
+import { format } from "date-fns";
 
 const AgendaHeaderItem = ({ date }: { date: DateWithEvents }) => {
   const today = useMemo(() => {
@@ -20,18 +21,14 @@ const AgendaHeaderItem = ({ date }: { date: DateWithEvents }) => {
         backgroundColor: date.active ? "orange" : "",
       }}
     >
-      <Text>
-        {new Date(date.date).toLocaleDateString("en-UK", {
-          weekday: "short",
-        })}
-      </Text>
+      <Text>{format(new Date(date.date), "E")}</Text>
       <Text
         className="rounded-full p-2 "
         style={{
           color: date.active ? "white" : today ? "orangered" : "black",
         }}
       >
-        {new Date(date.date).toLocaleDateString("en-UK", { day: "2-digit" })}
+        {format(new Date(date.date), "dd")}
       </Text>
       <View className="gap-1 flex-row flex-wrap">
         {date.eventList?.map((e, idx) => (
