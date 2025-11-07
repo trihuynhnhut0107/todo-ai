@@ -303,15 +303,22 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"EventStatus": {
+				"enum": [
+					"scheduled",
+					"in_progress",
+					"completed",
+					"cancelled"
+				],
+				"type": "string"
+			},
 			"EventResponse": {
+				"description": "Event Response DTO - for API responses",
 				"properties": {
 					"id": {
 						"type": "string"
 					},
 					"name": {
-						"type": "string"
-					},
-					"description": {
 						"type": "string"
 					},
 					"start": {
@@ -322,17 +329,26 @@
 						"type": "string",
 						"format": "date-time"
 					},
-					"status": {
+					"workspaceId": {
 						"type": "string"
 					},
-					"location": {
+					"createdById": {
 						"type": "string"
+					},
+					"status": {
+						"$ref": "#/components/schemas/EventStatus"
 					},
 					"color": {
 						"type": "string"
 					},
 					"isAllDay": {
 						"type": "boolean"
+					},
+					"description": {
+						"type": "string"
+					},
+					"location": {
+						"type": "string"
 					},
 					"recurrenceRule": {
 						"type": "string"
@@ -346,12 +362,6 @@
 					"metadata": {
 						"$ref": "#/components/schemas/Record_string.unknown_"
 					},
-					"workspaceId": {
-						"type": "string"
-					},
-					"createdById": {
-						"type": "string"
-					},
 					"createdAt": {
 						"type": "string",
 						"format": "date-time"
@@ -360,25 +370,9 @@
 						"type": "string",
 						"format": "date-time"
 					},
-					"assignees": {
+					"assigneeIds": {
 						"items": {
-							"properties": {
-								"email": {
-									"type": "string"
-								},
-								"name": {
-									"type": "string"
-								},
-								"id": {
-									"type": "string"
-								}
-							},
-							"required": [
-								"email",
-								"name",
-								"id"
-							],
-							"type": "object"
+							"type": "string"
 						},
 						"type": "array"
 					}
@@ -388,11 +382,11 @@
 					"name",
 					"start",
 					"end",
+					"workspaceId",
+					"createdById",
 					"status",
 					"color",
 					"isAllDay",
-					"workspaceId",
-					"createdById",
 					"createdAt",
 					"updatedAt"
 				],
@@ -424,46 +418,42 @@
 				"additionalProperties": false
 			},
 			"CreateEventDto": {
+				"description": "Create Event DTO for TSOA controller",
 				"properties": {
 					"name": {
+						"type": "string"
+					},
+					"start": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"end": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"workspaceId": {
 						"type": "string"
 					},
 					"description": {
 						"type": "string"
 					},
-					"start": {
-						"anyOf": [
-							{
-								"type": "string",
-								"format": "date-time"
-							},
-							{
-								"type": "string"
-							}
-						]
-					},
-					"end": {
-						"anyOf": [
-							{
-								"type": "string",
-								"format": "date-time"
-							},
-							{
-								"type": "string"
-							}
-						]
-					},
-					"workspaceId": {
+					"location": {
 						"type": "string"
 					},
-					"assigneeIds": {
+					"recurrenceRule": {
+						"type": "string"
+					},
+					"tags": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"location": {
-						"type": "string"
+					"metadata": {
+						"$ref": "#/components/schemas/Record_string.unknown_"
+					},
+					"status": {
+						"$ref": "#/components/schemas/EventStatus"
 					},
 					"color": {
 						"type": "string"
@@ -471,10 +461,7 @@
 					"isAllDay": {
 						"type": "boolean"
 					},
-					"recurrenceRule": {
-						"type": "string"
-					},
-					"tags": {
+					"assigneeIds": {
 						"items": {
 							"type": "string"
 						},
@@ -518,52 +505,24 @@
 				"additionalProperties": false
 			},
 			"UpdateEventDto": {
+				"description": "Update Event DTO for TSOA controller",
 				"properties": {
 					"name": {
 						"type": "string"
 					},
+					"start": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"end": {
+						"type": "string",
+						"format": "date-time"
+					},
 					"description": {
 						"type": "string"
 					},
-					"start": {
-						"anyOf": [
-							{
-								"type": "string",
-								"format": "date-time"
-							},
-							{
-								"type": "string"
-							}
-						]
-					},
-					"end": {
-						"anyOf": [
-							{
-								"type": "string",
-								"format": "date-time"
-							},
-							{
-								"type": "string"
-							}
-						]
-					},
-					"status": {
-						"type": "string",
-						"enum": [
-							"scheduled",
-							"in_progress",
-							"completed",
-							"cancelled"
-						]
-					},
 					"location": {
 						"type": "string"
-					},
-					"color": {
-						"type": "string"
-					},
-					"isAllDay": {
-						"type": "boolean"
 					},
 					"recurrenceRule": {
 						"type": "string"
@@ -576,12 +535,28 @@
 					},
 					"metadata": {
 						"$ref": "#/components/schemas/Record_string.unknown_"
+					},
+					"status": {
+						"$ref": "#/components/schemas/EventStatus"
+					},
+					"color": {
+						"type": "string"
+					},
+					"isAllDay": {
+						"type": "boolean"
+					},
+					"assigneeIds": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"type": "object",
 				"additionalProperties": false
 			},
 			"AssignEventDto": {
+				"description": "Assign Event DTO",
 				"properties": {
 					"userIds": {
 						"items": {
@@ -597,6 +572,7 @@
 				"additionalProperties": false
 			},
 			"UnassignEventDto": {
+				"description": "Unassign Event DTO",
 				"properties": {
 					"userId": {
 						"type": "string"
@@ -604,71 +580,6 @@
 				},
 				"required": [
 					"userId"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"BotResponseDto": {
-				"properties": {
-					"response": {
-						"type": "string"
-					},
-					"intent": {
-						"properties": {
-							"confidence": {
-								"type": "number",
-								"format": "double"
-							},
-							"intent": {
-								"type": "string"
-							}
-						},
-						"required": [
-							"confidence",
-							"intent"
-						],
-						"type": "object"
-					}
-				},
-				"required": [
-					"response",
-					"intent"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ApiResponse_BotResponseDto_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
-				"properties": {
-					"success": {
-						"type": "boolean"
-					},
-					"message": {
-						"type": "string"
-					},
-					"data": {
-						"$ref": "#/components/schemas/BotResponseDto"
-					},
-					"timestamp": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"success",
-					"message",
-					"timestamp"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"BotInputDto": {
-				"properties": {
-					"message": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"message"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -717,6 +628,114 @@
 					"senderType",
 					"createdAt",
 					"updatedAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_MessageResponse_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"$ref": "#/components/schemas/MessageResponse"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse__response-string__": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"properties": {
+							"response": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"response"
+						],
+						"type": "object"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse__intent-string--confidence-number--extractedInfo-Record_string.unknown_--missingRequiredFields-string-Array--reasoning-string__": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"properties": {
+							"reasoning": {
+								"type": "string"
+							},
+							"missingRequiredFields": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"extractedInfo": {
+								"$ref": "#/components/schemas/Record_string.unknown_"
+							},
+							"confidence": {
+								"type": "number",
+								"format": "double"
+							},
+							"intent": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"reasoning",
+							"missingRequiredFields",
+							"extractedInfo",
+							"confidence",
+							"intent"
+						],
+						"type": "object"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -805,30 +824,6 @@
 							"sessions"
 						],
 						"type": "object"
-					},
-					"timestamp": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"success",
-					"message",
-					"timestamp"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ApiResponse_MessageResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
-				"properties": {
-					"success": {
-						"type": "boolean"
-					},
-					"message": {
-						"type": "string"
-					},
-					"data": {
-						"$ref": "#/components/schemas/MessageResponse"
 					},
 					"timestamp": {
 						"type": "string"
@@ -2356,16 +2351,16 @@
 				}
 			}
 		},
-		"/api/chat/bot": {
+		"/api/chat": {
 			"post": {
-				"operationId": "TestBotResponse",
+				"operationId": "HandleChat",
 				"responses": {
 					"200": {
-						"description": "Bot response generated successfully",
+						"description": "Message processed successfully",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_BotResponseDto_"
+									"$ref": "#/components/schemas/ApiResponse_MessageResponse_"
 								}
 							}
 						}
@@ -2391,21 +2386,158 @@
 						}
 					}
 				},
-				"description": "Test bot response with intent detection",
-				"summary": "Test chatbot response and intent detection",
+				"description": "Handle chat message through LangGraph",
+				"summary": "Process chat message",
 				"tags": [
 					"Chat"
 				],
 				"security": [],
 				"parameters": [],
 				"requestBody": {
-					"description": "Bot input with user message",
+					"description": "User message input",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/BotInputDto",
-								"description": "Bot input with user message"
+								"properties": {
+									"message": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"message"
+								],
+								"type": "object",
+								"description": "User message input"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/chat/generate": {
+			"post": {
+				"operationId": "GenerateResponse",
+				"responses": {
+					"200": {
+						"description": "Response generated successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__response-string__"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Generate response from user message",
+				"summary": "Generate AI response",
+				"tags": [
+					"Chat"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "User message input",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"message": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"message"
+								],
+								"type": "object",
+								"description": "User message input"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/chat/detect-intent": {
+			"post": {
+				"operationId": "DetectIntent",
+				"responses": {
+					"200": {
+						"description": "Intent detected successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__intent-string--confidence-number--extractedInfo-Record_string.unknown_--missingRequiredFields-string-Array--reasoning-string__"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Detect intent from messages",
+				"summary": "Detect user intent and extract information",
+				"tags": [
+					"Chat"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"messages": {
+										"items": {
+											"type": "string"
+										},
+										"type": "array"
+									}
+								},
+								"required": [
+									"messages"
+								],
+								"type": "object"
 							}
 						}
 					}

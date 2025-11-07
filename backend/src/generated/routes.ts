@@ -144,26 +144,31 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "EventStatus": {
+        "dataType": "refEnum",
+        "enums": ["scheduled","in_progress","completed","cancelled"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "EventResponse": {
         "dataType": "refObject",
         "properties": {
             "id": {"dataType":"string","required":true},
             "name": {"dataType":"string","required":true},
-            "description": {"dataType":"string"},
             "start": {"dataType":"datetime","required":true},
             "end": {"dataType":"datetime","required":true},
-            "status": {"dataType":"string","required":true},
-            "location": {"dataType":"string"},
+            "workspaceId": {"dataType":"string","required":true},
+            "createdById": {"dataType":"string","required":true},
+            "status": {"ref":"EventStatus","required":true},
             "color": {"dataType":"string","required":true},
             "isAllDay": {"dataType":"boolean","required":true},
+            "description": {"dataType":"string"},
+            "location": {"dataType":"string"},
             "recurrenceRule": {"dataType":"string"},
             "tags": {"dataType":"array","array":{"dataType":"string"}},
             "metadata": {"ref":"Record_string.unknown_"},
-            "workspaceId": {"dataType":"string","required":true},
-            "createdById": {"dataType":"string","required":true},
             "createdAt": {"dataType":"datetime","required":true},
             "updatedAt": {"dataType":"datetime","required":true},
-            "assignees": {"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"email":{"dataType":"string","required":true},"name":{"dataType":"string","required":true},"id":{"dataType":"string","required":true}}}},
+            "assigneeIds": {"dataType":"array","array":{"dataType":"string"}},
         },
         "additionalProperties": false,
     },
@@ -183,16 +188,18 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "name": {"dataType":"string","required":true},
-            "description": {"dataType":"string"},
-            "start": {"dataType":"union","subSchemas":[{"dataType":"datetime"},{"dataType":"string"}],"required":true},
-            "end": {"dataType":"union","subSchemas":[{"dataType":"datetime"},{"dataType":"string"}],"required":true},
+            "start": {"dataType":"datetime","required":true},
+            "end": {"dataType":"datetime","required":true},
             "workspaceId": {"dataType":"string","required":true},
-            "assigneeIds": {"dataType":"array","array":{"dataType":"string"}},
+            "description": {"dataType":"string"},
             "location": {"dataType":"string"},
-            "color": {"dataType":"string"},
-            "isAllDay": {"dataType":"boolean"},
             "recurrenceRule": {"dataType":"string"},
             "tags": {"dataType":"array","array":{"dataType":"string"}},
+            "metadata": {"ref":"Record_string.unknown_"},
+            "status": {"ref":"EventStatus"},
+            "color": {"dataType":"string"},
+            "isAllDay": {"dataType":"boolean"},
+            "assigneeIds": {"dataType":"array","array":{"dataType":"string"}},
         },
         "additionalProperties": false,
     },
@@ -212,16 +219,17 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "name": {"dataType":"string"},
+            "start": {"dataType":"datetime"},
+            "end": {"dataType":"datetime"},
             "description": {"dataType":"string"},
-            "start": {"dataType":"union","subSchemas":[{"dataType":"datetime"},{"dataType":"string"}]},
-            "end": {"dataType":"union","subSchemas":[{"dataType":"datetime"},{"dataType":"string"}]},
-            "status": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["scheduled"]},{"dataType":"enum","enums":["in_progress"]},{"dataType":"enum","enums":["completed"]},{"dataType":"enum","enums":["cancelled"]}]},
             "location": {"dataType":"string"},
-            "color": {"dataType":"string"},
-            "isAllDay": {"dataType":"boolean"},
             "recurrenceRule": {"dataType":"string"},
             "tags": {"dataType":"array","array":{"dataType":"string"}},
             "metadata": {"ref":"Record_string.unknown_"},
+            "status": {"ref":"EventStatus"},
+            "color": {"dataType":"string"},
+            "isAllDay": {"dataType":"boolean"},
+            "assigneeIds": {"dataType":"array","array":{"dataType":"string"}},
         },
         "additionalProperties": false,
     },
@@ -242,34 +250,6 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "BotResponseDto": {
-        "dataType": "refObject",
-        "properties": {
-            "response": {"dataType":"string","required":true},
-            "intent": {"dataType":"nestedObjectLiteral","nestedProperties":{"confidence":{"dataType":"double","required":true},"intent":{"dataType":"string","required":true}},"required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ApiResponse_BotResponseDto_": {
-        "dataType": "refObject",
-        "properties": {
-            "success": {"dataType":"boolean","required":true},
-            "message": {"dataType":"string","required":true},
-            "data": {"ref":"BotResponseDto"},
-            "timestamp": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "BotInputDto": {
-        "dataType": "refObject",
-        "properties": {
-            "message": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "SenderType": {
         "dataType": "refEnum",
         "enums": ["user","bot"],
@@ -286,6 +266,39 @@ const models: TsoaRoute.Models = {
             "metadata": {"ref":"Record_string.unknown_"},
             "createdAt": {"dataType":"datetime","required":true},
             "updatedAt": {"dataType":"datetime","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse_MessageResponse_": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "message": {"dataType":"string","required":true},
+            "data": {"ref":"MessageResponse"},
+            "timestamp": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse__response-string__": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "message": {"dataType":"string","required":true},
+            "data": {"dataType":"nestedObjectLiteral","nestedProperties":{"response":{"dataType":"string","required":true}}},
+            "timestamp": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse__intent-string--confidence-number--extractedInfo-Record_string.unknown_--missingRequiredFields-string-Array--reasoning-string__": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "message": {"dataType":"string","required":true},
+            "data": {"dataType":"nestedObjectLiteral","nestedProperties":{"reasoning":{"dataType":"string","required":true},"missingRequiredFields":{"dataType":"array","array":{"dataType":"string"},"required":true},"extractedInfo":{"ref":"Record_string.unknown_","required":true},"confidence":{"dataType":"double","required":true},"intent":{"dataType":"string","required":true}}},
+            "timestamp": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -319,17 +332,6 @@ const models: TsoaRoute.Models = {
             "success": {"dataType":"boolean","required":true},
             "message": {"dataType":"string","required":true},
             "data": {"dataType":"nestedObjectLiteral","nestedProperties":{"total":{"dataType":"double","required":true},"sessions":{"dataType":"array","array":{"dataType":"refObject","ref":"SessionResponse"},"required":true}}},
-            "timestamp": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ApiResponse_MessageResponse_": {
-        "dataType": "refObject",
-        "properties": {
-            "success": {"dataType":"boolean","required":true},
-            "message": {"dataType":"string","required":true},
-            "data": {"ref":"MessageResponse"},
             "timestamp": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
@@ -965,25 +967,85 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsChatController_testBotResponse: Record<string, TsoaRoute.ParameterSchema> = {
-                input: {"in":"body","name":"input","required":true,"ref":"BotInputDto"},
+        const argsChatController_handleChat: Record<string, TsoaRoute.ParameterSchema> = {
+                input: {"in":"body","name":"input","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"message":{"dataType":"string","required":true}}},
         };
-        app.post('/api/chat/bot',
+        app.post('/api/chat',
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
-            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.testBotResponse)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.handleChat)),
 
-            async function ChatController_testBotResponse(request: ExRequest, response: ExResponse, next: any) {
+            async function ChatController_handleChat(request: ExRequest, response: ExResponse, next: any) {
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
             let validatedArgs: any[] = [];
             try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_testBotResponse, request, response });
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_handleChat, request, response });
 
                 const controller = new ChatController();
 
               await templateService.apiHandler({
-                methodName: 'testBotResponse',
+                methodName: 'handleChat',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsChatController_generateResponse: Record<string, TsoaRoute.ParameterSchema> = {
+                input: {"in":"body","name":"input","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"message":{"dataType":"string","required":true}}},
+        };
+        app.post('/api/chat/generate',
+            ...(fetchMiddlewares<RequestHandler>(ChatController)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.generateResponse)),
+
+            async function ChatController_generateResponse(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_generateResponse, request, response });
+
+                const controller = new ChatController();
+
+              await templateService.apiHandler({
+                methodName: 'generateResponse',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsChatController_detectIntent: Record<string, TsoaRoute.ParameterSchema> = {
+                input: {"in":"body","name":"input","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"messages":{"dataType":"array","array":{"dataType":"string"},"required":true}}},
+        };
+        app.post('/api/chat/detect-intent',
+            ...(fetchMiddlewares<RequestHandler>(ChatController)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.detectIntent)),
+
+            async function ChatController_detectIntent(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_detectIntent, request, response });
+
+                const controller = new ChatController();
+
+              await templateService.apiHandler({
+                methodName: 'detectIntent',
                 controller,
                 response,
                 next,

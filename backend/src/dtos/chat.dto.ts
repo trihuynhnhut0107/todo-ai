@@ -25,7 +25,7 @@ export interface MessageResponse {
 }
 
 export interface CreateSessionDto {
-  // Optional: can add title, description, or other metadata if needed
+  userId: string;
 }
 
 export interface SessionResponse {
@@ -52,4 +52,48 @@ export interface BotResponseDto {
     intent: string;
     confidence: number;
   };
+}
+
+// New DTOs for chat flow with LangGraph
+export interface ChatMessageDto {
+  sessionId: string;
+  userId: string;
+  message: string;
+}
+
+export interface ChatResponseDto {
+  threadId: string;
+  response: string;
+  isInterrupted: boolean;
+  missingFields?: string[];
+  interruptMessage?: string;
+}
+
+export interface FulfillInterruptDto {
+  message: string; // Natural language message with missing information
+}
+
+export interface ConfirmActionDto {
+  message: string; // Natural language confirmation/modification/cancellation
+}
+
+// DTOs for separate generate and detect endpoints
+export interface GenerateResponseDto {
+  message: string;
+}
+
+export interface GenerateResponseResultDto {
+  response: string;
+}
+
+export interface DetectIntentDto {
+  sessionId: string;
+}
+
+export interface IntentDetectionResult {
+  intent: string;
+  confidence: number;
+  extractedInfo: Record<string, unknown>;
+  missingRequiredFields: string[];
+  reasoning: string;
 }

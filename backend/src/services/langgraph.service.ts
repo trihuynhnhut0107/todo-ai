@@ -1,16 +1,22 @@
-import {
-  Annotation,
-  StateGraph,
-  MemorySaver,
-  Command,
-  interrupt,
-} from "@langchain/langgraph";
+import { Annotation, StateGraph } from "@langchain/langgraph";
 import { LangchainService } from "./langchain.service";
-import { ChatService } from "./chat.service";
+import { IntentType } from "../enums/chat.enum";
+import { Event } from "../types/event.types";
+import { EventService } from "./event.service";
+
+/**
+ * Extended Event info with helper fields for lookups
+ * Includes workspaceName and assigneeNames which are used to look up IDs
+ */
+export type ExtractedEventInfo = Partial<Event> & {
+  workspaceName?: string;
+  assigneeNames?: string[];
+  eventName?: string; // For update/delete operations
+};
 
 // Graph state
 const StateAnnotation = Annotation.Root({
-  userName: Annotation<string>({
+  userId: Annotation<string>({
     reducer: (left, right) => right ?? left,
     default: () => "",
   }),
@@ -26,19 +32,34 @@ const StateAnnotation = Annotation.Root({
     reducer: (left, right) => right ?? left,
     default: () => "",
   }),
-  eventData: Annotation<{
-    title?: string;
-    description?: string;
-    startTime?: string;
-    endTime?: string;
-    location?: string;
-  }>({
+  extractedInfo: Annotation<ExtractedEventInfo>({
     reducer: (left, right) => ({ ...left, ...right }),
     default: () => ({}),
   }),
-  missingFields: Annotation<string[]>({
+  confidence: Annotation<number>({
+    reducer: (left, right) => right ?? left,
+    default: () => 0,
+  }),
+  reasoning: Annotation<string>({
+    reducer: (left, right) => right ?? left,
+    default: () => "",
+  }),
+  requiredFieldsMissing: Annotation<string[]>({
     reducer: (left, right) => right ?? left,
     default: () => [],
+  }),
+  optionalFieldsMissing: Annotation<string[]>({
+    reducer: (left, right) => [...(left || []), ...(right || [])],
+    default: () => [],
+  }),
+  // Validation state
+  isValid: Annotation<boolean>({
+    reducer: (left, right) => right ?? left,
+    default: () => false,
+  }),
+  validationMessage: Annotation<string>({
+    reducer: (left, right) => right ?? left,
+    default: () => "",
   }),
 });
 
@@ -49,155 +70,386 @@ export class LanggraphService {
 
   constructor(
     private langchainService: LangchainService,
-    private chatService: ChatService
+    private eventService: EventService
   ) {
     this.compiledGraph = this.buildGraph();
   }
 
   // Node: Detect user intent
-  private async detectIntentNode(state: typeof StateAnnotation.State) {
-    console.log("Detecting intent for user:", state.userName);
-    console.log("Messages:", state.messages);
-
-    // Get the last message
-    const lastMessage = state.messages[state.messages.length - 1] || "";
-
-    // Use LangchainService to detect intent with LLM
-    try {
-      const llmResponse = await this.langchainService.detectIntent(lastMessage);
-
-      // Parse the intent from LLM response
-      const detectedIntent = llmResponse.intent;
-
-      console.log("Detected intent:", detectedIntent);
-      return { intent: detectedIntent };
-    } catch (error) {
-      console.error("Error detecting intent with LLM:", error);
-      // Fallback to simple keyword detection
-      const detectedIntent = lastMessage.toLowerCase().includes("todo")
-        ? "create_todo"
-        : "general_chat";
-      return { intent: detectedIntent };
-    }
+  private async detectIntentNode(state: LanggraphState) {
+    const intentDetectionResult = await this.langchainService.detectIntent(
+      state.messages
+    );
+    return {
+      intent: intentDetectionResult.intent,
+      extractedInfo: intentDetectionResult.extractedInfo,
+      confidence: intentDetectionResult.confidence,
+      reasoning: intentDetectionResult.reasoning,
+      requiredFieldsMissing: intentDetectionResult.missingRequiredFields,
+    };
   }
 
-  // Node: Generate chatbot response
-  private async generateResponseNode(state: typeof StateAnnotation.State) {
-    console.log("Generating response for intent:", state.intent);
+  private handleRoutingAfterIntentDetection(state: LanggraphState) {
+    if (state.intent === IntentType.LIST_EVENTS) return "listEvent";
+    if (state.intent === IntentType.CREATE_EVENT) return "validateCreateEvent";
+    if (state.intent === IntentType.UPDATE_EVENT) return "validateUpdateEvent";
+    if (state.intent === IntentType.DELETE_EVENT) return "validateDeleteEvent";
+    if (state.intent === IntentType.OFF_TOPIC) return "handleOffTopic";
+    return "handleGeneralChat";
+  }
 
-    // Get the last message
-    const lastMessage = state.messages[state.messages.length - 1] || "";
+  // Validation node: Check if all required fields for CREATE are present
+  private async validateCreateEventNode(state: LanggraphState) {
+    const { extractedInfo } = state;
+    const missing: string[] = [];
 
-    // Use LangchainService to generate contextual response based on intent
-    try {
-      const responsePrompt = `You are a helpful AI assistant for a todo application.
-User: ${state.userName}
-Intent: ${state.intent}
-Message: "${lastMessage}"
+    // Required fields for creating an event
+    if (!extractedInfo.name) missing.push("event name");
+    if (!extractedInfo.start) missing.push("start time");
+    if (!extractedInfo.end) missing.push("end time");
+    if (!extractedInfo.workspaceId && !extractedInfo.workspaceName) {
+      missing.push("workspace");
+    }
 
-Generate a helpful response based on the user's intent. Be concise and friendly.`;
-
-      const response = await this.langchainService.generateResponse(
-        responsePrompt
-      );
-
-      console.log("Generated response:", response);
-      return { response };
-    } catch (error) {
-      console.error("Error generating response with LLM:", error);
-      // Fallback response
+    if (missing.length > 0) {
       return {
-        response: `I understand you want to ${state.intent.replace(
-          /_/g,
-          " "
-        )}. How can I help you with that?`,
+        isValid: false,
+        requiredFieldsMissing: missing,
+        validationMessage: `To create an event, I need: ${missing.join(
+          ", "
+        )}. Please provide these details.`,
+      };
+    }
+
+    return { isValid: true, requiredFieldsMissing: [] };
+  }
+
+  // Validation node: Check if all required fields for UPDATE are present
+  private async validateUpdateEventNode(state: LanggraphState) {
+    const { extractedInfo } = state;
+    const missing: string[] = [];
+
+    // For update, we need to identify the event first
+    if (!extractedInfo.id && !extractedInfo.eventName) {
+      missing.push("event name or ID to update");
+    }
+
+    // Check if there's at least one field to update
+    const hasUpdateFields =
+      extractedInfo.name ||
+      extractedInfo.start ||
+      extractedInfo.end ||
+      extractedInfo.description ||
+      extractedInfo.location ||
+      extractedInfo.status ||
+      extractedInfo.color !== undefined ||
+      extractedInfo.isAllDay !== undefined;
+
+    if (!hasUpdateFields) {
+      missing.push("fields to update (e.g., new time, description, location)");
+    }
+
+    if (missing.length > 0) {
+      return {
+        isValid: false,
+        requiredFieldsMissing: missing,
+        validationMessage: `To update an event, I need: ${missing.join(
+          ", "
+        )}. Please provide these details.`,
+      };
+    }
+
+    return { isValid: true, requiredFieldsMissing: [] };
+  }
+
+  // Validation node: Check if all required fields for DELETE are present
+  private async validateDeleteEventNode(state: LanggraphState) {
+    const { extractedInfo } = state;
+    const missing: string[] = [];
+
+    // For delete, we need to identify the event
+    if (!extractedInfo.id && !extractedInfo.eventName) {
+      missing.push("event name or ID to delete");
+    }
+
+    if (missing.length > 0) {
+      return {
+        isValid: false,
+        requiredFieldsMissing: missing,
+        validationMessage: `To delete an event, I need: ${missing.join(
+          ", "
+        )}. Please provide the event name or ID.`,
+      };
+    }
+
+    return { isValid: true, requiredFieldsMissing: [] };
+  }
+
+  // Routing after validation: proceed or ask for info
+  private routeAfterValidation(state: LanggraphState): string {
+    return state.isValid ? "proceed" : "askForMissingInfo";
+  }
+
+  // Node: Ask user for missing information
+  private async askForMissingInfoNode(state: LanggraphState) {
+    return {
+      response: state.validationMessage,
+    };
+  }
+
+  // Node: Create event
+  private async createEventNode(state: LanggraphState) {
+    const { extractedInfo, userId } = state;
+
+    try {
+      // Resolve workspaceId from workspaceName if needed
+      let workspaceId = extractedInfo.workspaceId;
+      if (!workspaceId && extractedInfo.workspaceName) {
+        // You would need a helper method to look up workspace by name
+        // For now, we'll assume workspaceId is required from intent detection
+        return {
+          response: `Could not find workspace "${extractedInfo.workspaceName}". Please provide a valid workspace.`,
+        };
+      }
+
+      // Commented out for testing - will be enabled later
+      // const createDto = {
+      //   name: extractedInfo.name!,
+      //   start: extractedInfo.start!,
+      //   end: extractedInfo.end!,
+      //   workspaceId: workspaceId!,
+      //   description: extractedInfo.description,
+      //   location: extractedInfo.location,
+      //   color: extractedInfo.color,
+      //   isAllDay: extractedInfo.isAllDay,
+      //   recurrenceRule: extractedInfo.recurrenceRule,
+      //   tags: extractedInfo.tags,
+      // };
+      // const event = await this.eventService.createEvent(userId, createDto);
+
+      // Mock response for testing
+      return {
+        response: `✅ [TEST MODE] Event "${extractedInfo.name}" would be created successfully!\n📅 Start: ${extractedInfo.start}\n📅 End: ${extractedInfo.end}\n👤 User: ${userId}`,
+      };
+    } catch (error: any) {
+      return {
+        response: `❌ Failed to create event: ${error.message}`,
       };
     }
   }
 
-  // Node: Create event with interrupt for missing information
-  private async createEventNode(state: typeof StateAnnotation.State) {
-    console.log("Creating event with data:", state.eventData);
+  // Node: Update event
+  private async updateEventNode(state: LanggraphState) {
+    const { extractedInfo, userId } = state;
 
-    const requiredFields = ["title", "startTime", "endTime"];
-    const missing: string[] = [];
+    try {
+      // Commented out for testing - will be enabled later
+      // let eventId = extractedInfo.id;
+      // if (!eventId && extractedInfo.eventName) {
+      //   const events = await this.eventService.getEvents(userId, {
+      //     workspaceId: extractedInfo.workspaceId,
+      //   });
+      //   const matchedEvent = events.find((e) =>
+      //     e.name.toLowerCase().includes(extractedInfo.eventName!.toLowerCase())
+      //   );
+      //   if (!matchedEvent) {
+      //     return {
+      //       response: `❌ Event "${extractedInfo.eventName}" not found.`,
+      //     };
+      //   }
+      //   eventId = matchedEvent.id;
+      // }
 
-    // Check for missing required fields
-    for (const field of requiredFields) {
-      if (!state.eventData[field as keyof typeof state.eventData]) {
-        missing.push(field);
-      }
+      // Build update DTO with only changed fields
+      const updateDto: any = {};
+      if (extractedInfo.name) updateDto.name = extractedInfo.name;
+      if (extractedInfo.start) updateDto.start = extractedInfo.start;
+      if (extractedInfo.end) updateDto.end = extractedInfo.end;
+      if (extractedInfo.description !== undefined)
+        updateDto.description = extractedInfo.description;
+      if (extractedInfo.location !== undefined)
+        updateDto.location = extractedInfo.location;
+      if (extractedInfo.status) updateDto.status = extractedInfo.status;
+      if (extractedInfo.color) updateDto.color = extractedInfo.color;
+      if (extractedInfo.isAllDay !== undefined)
+        updateDto.isAllDay = extractedInfo.isAllDay;
+
+      // const event = await this.eventService.updateEvent(eventId!, userId, updateDto);
+
+      // Mock response for testing
+      const eventIdentifier =
+        extractedInfo.eventName || extractedInfo.id || "Unknown";
+      return {
+        response: `✅ [TEST MODE] Event "${eventIdentifier}" would be updated successfully!\nUpdates: ${JSON.stringify(
+          updateDto,
+          null,
+          2
+        )}\n👤 User: ${userId}`,
+      };
+    } catch (error: any) {
+      return {
+        response: `❌ Failed to update event: ${error.message}`,
+      };
     }
+  }
 
-    // If there are missing fields, interrupt and ask user
-    if (missing.length > 0) {
-      console.log("Missing fields:", missing);
-      const fieldNames = missing.join(", ");
+  // Node: Delete event
+  private async deleteEventNode(state: LanggraphState) {
+    const { extractedInfo, userId } = state;
 
-      // Use interrupt() to pause execution and wait for user input
-      const userInput = interrupt({
-        missingFields: missing,
-        message: `To create this event, I need the following information: ${fieldNames}. Please provide these details.`,
-      });
+    try {
+      // Commented out for testing - will be enabled later
+      // let eventId = extractedInfo.id;
+      // let eventName = "";
+      // if (!eventId && extractedInfo.eventName) {
+      //   const events = await this.eventService.getEvents(userId, {
+      //     workspaceId: extractedInfo.workspaceId,
+      //   });
+      //   const matchedEvent = events.find((e) =>
+      //     e.name.toLowerCase().includes(extractedInfo.eventName!.toLowerCase())
+      //   );
+      //   if (!matchedEvent) {
+      //     return {
+      //       response: `❌ Event "${extractedInfo.eventName}" not found.`,
+      //     };
+      //   }
+      //   eventId = matchedEvent.id;
+      //   eventName = matchedEvent.name;
+      // }
+      // await this.eventService.deleteEvent(eventId!, userId);
 
-      console.log("Received user input after interrupt:", userInput);
-
-      // After resume, userInput will contain the new data
-      // Return command to update state with user-provided data
-      return new Command({
-        update: {
-          eventData: { ...state.eventData, ...userInput },
-          response: "Processing your event information...",
-        },
-      });
+      // Mock response for testing
+      const eventIdentifier =
+        extractedInfo.eventName || extractedInfo.id || "Unknown";
+      return {
+        response: `✅ [TEST MODE] Event "${eventIdentifier}" would be deleted successfully.\n👤 User: ${userId}`,
+      };
+    } catch (error: any) {
+      return {
+        response: `❌ Failed to delete event: ${error.message}`,
+      };
     }
+  }
 
-    // All required fields present, create the event
-    console.log("All required fields present, creating event");
+  // Node: List events
+  private async listEventNode(state: LanggraphState) {
+    const { extractedInfo, userId } = state;
+
+    try {
+      // Commented out for testing - will be enabled later
+      // const query: any = {};
+      // if (extractedInfo.workspaceId) query.workspaceId = extractedInfo.workspaceId;
+      // if (extractedInfo.start) query.startDate = extractedInfo.start;
+      // if (extractedInfo.end) query.endDate = extractedInfo.end;
+      // if (extractedInfo.status) query.status = extractedInfo.status;
+      // const events = await this.eventService.getEvents(userId, query);
+
+      // Mock response for testing
+      const queryInfo = [];
+      if (extractedInfo.workspaceId)
+        queryInfo.push(`Workspace: ${extractedInfo.workspaceId}`);
+      if (extractedInfo.start) queryInfo.push(`Start: ${extractedInfo.start}`);
+      if (extractedInfo.end) queryInfo.push(`End: ${extractedInfo.end}`);
+      if (extractedInfo.status)
+        queryInfo.push(`Status: ${extractedInfo.status}`);
+
+      return {
+        response: `📋 [TEST MODE] Would list events with filters:\n${
+          queryInfo.length > 0 ? queryInfo.join("\n") : "No filters"
+        }\n👤 User: ${userId}`,
+      };
+    } catch (error: any) {
+      return {
+        response: `❌ Failed to list events: ${error.message}`,
+      };
+    }
+  }
+
+  // Node: Handle off-topic
+  private async handleOffTopicNode(_state: LanggraphState) {
     return {
-      response: `Event created successfully! Title: ${state.eventData.title}, Time: ${state.eventData.startTime} to ${state.eventData.endTime}`,
-      missingFields: [],
+      response:
+        "I'm designed to help with event management. Please ask about creating, updating, deleting, or listing events.",
     };
+  }
+
+  // Node: Handle general chat
+  private async handleGeneralChatNode(state: LanggraphState) {
+    const lastMessage = state.messages[state.messages.length - 1];
+    const response = await this.langchainService.generateResponse(lastMessage);
+
+    return { response };
   }
 
   // Build the workflow graph
   private buildGraph() {
     const graph = new StateGraph(StateAnnotation)
+      // Add all nodes
       .addNode("detectIntent", this.detectIntentNode.bind(this))
-      .addNode("generateResponse", this.generateResponseNode.bind(this))
+      .addNode("validateCreateEvent", this.validateCreateEventNode.bind(this))
+      .addNode("validateUpdateEvent", this.validateUpdateEventNode.bind(this))
+      .addNode("validateDeleteEvent", this.validateDeleteEventNode.bind(this))
+      .addNode("askForMissingInfo", this.askForMissingInfoNode.bind(this))
       .addNode("createEvent", this.createEventNode.bind(this))
+      .addNode("updateEvent", this.updateEventNode.bind(this))
+      .addNode("deleteEvent", this.deleteEventNode.bind(this))
+      .addNode("listEvent", this.listEventNode.bind(this))
+      .addNode("handleOffTopic", this.handleOffTopicNode.bind(this))
+      .addNode("handleGeneralChat", this.handleGeneralChatNode.bind(this))
+
+      // Start with intent detection
       .addEdge("__start__", "detectIntent")
+
+      // Route based on detected intent
       .addConditionalEdges(
         "detectIntent",
-        (state) => {
-          if (state.intent === "create_todo") {
-            return "createEvent";
-          }
-          return "generateResponse";
-        },
+        this.handleRoutingAfterIntentDetection.bind(this)
+      )
+
+      // Validation nodes route to either action or ask for info
+      .addConditionalEdges(
+        "validateCreateEvent",
+        this.routeAfterValidation.bind(this),
         {
-          createEvent: "createEvent",
-          generateResponse: "generateResponse",
+          proceed: "createEvent",
+          askForMissingInfo: "askForMissingInfo",
         }
       )
-      .addEdge("generateResponse", "__end__")
-      .addEdge("createEvent", "__end__");
+      .addConditionalEdges(
+        "validateUpdateEvent",
+        this.routeAfterValidation.bind(this),
+        {
+          proceed: "updateEvent",
+          askForMissingInfo: "askForMissingInfo",
+        }
+      )
+      .addConditionalEdges(
+        "validateDeleteEvent",
+        this.routeAfterValidation.bind(this),
+        {
+          proceed: "deleteEvent",
+          askForMissingInfo: "askForMissingInfo",
+        }
+      )
 
-    // Compile with MemorySaver for interrupt functionality
-    const checkpointer = new MemorySaver();
-    return graph.compile({
-      checkpointer,
-    });
+      // All terminal nodes end
+      .addEdge("createEvent", "__end__")
+      .addEdge("updateEvent", "__end__")
+      .addEdge("deleteEvent", "__end__")
+      .addEdge("listEvent", "__end__")
+      .addEdge("askForMissingInfo", "__end__")
+      .addEdge("handleOffTopic", "__end__")
+      .addEdge("handleGeneralChat", "__end__");
+
+    return graph.compile();
   }
 
   // Public method to process a message
   public async processMessage(
-    state: Partial<LanggraphState>,
-    threadId: string = "default"
+    state: Partial<LanggraphState>
   ): Promise<typeof StateAnnotation.State> {
     try {
-      const config = { configurable: { thread_id: threadId } };
-      const result = await this.compiledGraph.invoke(state, config);
+      const result = await this.compiledGraph.invoke(state);
       return result;
     } catch (error) {
       console.error("Error processing message:", error);
@@ -205,7 +457,7 @@ Generate a helpful response based on the user's intent. Be concise and friendly.
     }
   }
 
-  // Get the current state including interrupt information
+  // Get the current state
   public async getState(threadId: string = "default") {
     try {
       const config = { configurable: { thread_id: threadId } };
@@ -214,68 +466,6 @@ Generate a helpful response based on the user's intent. Be concise and friendly.
     } catch (error) {
       console.error("Error getting state:", error);
       throw new Error("Failed to get graph state");
-    }
-  }
-
-  // Check if the graph is currently interrupted
-  public async isInterrupted(threadId: string = "default"): Promise<boolean> {
-    try {
-      const state = await this.getState(threadId);
-      // Check if there are any tasks with interrupt status
-      return state.tasks?.some((task) => task.interrupts?.length > 0) || false;
-    } catch (error) {
-      console.error("Error checking interrupt status:", error);
-      return false;
-    }
-  }
-
-  // Resume execution from an interrupt with user-provided data
-  public async resumeFromInterrupt(
-    userInput: Record<string, unknown>,
-    threadId: string = "default"
-  ): Promise<typeof StateAnnotation.State> {
-    try {
-      const config = { configurable: { thread_id: threadId } };
-
-      // Use Command to resume with the user input
-      const resumeCommand = new Command({
-        resume: userInput,
-      });
-
-      const result = await this.compiledGraph.invoke(resumeCommand, config);
-      return result;
-    } catch (error) {
-      console.error("Error resuming from interrupt:", error);
-      throw new Error("Failed to resume execution from interrupt");
-    }
-  }
-
-  // Get interrupt details if the graph is interrupted
-  public async getInterruptDetails(threadId: string = "default") {
-    try {
-      const state = await this.getState(threadId);
-
-      if (!state.tasks) {
-        return null;
-      }
-
-      // Find the task with interrupt information
-      const interruptedTask = state.tasks.find(
-        (task) => task.interrupts && task.interrupts.length > 0
-      );
-
-      if (!interruptedTask || !interruptedTask.interrupts) {
-        return null;
-      }
-
-      return {
-        node: interruptedTask.name,
-        interrupts: interruptedTask.interrupts,
-        currentState: state.values,
-      };
-    } catch (error) {
-      console.error("Error getting interrupt details:", error);
-      return null;
     }
   }
 }

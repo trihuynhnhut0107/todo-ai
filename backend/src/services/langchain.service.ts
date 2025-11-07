@@ -2,7 +2,12 @@ require("dotenv").config();
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { createEventPromptTemplate } from "../prompts/create-events.prompt";
 import { DetectIntentPromptTemplate } from "../prompts/detect-intent.prompt";
-import { IntentDetectionResult } from "../types/chat.types";
+import {
+  BaseMessage,
+  HumanMessage,
+  SystemMessage,
+} from "@langchain/core/messages";
+import { IntentType } from "../enums/chat.enum";
 
 export class LangchainService {
   private responseModel: ChatGoogleGenerativeAI;
@@ -10,13 +15,13 @@ export class LangchainService {
 
   constructor() {
     this.responseModel = new ChatGoogleGenerativeAI({
-      model: "gemini-2.5-pro",
+      model: "gemini-2.5-flash-lite",
       temperature: 0,
       maxRetries: 2,
       apiKey: process.env.GOOGLE_API_KEY,
     });
     this.detectIntentModel = new ChatGoogleGenerativeAI({
-      model: "gemini-2.5-pro",
+      model: "gemini-2.5-flash-lite",
       temperature: 0,
       maxRetries: 2,
       apiKey: process.env.GOOGLE_API_KEY,
@@ -25,13 +30,13 @@ export class LangchainService {
 
   async generateResponse(input: string): Promise<string> {
     try {
-      const currentDateTime = new Date().toISOString();
-      const prompt = await createEventPromptTemplate.format({
-        user_input: input,
-        current_datetime: currentDateTime,
-      });
+      const messages = [
+        new HumanMessage({
+          content: input,
+        }),
+      ];
 
-      const response = await this.responseModel.invoke(prompt);
+      const response = await this.responseModel.invoke(messages);
       console.log(response);
       return typeof response.content === "string"
         ? response.content
@@ -42,68 +47,66 @@ export class LangchainService {
     }
   }
 
-  async detectIntent(userMessage: string): Promise<IntentDetectionResult> {
+  async detectIntent(messages: string[]): Promise<{
+    intent: IntentType;
+    confidence: number;
+    extractedInfo: Record<string, unknown>;
+    missingRequiredFields: string[];
+    reasoning: string;
+  }> {
     try {
-      const prompt = await DetectIntentPromptTemplate.format({
-        user_input: userMessage,
+      // Convert string array to HumanMessage array
+      const humanMessages: BaseMessage[] = messages.map(
+        (msg) => new HumanMessage(msg)
+      );
+
+      // Create system prompt for intent detection
+      const systemPrompt = await DetectIntentPromptTemplate.format({
+        messages: messages,
       });
 
-      const response = await this.detectIntentModel.invoke(prompt);
-      const intentText =
+      // Build message array with system prompt
+      const messageList: BaseMessage[] = [
+        new SystemMessage(systemPrompt),
+        ...humanMessages,
+      ];
+
+      const response = await this.detectIntentModel.invoke(messageList);
+
+      // Extract text content from response
+      const rawContent =
         typeof response.content === "string"
           ? response.content
           : JSON.stringify(response.content);
 
-      const detectedIntent = this.parseIntentFromResponse(intentText);
-      const confidence = this.calculateConfidence(intentText);
+      // Remove markdown code blocks if present
+      const cleanedContent = rawContent
+        .replace(/^```(?:json)?\n?/, "") // Remove opening markdown
+        .replace(/\n?```$/, "") // Remove closing markdown
+        .trim();
+
+      // Parse the cleaned JSON
+      const parsedResult = JSON.parse(cleanedContent);
+
+      // Validate and cast intent to IntentType enum
+      const intentValue = parsedResult.intent as string;
+      if (!Object.values(IntentType).includes(intentValue as IntentType)) {
+        throw new Error(
+          `Invalid intent type: ${intentValue}. Expected one of: ${Object.values(IntentType).join(", ")}`
+        );
+      }
 
       return {
-        intent: detectedIntent,
-        confidence: confidence,
+        intent: intentValue as IntentType,
+        confidence: parsedResult.confidence,
+        extractedInfo: parsedResult.extractedInfo,
+        missingRequiredFields: parsedResult.missingRequiredFields,
+        reasoning: parsedResult.reasoning,
       };
     } catch (error) {
       console.error("Error detecting intent:", error);
       throw new Error("Failed to detect user intent");
     }
-  }
-
-  private parseIntentFromResponse(response: string): string {
-    const lowerResponse = response.toLowerCase().trim();
-    const validIntents = [
-      "create_todo",
-      "update_todo",
-      "delete_todo",
-      "list_todos",
-      "general_chat",
-    ];
-
-    for (const intent of validIntents) {
-      if (lowerResponse.includes(intent)) {
-        return intent;
-      }
-    }
-
-    return "general_chat";
-  }
-
-  private calculateConfidence(response: string): number {
-    const lowerResponse = response.toLowerCase().trim();
-    const validIntents = [
-      "create_todo",
-      "update_todo",
-      "delete_todo",
-      "list_todos",
-      "general_chat",
-    ];
-
-    for (const intent of validIntents) {
-      if (lowerResponse.includes(intent)) {
-        const exactMatch = lowerResponse === intent;
-        return exactMatch ? 1.0 : 0.9;
-      }
-    }
-
-    return 0.5;
   }
 }
 

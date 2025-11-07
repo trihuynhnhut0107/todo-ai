@@ -14,36 +14,88 @@ import {
 } from "tsoa";
 import { ChatService } from "../services/chat.service";
 import { LangchainService } from "../services/langchain.service";
+import { LanggraphService } from "../services/langgraph.service";
+import { EventService } from "../services/event.service";
 import {
   CreateMessageDto,
   UpdateMessageDto,
   MessageResponse,
   SessionResponse,
   GetSessionMessagesDto,
-  BotInputDto,
-  BotResponseDto,
 } from "../dtos/chat.dto";
 import { ApiResponse, ErrorResponse } from "../types/api-response.types";
 
 @Route("api/chat")
 @Tags("Chat")
 export class ChatController extends Controller {
-  private chatService = new ChatService();
-  private langchainService = new LangchainService();
+  private chatService: ChatService;
+  private langchainService: LangchainService;
+  private langgraphService: LanggraphService;
+  private eventService: EventService;
+
+  constructor() {
+    super();
+
+    // Initialize services with proper dependency injection
+    this.langchainService = new LangchainService();
+    this.eventService = new EventService();
+    this.langgraphService = new LanggraphService(
+      this.langchainService,
+      this.eventService
+    );
+    this.chatService = new ChatService(this.langgraphService);
+  }
 
   /**
-   * Test bot response with intent detection
-   * @summary Test chatbot response and intent detection
-   * @param input Bot input with user message
-   * @returns Bot response with detected intent
+   * Handle chat message through LangGraph
+   * @summary Process chat message
+   * @param input User message input
+   * @returns Message response with bot reply
    */
-  @Post("bot")
-  @SuccessResponse("200", "Bot response generated successfully")
+  @Post()
+  @SuccessResponse("200", "Message processed successfully")
   @Response<ErrorResponse>("400", "Validation Error")
   @Response<ErrorResponse>("500", "Internal Server Error")
-  public async testBotResponse(
-    @Body() input: BotInputDto
-  ): Promise<ApiResponse<BotResponseDto>> {
+  public async handleChat(
+    @Body() input: { message: string }
+  ): Promise<ApiResponse<MessageResponse>> {
+    try {
+      if (!input.message || input.message.trim().length === 0) {
+        this.setStatus(400);
+        throw new Error("Message field is required and cannot be empty");
+      }
+
+      const response = await this.chatService.handleChat(input.message);
+
+      return {
+        success: true,
+        message: "Message processed successfully",
+        data: response,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("required")) {
+        this.setStatus(400);
+      } else {
+        this.setStatus(500);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Generate response from user message
+   * @summary Generate AI response
+   * @param input User message input
+   * @returns Generated response
+   */
+  @Post("generate")
+  @SuccessResponse("200", "Response generated successfully")
+  @Response<ErrorResponse>("400", "Validation Error")
+  @Response<ErrorResponse>("500", "Internal Server Error")
+  public async generateResponse(
+    @Body() input: { message: string }
+  ): Promise<ApiResponse<{ response: string }>> {
     try {
       if (!input.message || input.message.trim().length === 0) {
         this.setStatus(400);
@@ -53,16 +105,63 @@ export class ChatController extends Controller {
       const response = await this.langchainService.generateResponse(
         input.message
       );
+
+      return {
+        success: true,
+        message: "Response generated successfully",
+        data: { response },
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("required")) {
+        this.setStatus(400);
+      } else {
+        this.setStatus(500);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Detect intent from messages
+   * @summary Detect user intent and extract information
+   * @param messages Array of message strings to analyze
+   * @returns Intent detection result
+   */
+  @Post("detect-intent")
+  @SuccessResponse("200", "Intent detected successfully")
+  @Response<ErrorResponse>("400", "Validation Error")
+  @Response<ErrorResponse>("500", "Internal Server Error")
+  public async detectIntent(
+    @Body() input: { messages: string[] }
+  ): Promise<
+    ApiResponse<{
+      intent: string;
+      confidence: number;
+      extractedInfo: Record<string, unknown>;
+      missingRequiredFields: string[];
+      reasoning: string;
+    }>
+  > {
+    try {
+      if (!input.messages || input.messages.length === 0) {
+        this.setStatus(400);
+        throw new Error("Messages array is required and cannot be empty");
+      }
+
       const intentResult = await this.langchainService.detectIntent(
-        input.message
+        input.messages
       );
 
       return {
         success: true,
-        message: "Bot response generated successfully",
+        message: "Intent detected successfully",
         data: {
-          response,
-          intent: intentResult,
+          intent: intentResult.intent,
+          confidence: intentResult.confidence,
+          extractedInfo: intentResult.extractedInfo || {},
+          missingRequiredFields: intentResult.missingRequiredFields || [],
+          reasoning: intentResult.reasoning || "",
         },
         timestamp: new Date().toISOString(),
       };

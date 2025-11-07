@@ -9,8 +9,11 @@ import {
   SessionResponse,
   GetSessionMessagesDto,
 } from "../dtos/chat.dto";
+import LanggraphService, { LanggraphState } from "./langgraph.service";
+import { SenderType } from "../enums/role.enum";
 
 export class ChatService {
+  constructor(private langgraphService: LanggraphService) {}
   private messageRepository = AppDataSource.getRepository(Message);
   private sessionRepository = AppDataSource.getRepository(Session);
 
@@ -359,6 +362,34 @@ export class ChatService {
       );
     }
 
+    return response;
+  }
+
+  public async handleChat(input: string): Promise<MessageResponse> {
+    const state: LanggraphState = {
+      userId: "",
+      messages: [input],
+      intent: "",
+      response: "",
+      extractedInfo: {},
+      confidence: 0,
+      reasoning: "",
+      requiredFieldsMissing: [],
+      optionalFieldsMissing: [],
+      isValid: false,
+      validationMessage: "",
+    };
+    const graphResult = await this.langgraphService.processMessage(state);
+    console.log("Graph result:::", graphResult);
+    const response: MessageResponse = {
+      id: "",
+      sessionId: "",
+      senderId: "",
+      content: graphResult.response,
+      senderType: SenderType.BOT,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
     return response;
   }
 }
