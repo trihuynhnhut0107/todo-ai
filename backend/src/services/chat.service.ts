@@ -5,7 +5,6 @@ import {
   CreateMessageDto,
   UpdateMessageDto,
   MessageResponse,
-  CreateSessionDto,
   SessionResponse,
   GetSessionMessagesDto,
 } from "../dtos/chat.dto";
