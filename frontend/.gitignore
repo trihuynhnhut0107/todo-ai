@@ -32,6 +32,7 @@ yarn-error.*
 
 # local env files
 .env*.local
+todo-ai-d7ac9-3fd9172df16b.json
 
 # typescript
 *.tsbuildinfo

@@ -1,15 +1,17 @@
-import { FontAwesome6 } from "@expo/vector-icons";
-import { registerForPushNotificationsAsync } from '../../../services/notification';
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
-  ScrollView,
+  View,
   Text,
+  ScrollView,
   TouchableOpacity,
-  View
+  StatusBar,
+  StyleSheet,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { FontAwesome6, Ionicons } from "@expo/vector-icons";
 
 const Header = () => (
-  <View className="flex-row justify-between items-center p-5">
+  <View className="flex-row justify-between items-center p-5 ">
     <View className="flex-1 gap-2">
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-2">
@@ -40,39 +42,58 @@ const SearchBar = () => (
     <Text className="text-gray-600">Ask anything about your health?</Text>
   </View>
 );
+// ------------------------------------
 
 export default function Index() {
-  const [expoPushToken, setExpoPushToken] = useState('');
-  useEffect(() => {
-    // Lấy token và lưu lại (ví dụ: gửi lên server)
-    registerForPushNotificationsAsync().then(token => {
-      if (token) {
-        setExpoPushToken(token);
-        // TODO: Gửi token này lên backend của bạn
-        // fetch('https://api.yourserver.com/register-token', {
-        //   method: 'POST',
-        //   body: JSON.stringify({ token: token }),
-        // });
-      }
-    });
-  }, []);
   return (
-    <View className="flex-1 -mb-10 ">
+    // 1. View gốc có MÀU NỀN CỨNG (màu xám nhạt ở dưới)
+    <View className="flex-1 bg-gray-50 ">
+      <StatusBar barStyle="light-content" />
+
+      {/* === PHẦN NỀN "GIẢ LẬP" MỜ NHÒE (MỚI) === */}
+
+      {/* Lớp 1: Vầng sáng cam-đỏ chính */}
+      <LinearGradient
+        // Bắt đầu bằng màu cam MỜ, mờ dần sang TRONG SUỐT
+        colors={["rgba(255, 120, 70, 0.5)", "rgba(255, 120, 70, 0.1)"]}
+        style={StyleSheet.absoluteFill}
+        // Vị trí: 0% là màu, 60% là trong suốt
+        locations={[0, 0.6]}
+        // Hướng: Từ trên (y: 0) xuống dưới (y: 0.8)
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 0.8 }}
+      />
+
+      {/* Lớp 2: Vầng sáng hồng nhẹ ở trên-phải */}
+      <LinearGradient
+        // Bắt đầu bằng màu hồng MỜ, mờ dần sang TRONG SUỐT
+        colors={["rgba(255, 100, 100, 0.3)", "transparent"]}
+        style={StyleSheet.absoluteFill}
+        locations={[0, 1]} // Mờ nhanh hơn
+        // Hướng: Từ trên-phải (x: 0.8) chéo xuống
+        start={{ x: 0.8, y: 0 }}
+        end={{ x: 0.5, y: 0.7 }}
+      />
+      {/* === KẾT THÚC PHẦN NỀN === */}
+
+      {/* PHẦN 1: HEADER, SEARCH, TABS */}
+      {/* Các component này phải đặt SAU các gradient
+          để nó nằm BÊN TRÊN gradient */}
       <View className="pb-6">
         <Header />
         <SearchBar />
       </View>
 
+      {/* PHẦN 2: NỘI DUNG TRẮNG BÊN DƯỚI */}
       <ScrollView
-        className="flex-1 p-6 -mt-6 "
-        contentContainerStyle={{ paddingBottom: 0 }}
+        className="flex-1 p-6 -mt-6"
+        // 4. Thêm style này để đảm bảo ScrollView trong suốt
+        style={{ backgroundColor: "transparent" }}
+        contentContainerStyle={{ paddingBottom: 100 }}
       >
+        {/* Mood Card (Simplified) */}
         <View className="bg-white p-4 rounded-xl shadow-sm mb-3 flex-row items-center gap-4">
-          <FontAwesome6
-            name="face-smile-beam"
-            size={30}
-            color="rgba(255, 120, 70, 1)"
-          />
+          <FontAwesome6 name="face-smile-beam" size={30} color="rgba(255, 120, 70, 1)" />
           <View>
             <Text className="text-lg font-bold">Your mood</Text>
             <Text className="text-gray-600 mt-1">
@@ -81,6 +102,7 @@ export default function Index() {
           </View>
         </View>
 
+        {/* Meds Card */}
         <View className="flex-1 bg-white p-4 rounded-xl shadow-sm mb-3">
           <Text className="font-semibold text-gray-500">Reminder</Text>
           <Text className="font-bold text-lg text-gray-800 mt-2">Học bài</Text>
@@ -101,6 +123,7 @@ export default function Index() {
           </View>
         </View>
 
+        {/* Appointment Card */}
         <View className="flex-1 bg-white p-4 rounded-xl shadow-sm mb-3">
           <Text className="font-semibold text-gray-500">Appointment</Text>
           <Text className="font-bold text-lg text-gray-800 mt-2">
@@ -115,6 +138,7 @@ export default function Index() {
           </TouchableOpacity>
         </View>
 
+        {/* To-do List */}
         <View className=" bg-white p-4 rounded-xl shadow-sm ">
           <View className="flex-row justify-between items-center">
             <Text className="text-lg font-bold">To-do list</Text>
@@ -135,6 +159,10 @@ export default function Index() {
           </View>
         </View>
       </ScrollView>
+
+      <TouchableOpacity className="absolute bottom-8 right-6 border-2 border-red-400 w-16 h-16 rounded-full items-center justify-center ">
+        <Ionicons name="sparkles-sharp" size={32} color="#FF6347" />
+      </TouchableOpacity>
     </View>
   );
 }

@@ -27,9 +27,9 @@ export const useCreateEvent = () => {
 
   return useMutation({
     mutationFn: createEvent,
-    onSuccess: (_, { wp_id }) => {
+    onSuccess: (_, { workspaceId }) => {
       queryClient.invalidateQueries({
-        queryKey: ["workspace", wp_id, "events"],
+        queryKey: ["workspace", workspaceId, "events"],
       });
     },
     onError: (error: any) => {
@@ -43,10 +43,10 @@ export const useUpdateEvent = () => {
   return useMutation({
     mutationFn: updateEvent,
 
-    // optional: automatically refetch workspace list after creation
-    onSuccess: (_, { wp_id }) => {
+    onSuccess: (_, { id, payload }) => {
+      queryClient.invalidateQueries({ queryKey: ["event", id] });
       queryClient.invalidateQueries({
-        queryKey: ["workspace", wp_id, "events"],
+        queryKey: ["workspace", payload.workspaceId, "events"],
       });
     },
     onError: (error: any) => {
@@ -60,8 +60,10 @@ export const useDeleteEvent = () => {
   return useMutation({
     mutationFn: deleteEvent,
 
-    // optional: automatically refetch workspace list after creation
-    onSuccess: (_, { wp_id }) => {
+    onSuccess: (_, { id, wp_id }) => {
+      queryClient.invalidateQueries({
+        queryKey: ["event", id],
+      });
       queryClient.invalidateQueries({
         queryKey: ["workspace", wp_id, "events"],
       });
