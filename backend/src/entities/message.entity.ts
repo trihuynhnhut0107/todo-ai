@@ -29,7 +29,7 @@ export class Message {
   metadata?: object;
 
   @JoinColumn({ name: "sessionId" })
-  @ManyToOne(() => Session, (session) => session.messages)
+  @ManyToOne(() => Session, (session) => session.messages, { onDelete: "CASCADE" })
   session!: Session;
 
   @Column({ nullable: false })
