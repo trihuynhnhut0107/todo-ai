@@ -31,7 +31,7 @@ yarn-error.*
 *.pem
 
 # local env files
-.env*.local
+.env
 todo-ai-d7ac9-3fd9172df16b.json
 
 # typescript
