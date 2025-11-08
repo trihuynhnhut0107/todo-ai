@@ -18,6 +18,17 @@ export interface ErrorControl {
 export interface MyCustomInput {
   label: string;
 }
+
+interface CustomColorPickerProps extends ErrorControl, MyCustomInput {
+  selectedColor: string | undefined;
+  onSelect: (color: string) => void;
+}
+
+interface CustomIconSelectorProps extends ErrorControl, MyCustomInput {
+  selectedIcon: string | undefined;
+  onSelect: (iconName: string) => void;
+}
+
 export interface CustomButtonProps {
   onPress?: () => void;
   title?: string;

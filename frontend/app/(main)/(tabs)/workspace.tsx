@@ -1,4 +1,4 @@
-import { View, Text, RefreshControl } from "react-native";
+import { View, Text, RefreshControl, TouchableOpacity } from "react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import CustomInput from "@/components/Input/CustomInput";
 import SearchInput from "@/components/Input/SearchInput";
@@ -7,6 +7,7 @@ import { FlatList, TextInput } from "react-native-gesture-handler";
 import { getWorkspaces } from "@/services/workspace";
 import WorkspaceCard from "@/components/UI/Workspace/WorkspaceCard";
 import { useWorkSpace } from "@/query/workspace.query";
+import { router } from "expo-router";
 
 const Calendar = () => {
   const [filterText, setFilterText] = useState("");
@@ -21,7 +22,7 @@ const Calendar = () => {
   }, [workspaces, filterText]);
 
   return (
-    <View className="p-4">
+    <View className="p-4 flex-1">
       <Text className="font-bold text-white text-5xl ">Your Workspace</Text>
       <SearchInput
         value={filterText}
@@ -41,6 +42,12 @@ const Calendar = () => {
           <RefreshControl refreshing={refreshing} onRefresh={refetch} />
         }
       />
+      <TouchableOpacity
+        onPress={() => router.push(`/(main)/workspace/create/form`)}
+        className="absolute right-5 bottom-5 flex-row items-center p-3 bg-orange-400 rounded-full "
+      >
+        <Ionicons name="add" size={32} color="white" />
+      </TouchableOpacity>
     </View>
   );
 };

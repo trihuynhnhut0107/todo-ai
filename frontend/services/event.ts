@@ -5,7 +5,7 @@ import { DateOrDateTime, DateTimeType } from "@howljs/calendar-kit";
 
 export const getEvents = async (wp_id: string): Promise<Event[]> => {
   try {
-    return await api.get("api/events");
+    return await api.get("/events");
   } catch (err) {
     return mockEvents
   }
@@ -13,7 +13,7 @@ export const getEvents = async (wp_id: string): Promise<Event[]> => {
 
 export const getEvent = async (id: string): Promise<Event | undefined> => {
   try {
-    return await api.get(`api/events/${id}`);
+    return await api.get(`/events/${id}`);
   } catch (err) {
     return mockEvents.find((e) => e.id === id);
   }
@@ -21,7 +21,7 @@ export const getEvent = async (id: string): Promise<Event | undefined> => {
 
 export const createEvent = async (payload: EventPayload): Promise<Event> => {
   try {
-    return await api.post(`api/events`, payload);
+    return await api.post(`/events`, payload);
   } catch (err) {
     return mockEvents[0];
   }
@@ -35,7 +35,7 @@ export const updateEvent = async ({
   payload: EventPayload;
 }): Promise<Event> => {
   try {
-    return await api.put(`api/events/${id}`, payload);
+    return await api.put(`/events/${id}`, payload);
   } catch (err) {
     return mockEvents[0];
   }
@@ -49,7 +49,7 @@ export const deleteEvent = async ({
   wp_id: string;
 }): Promise<void> => {
   try {
-    return await api.delete(`api/events/${id}`);
+    return await api.delete(`/events/${id}`);
   } catch (err) {
     return;
   }
@@ -65,7 +65,7 @@ export const assignUser = async ({
   };
 }) => {
   try {
-    return await api.post(`api/events/${id}/assignees`, payload);
+    return await api.post(`/events/${id}/assignees`, payload);
   } catch (err) {
     return mockEvents[0];
   }
@@ -81,7 +81,7 @@ export const unassignUser = async ({
   };
 }) => {
   try {
-    return await api.delete(`api/events/${id}/assignees`, {
+    return await api.delete(`/events/${id}/assignees`, {
       data: payload,
     });
   } catch (err) {

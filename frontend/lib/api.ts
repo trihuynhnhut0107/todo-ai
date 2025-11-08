@@ -1,4 +1,4 @@
-const BASE_URL = "";
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 import axios from "axios";
 import {
@@ -11,7 +11,7 @@ import { navigate } from "expo-router/build/global-state/routing";
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 3000,
+  timeout: 10000,
 });
 
 async function refreshAccessToken() {
@@ -34,14 +34,14 @@ async function refreshAccessToken() {
   }
 }
 
-api.interceptors.request.use((config) => {
-  const token = getAccessToken();
+api.interceptors.request.use(async (config) => {
+  const token = await getAccessToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
 api.interceptors.response.use(
-  (response) => response.data,
+  (response) => response.data.data,
   async (error) => {
     if (error?.response?.status === 401) {
       const newToken = await refreshAccessToken();
@@ -51,8 +51,9 @@ api.interceptors.response.use(
         return api.request(error.config); // ✅ retry original request
       }
     }
-
+    console.error(error);
     return Promise.reject(error);
+    // return Promise.reject(error);
   }
 );
 

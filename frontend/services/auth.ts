@@ -1,12 +1,24 @@
 import api from "@/lib/api";
 import { mockUser } from "@/lib/mock/auth";
+import { saveAccessToken, saveRefreshToken } from "@/store/storage";
 import { User } from "@/types/auth";
 
 export async function signUp(name: string, email: string, password: string) {
   try {
-    return await api.post(`api/auth/register`, { name, email, password });
+    const res = await api.post("/auth/register", { name, email, password });
+
+    const { accessToken, refreshToken, user } = res.data;
+
+    if (accessToken && refreshToken && user) {
+      await saveAccessToken(accessToken);
+      await saveRefreshToken(refreshToken);
+      return user;
+    }
+
+    return null; // or throw an error if missing tokens/user
   } catch (error) {
-    throw new Error("signUp not implemented");
+    // Handle or rethrow error so UI can catch it
+    throw error;
   }
 }
 
@@ -15,26 +27,29 @@ export async function signIn(
   password: string
 ): Promise<User | null> {
   try {
-    return await api.post(`api/auth/login`, { email, password });
+    const res = await api.post("/auth/login", { email, password });
+
+    const { accessToken, refreshToken, user } = res.data;
+
+    if (accessToken && refreshToken && user) {
+      await saveAccessToken(accessToken);
+      await saveRefreshToken(refreshToken);
+      return user;
+    }
+
+    return null; // or throw an error if missing tokens/user
   } catch (error) {
-    return mockUser;
+    // Handle or rethrow error so UI can catch it
+    throw error;
   }
 }
 
 export async function getUser(): Promise<User | null> {
-  try {
-    return await api.get(`/api/auth/me`);
-  } catch (error) {
-    return mockUser;
-  }
+  return await api.get(`/auth/me`);
 }
 
 export async function getToken(refreshToken: string): Promise<string> {
-  try {
-    return await api.post(`api/auth/refresh`, { refreshToken });
-  } catch (error) {
-    return "legit-token";
-  }
+  return await api.post(`/auth/refresh`, { refreshToken });
 }
 export async function signOut() {
   return true;

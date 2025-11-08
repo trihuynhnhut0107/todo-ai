@@ -32,3 +32,17 @@ export function getDatesBetween(start: Date | string, end: Date | string) {
   }
   return dates;
 }
+
+export function getReadableTextColor(bgHex: string): string {
+  const hex = bgHex.replace("#", "");
+
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+
+  // perceived luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
+
+  // threshold around mid brightness
+  return luminance > 186 ? "#000000" : "#FFFFFF";
+}
