@@ -9,6 +9,7 @@ import {
   TokenPayload,
 } from "../dtos/auth.dto";
 import {
+  ApiError,
   ConflictError,
   UnauthorizedError,
   NotFoundError,
@@ -139,9 +140,11 @@ export class AuthService {
 
       return { accessToken };
     } catch (error) {
-      if (error instanceof NotFoundError) {
+      // Preserve all custom API errors (NotFoundError, ForbiddenError, etc.)
+      if (error instanceof ApiError) {
         throw error;
       }
+      // Only wrap unknown errors (jwt.verify failures, database errors, etc.)
       throw new UnauthorizedError("Invalid refresh token");
     }
   }

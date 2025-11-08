@@ -1010,13 +1010,23 @@
 			"RegisterDto": {
 				"properties": {
 					"name": {
-						"type": "string"
+						"type": "string",
+						"description": "User's full name",
+						"example": "John Doe",
+						"minLength": 1
 					},
 					"email": {
-						"type": "string"
+						"type": "string",
+						"description": "User's email address",
+						"example": "john.doe@example.com",
+						"format": "email",
+						"pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
 					},
 					"password": {
-						"type": "string"
+						"type": "string",
+						"description": "User's password",
+						"example": "securePassword123",
+						"minLength": 6
 					}
 				},
 				"required": [
@@ -1030,10 +1040,17 @@
 			"LoginDto": {
 				"properties": {
 					"email": {
-						"type": "string"
+						"type": "string",
+						"description": "User's email address",
+						"example": "john.doe@example.com",
+						"format": "email",
+						"pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
 					},
 					"password": {
-						"type": "string"
+						"type": "string",
+						"description": "User's password",
+						"example": "securePassword123",
+						"minLength": 1
 					}
 				},
 				"required": [
@@ -1078,7 +1095,10 @@
 			"RefreshTokenDto": {
 				"properties": {
 					"refreshToken": {
-						"type": "string"
+						"type": "string",
+						"description": "JWT refresh token",
+						"example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+						"minLength": 1
 					}
 				},
 				"required": [
@@ -3236,8 +3256,8 @@
 							}
 						}
 					},
-					"400": {
-						"description": "Validation Error",
+					"409": {
+						"description": "User already exists",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -3246,8 +3266,8 @@
 							}
 						}
 					},
-					"409": {
-						"description": "User already exists",
+					"422": {
+						"description": "Validation Error",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -3302,8 +3322,8 @@
 							}
 						}
 					},
-					"400": {
-						"description": "Validation Error",
+					"401": {
+						"description": "Invalid credentials",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -3312,8 +3332,8 @@
 							}
 						}
 					},
-					"401": {
-						"description": "Invalid credentials",
+					"422": {
+						"description": "Validation Error",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -3368,8 +3388,8 @@
 							}
 						}
 					},
-					"400": {
-						"description": "Validation Error",
+					"401": {
+						"description": "Invalid refresh token",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -3378,8 +3398,8 @@
 							}
 						}
 					},
-					"401": {
-						"description": "Invalid refresh token",
+					"422": {
+						"description": "Validation Error",
 						"content": {
 							"application/json": {
 								"schema": {

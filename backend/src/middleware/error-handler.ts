@@ -14,7 +14,7 @@ export const errorHandler = (
 ) => {
   // TSOA Validation Error
   if (err instanceof ValidateError) {
-    console.warn(`Validation Error for ${req.path}:`, err.fields);
+    console.warn(`Validation Error for ${req.path}:`, Object.keys(err.fields));
     return res.status(422).json({
       success: false,
       message: "Validation Failed",

@@ -18,11 +18,7 @@ import {
   AuthResponse,
 } from "../dtos/auth.dto";
 import { ApiResponse, ErrorResponse } from "../types/api-response.types";
-import {
-  BadRequestError,
-  UnauthorizedError,
-  NotFoundError,
-} from "../utils/errors";
+import { UnauthorizedError, NotFoundError } from "../utils/errors";
 
 interface UserResponse {
   id: string;
@@ -44,28 +40,12 @@ export class AuthController extends Controller {
    */
   @Post("register")
   @SuccessResponse("201", "User registered successfully")
-  @Response<ErrorResponse>("400", "Validation Error")
+  @Response<ErrorResponse>("422", "Validation Error")
   @Response<ErrorResponse>("409", "User already exists")
   @Response<ErrorResponse>("500", "Internal Server Error")
   public async register(
     @Body() registerDto: RegisterDto
   ): Promise<ApiResponse<AuthResponse>> {
-    // Validate input
-    if (!registerDto.name || !registerDto.email || !registerDto.password) {
-      throw new BadRequestError("Name, email, and password are required");
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(registerDto.email)) {
-      throw new BadRequestError("Invalid email format");
-    }
-
-    // Validate password length
-    if (registerDto.password.length < 6) {
-      throw new BadRequestError("Password must be at least 6 characters long");
-    }
-
     const result = await this.authService.register(registerDto);
 
     this.setStatus(201);
@@ -85,17 +65,12 @@ export class AuthController extends Controller {
    */
   @Post("login")
   @SuccessResponse("200", "Login successful")
-  @Response<ErrorResponse>("400", "Validation Error")
+  @Response<ErrorResponse>("422", "Validation Error")
   @Response<ErrorResponse>("401", "Invalid credentials")
   @Response<ErrorResponse>("500", "Internal Server Error")
   public async login(
     @Body() loginDto: LoginDto
   ): Promise<ApiResponse<AuthResponse>> {
-    // Validate input
-    if (!loginDto.email || !loginDto.password) {
-      throw new BadRequestError("Email and password are required");
-    }
-
     const result = await this.authService.login(loginDto);
 
     return {
@@ -114,16 +89,12 @@ export class AuthController extends Controller {
    */
   @Post("refresh")
   @SuccessResponse("200", "Token refreshed successfully")
-  @Response<ErrorResponse>("400", "Validation Error")
+  @Response<ErrorResponse>("422", "Validation Error")
   @Response<ErrorResponse>("401", "Invalid refresh token")
   @Response<ErrorResponse>("500", "Internal Server Error")
   public async refreshToken(
     @Body() refreshTokenDto: RefreshTokenDto
   ): Promise<ApiResponse<{ accessToken: string }>> {
-    if (!refreshTokenDto.refreshToken) {
-      throw new BadRequestError("Refresh token is required");
-    }
-
     const result = await this.authService.refreshToken(
       refreshTokenDto.refreshToken
     );
@@ -151,7 +122,7 @@ export class AuthController extends Controller {
     @Request() request: Express.Request
   ): Promise<ApiResponse<UserResponse>> {
     // The user is attached by the expressAuthentication function
-    const userId = (request as any).user?.userId;
+    const userId = request.user?.userId;
 
     if (!userId) {
       throw new UnauthorizedError("Unauthorized");
