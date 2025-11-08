@@ -98,6 +98,7 @@ const AuthLayout = () => {
           </SafeAreaView>
         </ScrollView>
         <BottomSheetModal
+          name="authentication"
           ref={sheetRef}
           // snapPoints={snapPoints}
           enablePanDownToClose

@@ -1,33 +1,59 @@
+const BASE_URL = "";
 
-const BASE_URL = "https://your-api-domain.com/api";
+import axios from "axios";
+import {
+  clearTokens,
+  getAccessToken,
+  getRefreshToken,
+  saveAccessToken,
+} from "@/store/storage";
+import { navigate } from "expo-router/build/global-state/routing";
 
-export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+const api = axios.create({
+  baseURL: BASE_URL,
+  timeout: 3000,
+});
 
-export async function apiCall<T>(
-  endpoint: string,
-  method: HttpMethod = "GET",
-  body?: unknown,
-  token?: string
-): Promise<T> {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
+async function refreshAccessToken() {
+  const refreshToken = await getRefreshToken();
+  if (!refreshToken) return null;
 
-  if (token) headers.Authorization = `Bearer ${token}`;
+  try {
+    const res = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
 
-  const options: RequestInit = {
-    method,
-    headers,
-  };
+    const newAccessToken = res.data?.data?.accessToken;
+    if (!newAccessToken) throw new Error("No access token returned");
 
-  if (body) options.body = JSON.stringify(body);
+    saveAccessToken(newAccessToken);
 
-  const res = await fetch(`${BASE_URL}${endpoint}`, options);
-
-  if (!res.ok) {
-    const errorData = await res.text();
-    throw new Error(errorData || `Request failed: ${res.status}`);
+    return newAccessToken;
+  } catch {
+    clearTokens();
+    navigate("/(auth)/sign-in");
+    return null;
   }
-
-  return res.json() as Promise<T>;
 }
+
+api.interceptors.request.use((config) => {
+  const token = getAccessToken();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => response.data,
+  async (error) => {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();
+
+      if (newToken) {
+        error.config.headers.Authorization = `Bearer ${newToken}`;
+        return api.request(error.config); // ✅ retry original request
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default api;

@@ -22,7 +22,7 @@ const profile = () => {
   return (
     <ScrollView contentContainerClassName="items-center gap-4 p-4">
       <View className="rounded-full p-2 bg-white size-[150px]">
-        <Image source={images.john_doe} className="size-full rounded-full" />
+        <Image source={user?.avatar?{uri:user.avatar}:images.john_doe} className="size-full rounded-full" />
       </View>
       <Text className="text-3xl ">{user?.name}</Text>
 
