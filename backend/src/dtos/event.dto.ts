@@ -1,67 +1,129 @@
-export interface CreateEventDto {
-  name: string;
-  description?: string;
-  start: Date | string;
-  end: Date | string;
+import { EventStatus } from "../enums/event.enum";
+import { Event } from "../types/event.types";
+
+/**
+ * Create Event DTO - required and optional user-provided fields
+ */
+export type CreateEventDTO = Pick<
+  Event,
+  "name" | "start" | "end" | "workspaceId"
+> &
+  Partial<
+    Pick<
+      Event,
+      | "description"
+      | "location"
+      | "recurrenceRule"
+      | "tags"
+      | "metadata"
+      | "status"
+      | "color"
+      | "isAllDay"
+    >
+  > & {
+    assigneeIds?: string[];
+  };
+
+/**
+ * Update Event DTO - all fields optional
+ */
+export type UpdateEventDTO = Partial<Omit<CreateEventDTO, "workspaceId">>;
+
+/**
+ * Event query/filter options
+ */
+export interface EventQueryOptions {
   workspaceId: string;
-  assigneeIds?: string[];
-  location?: string;
-  color?: string;
-  isAllDay?: boolean;
-  recurrenceRule?: string;
+  startDate?: Date;
+  endDate?: Date;
+  status?: EventStatus;
+  createdById?: string;
   tags?: string[];
+  limit?: number;
+  offset?: number;
 }
 
-export interface UpdateEventDto {
-  name?: string;
+/**
+ * Create Event DTO for TSOA controller
+ */
+export interface CreateEventDto {
+  name: string;
+  start: Date;
+  end: Date;
+  workspaceId: string;
   description?: string;
-  start?: Date | string;
-  end?: Date | string;
-  status?: "scheduled" | "in_progress" | "completed" | "cancelled";
   location?: string;
-  color?: string;
-  isAllDay?: boolean;
   recurrenceRule?: string;
   tags?: string[];
   metadata?: Record<string, unknown>;
+  status?: EventStatus;
+  color?: string;
+  isAllDay?: boolean;
+  assigneeIds?: string[];
 }
 
+/**
+ * Update Event DTO for TSOA controller
+ */
+export interface UpdateEventDto {
+  name?: string;
+  start?: Date;
+  end?: Date;
+  description?: string;
+  location?: string;
+  recurrenceRule?: string;
+  tags?: string[];
+  metadata?: Record<string, unknown>;
+  status?: EventStatus;
+  color?: string;
+  isAllDay?: boolean;
+  assigneeIds?: string[];
+}
+
+/**
+ * Event Response DTO - for API responses
+ */
 export interface EventResponse {
   id: string;
   name: string;
-  description?: string;
   start: Date;
   end: Date;
-  status: string;
-  location?: string;
+  workspaceId: string;
+  createdById: string;
+  status: EventStatus;
   color: string;
   isAllDay: boolean;
+  description?: string;
+  location?: string;
   recurrenceRule?: string;
   tags?: string[];
   metadata?: Record<string, unknown>;
-  workspaceId: string;
-  createdById: string;
   createdAt: Date;
   updatedAt: Date;
-  assignees?: {
-    id: string;
-    name: string;
-    email: string;
-  }[];
+  assigneeIds?: string[];
 }
 
+/**
+ * Assign Event DTO
+ */
 export interface AssignEventDto {
   userIds: string[];
 }
 
+/**
+ * Unassign Event DTO
+ */
 export interface UnassignEventDto {
   userId: string;
 }
 
+/**
+ * Event Query DTO for TSOA controller
+ */
 export interface EventQueryDto {
   workspaceId?: string;
-  startDate?: Date | string;
-  endDate?: Date | string;
+  startDate?: string;
+  endDate?: string;
   status?: string;
   assigneeId?: string;
 }
