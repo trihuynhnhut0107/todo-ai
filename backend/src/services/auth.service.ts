@@ -8,6 +8,12 @@ import {
   AuthResponse,
   TokenPayload,
 } from "../dtos/auth.dto";
+import {
+  ApiError,
+  ConflictError,
+  UnauthorizedError,
+  NotFoundError,
+} from "../utils/errors";
 
 export class AuthService {
   private userRepository = AppDataSource.getRepository(User);
@@ -30,7 +36,7 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new Error("User with this email already exists");
+      throw new ConflictError("User with this email already exists");
     }
 
     // Hash password
@@ -77,14 +83,14 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new Error("Invalid credentials");
+      throw new UnauthorizedError("Invalid credentials");
     }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new Error("Invalid credentials");
+      throw new UnauthorizedError("Invalid credentials");
     }
 
     // Generate tokens
@@ -122,7 +128,7 @@ export class AuthService {
       });
 
       if (!user) {
-        throw new Error("User not found");
+        throw new NotFoundError("User not found");
       }
 
       // Generate new access token
@@ -134,7 +140,12 @@ export class AuthService {
 
       return { accessToken };
     } catch (error) {
-      throw new Error("Invalid refresh token");
+      // Preserve all custom API errors (NotFoundError, ForbiddenError, etc.)
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      // Only wrap unknown errors (jwt.verify failures, database errors, etc.)
+      throw new UnauthorizedError("Invalid refresh token");
     }
   }
 
@@ -154,7 +165,7 @@ export class AuthService {
     try {
       return jwt.verify(token, this.JWT_SECRET) as TokenPayload;
     } catch (error) {
-      throw new Error("Invalid or expired token");
+      throw new UnauthorizedError("Invalid or expired token");
     }
   }
 
