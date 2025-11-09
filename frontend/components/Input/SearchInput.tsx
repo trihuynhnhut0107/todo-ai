@@ -13,6 +13,8 @@ const SearchInput = (props: TextInputProps) => {
       )}
     >
       <TextInput
+        returnKeyType="search"
+        submitBehavior="blurAndSubmit"
         autoCapitalize="none"
         autoComplete="off"
         onFocus={() => setIsFocused(true)}

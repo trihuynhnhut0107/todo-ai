@@ -1,7 +1,7 @@
 import AgendaHeader from "@/components/UI/Calendar/AgendaHeader";
 import EventCard from "@/components/UI/Calendar/EventCard";
 import { SelectedDateContext } from "@/context/selectedDate";
-import { getDatesBetween } from "@/lib/utils";
+import { getDatesBetween, spreadEvent } from "@/lib/utils";
 import {
   useCreateEvent,
   useDeleteEvent,
@@ -65,9 +65,6 @@ const workspaceDetail = () => {
     isLoading: pendingEvents,
     refetch: refetchEvents,
   } = useEvents(id);
-  const { mutate: createEvent } = useCreateEvent();
-  const { mutate: updateEvent } = useUpdateEvent();
-  const { mutate: deleteEvent } = useDeleteEvent();
 
   const onRefresh = () => {
     refetchWorkspace();
@@ -102,57 +99,6 @@ const workspaceDetail = () => {
   const handleSelectDate = (d: string | Date) => {
     selectDate(new Date(d).toISOString().split("T")[0]);
     handleGoToDate(new Date(d).toISOString().split("T")[0]);
-  };
-
-  const handleDragCreateStart = (start: OnCreateEventResponse) => {
-    console.log("Started creating event at:", start);
-    // You can use this to show a UI indicator that event creation has started
-  };
-
-  const handleDragCreateEnd = (event: OnCreateEventResponse) => {
-    const payload: EventPayload = {
-      name: "New Event",
-      description: "",
-      start: event.start.toString(),
-      end: event.end.toString(),
-      status: "",
-      location: "",
-      color: "blue",
-      isAllDay: false,
-      recurrenceRule: "",
-      tags: [],
-      metadata: {},
-
-      workspaceId: id,
-      assigneeIds: [],
-    };
-
-    createEvent(payload);
-  };
-  const handleDragStart = (event: OnEventResponse) => {
-    console.log("Started editing event:", event);
-    // You can use this to show a UI indicator that event editing has started
-  };
-
-  const handleDragEnd = (event: OnEventResponse) => {
-    const payload: EventPayload = {
-      workspaceId:event.workspaceId,
-      start: event.start.toString(),
-      end: event.end.toString(),
-    };
-  
-    updateEvent({
-    id: event.id,
-    payload
-});
-  };
-
-  const handleDeleteEvent = (e_id: string) => {
-    const payload = {
-      wp_id: id,
-      id: e_id,
-    };
-    deleteEvent(payload);
   };
 
   const calendarDates = useMemo(() => {
@@ -191,7 +137,13 @@ const workspaceDetail = () => {
     }
     eventLog[selected].selected = true;
 
-    return eventLog;
+    const calendarBody: EventItem[] = [];
+
+    events?.forEach((e) => {
+      calendarBody.push(...spreadEvent(e));
+    });
+
+    return { eventLog, calendarBody };
   }, [events, selected]);
 
   return (
@@ -199,9 +151,9 @@ const workspaceDetail = () => {
       value={{ selected, selectDate: handleSelectDate }}
     >
       <View className="flex-1 ">
-        <View className="overflow-display">
+        <View className="overflow-display shadow-sm bg-white z-50">
           <ScrollView
-            contentContainerStyle={{ flexGrow: 0, backgroundColor: "white" }}
+            contentContainerStyle={{ flexGrow: 0 }}
             refreshControl={
               <RefreshControl
                 refreshing={pendingEvents && pendingWorkspace}
@@ -230,36 +182,21 @@ const workspaceDetail = () => {
                 // surface:"white"
               },
               eventContainerStyle: {
-                backgroundColor:"transparent",
+                backgroundColor: "transparent",
               },
             }}
             ref={calendarRef}
             allowPinchToZoom
-            allowDragToCreate
-            allowDragToEdit
             onDateChanged={handleDateChanged}
-            onDragCreateEventStart={handleDragCreateStart}
-            onDragCreateEventEnd={handleDragCreateEnd}
-            onDragEventStart={handleDragStart}
-            onDragEventEnd={handleDragEnd}
-            events={
-              events?.map((e) => ({
-                ...e,
-                start: { dateTime: e.start },
-                end: { dateTime: e.end },
-              })) as EventItem[]
-            }
+            events={calendarDates.calendarBody}
             useHaptic={true}
             scrollByDay={true}
             numberOfDays={1}
+            isLoading={pendingEvents}
           >
             {/* <CalendarHeader /> */}
 
-            <CalendarBody
-              renderEvent={(e: any) => (
-                <EventCard event={e} />
-              )}
-            />
+            <CalendarBody renderEvent={(e: any) => <EventCard event={e} />} />
           </CalendarContainer>
         </View>
         <BottomSheetModal
@@ -314,7 +251,7 @@ const workspaceDetail = () => {
                 handleSelectDate(day.dateString);
               }}
               markingType="multi-dot" // or "period"
-              markedDates={calendarDates}
+              markedDates={calendarDates.eventLog}
             />
           </BottomSheetView>
         </BottomSheetModal>
