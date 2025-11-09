@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -10,9 +10,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import CustomInput from "@/components/Input/CustomInput";
 import CustomIconSelector from "@/components/Input/CustomIconSelector";
 import CustomColorPicker from "@/components/Input/CustomColorPicker";
-import { useCreateWorkspace } from "@/query/workspace.query";
+import {
+  useCreateWorkspace,
+  useUpdateWorkspace,
+  useWorkSpaceById,
+} from "@/query/workspace.query";
 import { WorkspacePayload } from "@/types/workspace";
 import CustomButton from "@/components/Input/CustomButton";
+import { ScrollView } from "react-native-gesture-handler";
 
 export const schema = z.object({
   name: z.string().min(1, "Please add a name"),
@@ -23,13 +28,18 @@ export const schema = z.object({
   order: z.number().optional(),
 });
 
-const edit = () => {
+const form = () => {
   const { id } = useLocalSearchParams<{
     id: string;
   }>();
   const isEditmode = id && id !== "create";
 
-  const { mutate: createWorkspace, isPending } = useCreateWorkspace();
+  const { data: workspace, isPending: pendingoWorkspace } =
+    useWorkSpaceById(id);
+  const { mutate: createWorkspace, isPending: pendingCreating } =
+    useCreateWorkspace();
+  const { mutate: updateWorkspace, isPending: pendingUpdating } =
+    useUpdateWorkspace();
   const {
     control,
     handleSubmit,
@@ -49,12 +59,26 @@ const edit = () => {
 
   const onSubmit = (data: any) => {
     const payload: WorkspacePayload = data;
-
-    createWorkspace(payload);
+    if (isEditmode) {
+      updateWorkspace({ id, payload });
+    } else {
+      createWorkspace(payload);
+    }
   };
 
+  useEffect(() => {
+    if (workspace) {
+      reset({
+        name: workspace.name,
+        description: workspace.description,
+        icon: workspace.icon,
+        color: workspace.color,
+      });
+    }
+  }, [workspace]);
+
   return (
-    <View className="p-4">
+    <ScrollView contentContainerClassName="flex-1 p-4 gap-4 items-start">
       <TouchableOpacity
         onPress={() => router.back()}
         className=" bg-white/30 rounded-full p-2 px-4 z-10 flex-row items-center gap-2 w-fit"
@@ -62,7 +86,7 @@ const edit = () => {
         <Ionicons name="arrow-back" size={22} color="white" />
         <Text className="text-white/70">back</Text>
       </TouchableOpacity>
-      <View className="rounded-lg bg-white p-4 gap-4">
+      <View className="rounded-lg bg-white p-4 gap-2 w-full">
         <Text className="text-3xl font-bold text-orange-500">
           {isEditmode ? "Edit" : "Add New"} Workspace
         </Text>
@@ -81,20 +105,8 @@ const edit = () => {
             </View>
           )}
         />
-        <Controller
-          control={control}
-          name="description"
-          render={({ field }) => (
-            <CustomInput
-              label="Description"
-              value={field.value}
-              onChangeText={field.onChange}
-              multiline
-              error={!!errors.description}
-            />
-          )}
-        />
-        <View className="flex-row gap-2">
+
+        <View className="flex-row gap-2 ">
           <Controller
             control={control}
             name="color"
@@ -118,13 +130,28 @@ const edit = () => {
             )}
           />
         </View>
+        <Controller
+          control={control}
+          name="description"
+          render={({ field }) => (
+            <CustomInput
+              label="Description"
+              value={field.value}
+              onChangeText={field.onChange}
+              multiline
+              error={!!errors.description}
+            />
+          )}
+        />
+
         <CustomButton
+          isLoading={pendingCreating || pendingUpdating}
           title={isEditmode ? "Update Workspace" : "Add Workspace"}
           onPress={handleSubmit(onSubmit)}
         />
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
-export default edit;
+export default form;

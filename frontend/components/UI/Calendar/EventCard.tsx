@@ -24,12 +24,12 @@ const EventCard = ({ event }: { event: EventCardProps }) => {
           }}
         ></View>
         <View className="flex-col flex-1">
-          <View className="flex-1 flex-col items-start gap-1 overflow-hidden">
+          <View className="flex-col items-start gap-1 overflow-hidden">
             <Text className="text-xl text-black">{event.name}</Text>
             <Text className="text-gray-500 text-sm">{`${format(
-              new Date(event.start.dateTime),
-              "EEE dd"
-            )} - ${format(new Date(event.end.dateTime), "EEE dd")}`}</Text>
+              new Date(event.displayStart),
+              "HH:mm"
+            )} - ${format(new Date(event.displayEnd), "HH:mm")}`}</Text>
             <View className="flex-row relative justify-start">
               {event.assignees?.map((m: any, idx: number) => (
                 <Image

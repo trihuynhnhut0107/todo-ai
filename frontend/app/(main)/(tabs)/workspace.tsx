@@ -23,20 +23,20 @@ const Calendar = () => {
 
   return (
     <View className="p-4 flex-1">
-      <Text className="font-bold text-white text-5xl ">Your Workspace</Text>
+      <Text style={{ fontWeight: "bold", color: "white", fontSize: 40 }}>
+        Your Workspace
+      </Text>
       <SearchInput
         value={filterText}
         onChangeText={setFilterText}
         placeholder="Search workspaces"
-        className="mt-4"
       />
-
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <WorkspaceCard workspace={item} />}
         ItemSeparatorComponent={() => <View className="h-4"></View>}
-        contentContainerClassName="mt-4 pb-48"
+        contentContainerClassName="pb-48 p-2"
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={refetch} />

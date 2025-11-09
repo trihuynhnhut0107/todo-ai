@@ -1,4 +1,4 @@
-import { signUp } from "@/services/auth";
+import { signIn, signUp } from "@/services/auth";
 import useAuthStore from "@/store/auth.store";
 import { Link } from "expo-router";
 import React, { useContext, useState } from "react";
@@ -10,17 +10,17 @@ import CustomInput from "@/components/Input/CustomInput";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
+import { useSignUp } from "@/query/auth.query";
 
 export const schema = z.object({
-  name: z.string().email().min(1, "Please enter name"),
+  name: z.string().min(1, "Please enter name"),
   email: z.string().email().min(1, "Please enter email"),
   password: z.string().min(1, "Please enter password"),
 });
 
 const SignUp = () => {
   const { setOpen } = useContext(modalContext);
-  const { fetchAuthenticatedUser } = useAuthStore();
-  const [loading, setLoading] = useState(false);
+  const { mutate: signUp, isPending } = useSignUp();
   const {
     control,
     handleSubmit,
@@ -35,16 +35,7 @@ const SignUp = () => {
   });
 
   async function onSubmit(data: any) {
-    setLoading(true);
-
-    try {
-      await signUp(data.name, data.email, data.password);
-      setOpen(true);
-    } catch (error: any) {
-      Alert.alert("Error", error.message);
-    } finally {
-      setLoading(false);
-    }
+    signUp({ name: data.name, email: data.email, password: data.password });
   }
   return (
     <View className="gap-5 rounded-lg px-5 bg-white backdrop:blur-sm p-4 ">
@@ -96,7 +87,7 @@ const SignUp = () => {
       />
       <CustomButton
         title="Sign up"
-        isLoading={loading}
+        isLoading={isPending}
         onPress={handleSubmit(onSubmit)}
       />
 

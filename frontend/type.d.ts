@@ -43,6 +43,14 @@ export interface CustomInputProps
     ErrorControl,
     MyCustomInput {}
 
+export interface CustomTagInputProps
+  extends TextInputProps,
+    ErrorControl,
+    MyCustomInput {
+  value: string[];
+  onListChange: (list: string[]) => void;
+}
+
 export interface CustomDateTimePickerProps
   extends BaseProps,
     ErrorControl,
@@ -64,4 +72,16 @@ export interface DateWithEvents {
     end: string | DateTimeType;
   }[];
   active?: boolean;
+}
+
+export interface SettingTableProps {
+  items: SettingItemProps[];
+}
+
+export interface SettingItemProps {
+  title: string;
+  url?: string;
+  onPress?: any;
+  icon?: string;
+  color?: string;
 }

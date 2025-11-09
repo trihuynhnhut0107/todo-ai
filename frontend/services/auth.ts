@@ -3,11 +3,19 @@ import { mockUser } from "@/lib/mock/auth";
 import { saveAccessToken, saveRefreshToken } from "@/store/storage";
 import { User } from "@/types/auth";
 
-export async function signUp(name: string, email: string, password: string) {
+export async function signUp({
+  name,
+  email,
+  password,
+}: {
+  name: string;
+  email: string;
+  password: string;
+}) {
   try {
     const res = await api.post("/auth/register", { name, email, password });
 
-    const { accessToken, refreshToken, user } = res.data;
+    const { accessToken, refreshToken, user } = res as any;
 
     if (accessToken && refreshToken && user) {
       await saveAccessToken(accessToken);
@@ -22,14 +30,17 @@ export async function signUp(name: string, email: string, password: string) {
   }
 }
 
-export async function signIn(
-  email: string,
-  password: string
-): Promise<User | null> {
+export async function signIn({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}): Promise<User | null> {
   try {
     const res = await api.post("/auth/login", { email, password });
 
-    const { accessToken, refreshToken, user } = res.data;
+    const { accessToken, refreshToken, user } = res as any;
 
     if (accessToken && refreshToken && user) {
       await saveAccessToken(accessToken);

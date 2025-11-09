@@ -33,6 +33,43 @@ export function getDatesBetween(start: Date | string, end: Date | string) {
   return dates;
 }
 
+export function spreadEvent(event: any) {
+  const events = [];
+
+  let s = new Date(event.start);
+  const e = new Date(event.end);
+
+  while (s < e) {
+    const nextMidnight = new Date(s);
+    nextMidnight.setHours(24, 0, 0, 0);
+
+    // Choose where this segment ends
+    let segmentEnd = nextMidnight < e ? nextMidnight : e;
+
+    // If segment ends exactly on midnight, shift end back 1 ms
+    if (
+      segmentEnd.getHours() === 0 &&
+      segmentEnd.getMinutes() === 0 &&
+      segmentEnd < e
+    ) {
+      segmentEnd = new Date(segmentEnd.getTime() - 1);
+    }
+
+    events.push({
+      ...event,
+      start: { dateTime: new Date(s) },
+      end: { dateTime: new Date(segmentEnd) },
+      displayStart: event.start,
+      displayEnd: event.end,
+    });
+
+    // Next segment starts exactly at the next midnight
+    s = nextMidnight;
+  }
+
+  return events;
+}
+
 export function getReadableTextColor(bgHex: string): string {
   const hex = bgHex.replace("#", "");
 
@@ -41,7 +78,7 @@ export function getReadableTextColor(bgHex: string): string {
   const b = parseInt(hex.slice(4, 6), 16);
 
   // perceived luminance
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
+  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
 
   // threshold around mid brightness
   return luminance > 186 ? "#000000" : "#FFFFFF";

@@ -1,11 +1,14 @@
 import {
+  assignMember,
   createEvent,
   deleteEvent,
   getEvent,
   getEvents,
+  unassignMember,
   updateEvent,
 } from "@/services/event";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { showMessage } from "react-native-flash-message";
 
 export const useEvents = (wp_id: string) =>
   useQuery({
@@ -19,7 +22,7 @@ export const useEventById = (id: string) =>
   useQuery({
     queryKey: ["event", id],
     queryFn: () => getEvent(id),
-    enabled: !!id && id !=="create",
+    enabled: !!id && id !== "create",
   });
 
 export const useCreateEvent = () => {
@@ -31,9 +34,10 @@ export const useCreateEvent = () => {
       queryClient.invalidateQueries({
         queryKey: ["workspace", workspaceId, "events"],
       });
-    },
-    onError: (error: any) => {
-      console.error(error);
+      showMessage({
+        message: "Event created!",
+        type: "success",
+      });
     },
   });
 };
@@ -48,28 +52,65 @@ export const useUpdateEvent = () => {
       queryClient.invalidateQueries({
         queryKey: ["workspace", payload.workspaceId, "events"],
       });
-    },
-    onError: (error: any) => {
-      console.log(error);
+      showMessage({
+        message: "Event updated!",
+        type: "success",
+      });
     },
   });
 };
 
-export const useDeleteEvent = () => {
+export const useDeleteEvent = (callback?: any) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteEvent,
 
     onSuccess: (_, { id, wp_id }) => {
-      queryClient.invalidateQueries({
+      queryClient.removeQueries({
         queryKey: ["event", id],
       });
       queryClient.invalidateQueries({
         queryKey: ["workspace", wp_id, "events"],
       });
+      showMessage({
+        message: "Event deleted!",
+        type: "success",
+      });
+      callback?.();
     },
-    onError: (error: any) => {
-      console.log(error);
+  });
+};
+
+export const useAssignMember = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: assignMember,
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: ["event", id],
+      });
+      showMessage({
+        message: "Member Assigned!",
+        type: "success",
+      });
+    },
+  });
+};
+
+export const useUnassignMember = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: unassignMember,
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: ["event", id],
+      });
+      showMessage({
+        message: "Member Unassigned!",
+        type: "success",
+      });
     },
   });
 };

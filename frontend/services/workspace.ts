@@ -15,17 +15,53 @@ export const getWorkspaces = async (): Promise<Workspace[]> => {
 export const getWorkspace = async (
   id: string
 ): Promise<Workspace | undefined> => {
-  try {
-    return await api.get(`/workspaces/${id}`);
-  } catch (error) {
-    return mockWorkspaces.find((wp) => wp.id === id);
-  }
+  return await api.get(`/workspaces/${id}`);
+};
+
+export const getWorkspaceMember = async (
+  id: string
+): Promise<Workspace | undefined> => {
+  return await api.get(`/workspaces/${id}/members`);
+};
+
+export const addWorkspaceMember = async ({
+  id,
+  payload,
+}: {
+  id: string;
+  payload: {
+    userIds: string[];
+  };
+}) => {
+  return await api.post(`/workspaces/${id}/members`, payload);
+};
+
+export const deleteWorkspaceMember = async ({
+  id,
+  payload,
+}: {
+  id: string;
+  payload: {
+    userIds: string[];
+  };
+}) => {
+  return await api.delete(`/workspaces/${id}/members`, { data: payload });
 };
 
 export const createWorkspace = async (payload: WorkspacePayload) => {
-  try {
-    return await api.post(`/workspaces`, payload);
-  } catch (err) {
-    return mockWorkspaces[0];
-  }
+  return await api.post(`/workspaces`, payload);
+};
+
+export const updateWorkspace = async ({
+  id,
+  payload,
+}: {
+  id: string;
+  payload: WorkspacePayload;
+}) => {
+  return await api.put(`/workspaces/${id}`, payload);
+};
+
+export const deleteWorkspace = async (id: string): Promise<void> => {
+  return await api.delete(`/workspaces/${id}`);
 };

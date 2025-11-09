@@ -8,6 +8,7 @@ import {
   saveAccessToken,
 } from "@/store/storage";
 import { navigate } from "expo-router/build/global-state/routing";
+import { showMessage } from "react-native-flash-message";
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -37,6 +38,7 @@ async function refreshAccessToken() {
 api.interceptors.request.use(async (config) => {
   const token = await getAccessToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
+
   return config;
 });
 
@@ -51,7 +53,10 @@ api.interceptors.response.use(
         return api.request(error.config); // ✅ retry original request
       }
     }
-    console.error(error);
+    showMessage({
+      message: error.message,
+      type: "danger",
+    });
     return Promise.reject(error);
     // return Promise.reject(error);
   }

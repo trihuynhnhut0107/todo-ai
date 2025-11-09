@@ -10,6 +10,7 @@ import CustomButton from "@/components/Input/CustomButton";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
+import { useSignIn } from "@/query/auth.query";
 
 export const schema = z.object({
   email: z.string().email().min(1, "Please enter email"),
@@ -18,8 +19,8 @@ export const schema = z.object({
 
 const SignIn = () => {
   const { setOpen } = useContext(modalContext);
-  const { fetchAuthenticatedUser } = useAuthStore();
-  const [loading, setLoading] = useState(false);
+  const { mutate: signIn, isPending } = useSignIn();
+
   const {
     control,
     handleSubmit,
@@ -34,17 +35,9 @@ const SignIn = () => {
   });
 
   async function onSubmit(data: any) {
-    setLoading(true);
-    
-    try {
-      const res = await signIn(data.email, data.password);
-      setOpen(!!res);
-    } catch (error: any) {
-      Alert.alert("Error", error.message);
-    } finally {
-      setLoading(false);
-    }
+    signIn({ email: data.email, password: data.password });
   }
+
   return (
     <View className="gap-5 rounded-lg px-5 bg-white backdrop:blur-sm p-4 ">
       <Controller
@@ -81,7 +74,7 @@ const SignIn = () => {
 
       <CustomButton
         title="Sign in"
-        isLoading={loading}
+        isLoading={isPending}
         onPress={handleSubmit(onSubmit)}
       />
 
