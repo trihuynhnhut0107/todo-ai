@@ -1,6 +1,7 @@
 import * as express from "express";
 import { TokenPayload } from "../dtos/auth.dto";
 import { AuthService } from "../services/auth.service";
+import { UnauthorizedError, ForbiddenError } from "../utils/errors";
 
 // Create a single instance of AuthService to reuse
 const authService = new AuthService();
@@ -20,7 +21,7 @@ export function expressAuthentication(
       const authHeader = request.headers.authorization;
 
       if (!authHeader) {
-        reject(new Error("No authorization header provided"));
+        reject(new UnauthorizedError("No authorization header provided"));
         return;
       }
 
@@ -28,7 +29,9 @@ export function expressAuthentication(
 
       if (parts.length !== 2 || parts[0] !== "Bearer") {
         reject(
-          new Error("Invalid authorization header format. Use: Bearer <token>")
+          new UnauthorizedError(
+            "Invalid authorization header format. Use: Bearer <token>"
+          )
         );
         return;
       }
@@ -42,14 +45,18 @@ export function expressAuthentication(
         // Check scopes/roles if provided
         if (scopes && scopes.length > 0) {
           if (!scopes.includes(decoded.role)) {
-            reject(new Error("Forbidden: Insufficient permissions"));
+            reject(new ForbiddenError("Insufficient permissions"));
             return;
           }
         }
 
         resolve(decoded);
       } catch (error) {
-        reject(new Error("Invalid or expired token"));
+        if (error instanceof UnauthorizedError) {
+          reject(error);
+        } else {
+          reject(new UnauthorizedError("Invalid or expired token"));
+        }
       }
     });
   }

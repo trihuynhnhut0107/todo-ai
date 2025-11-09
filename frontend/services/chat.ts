@@ -7,3 +7,4 @@ export async function getAIMessage(
         }, 3000);
     });
 }
+

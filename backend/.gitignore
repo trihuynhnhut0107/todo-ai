@@ -164,6 +164,9 @@ uploads/
 # PM2 ecosystem file
 ecosystem.config.js
 
+# Serena folder
+*/serena/
+
 # Docker files (if you want to ignore them)
 # Dockerfile
 # docker-compose.yml
