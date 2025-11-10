@@ -5,6 +5,7 @@ import morgan from "morgan";
 import compression from "compression";
 import swaggerUi from "swagger-ui-express";
 import { RegisterRoutes } from "./generated/routes";
+import path from "path";
 
 const app = express();
 
@@ -42,7 +43,7 @@ app.use(
 
 // Serve swagger.json
 app.get("/swagger.json", (req, res) => {
-  res.sendFile(__dirname + "/generated/swagger.json");
+  res.sendFile(path.join(__dirname, "generated", "swagger.json"));
 });
 
 // TSOA generated routes (auto-generated from controllers)
