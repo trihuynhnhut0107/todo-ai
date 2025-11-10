@@ -404,9 +404,9 @@ const models: TsoaRoute.Models = {
     "RegisterDto": {
         "dataType": "refObject",
         "properties": {
-            "name": {"dataType":"string","required":true},
-            "email": {"dataType":"string","required":true},
-            "password": {"dataType":"string","required":true},
+            "name": {"dataType":"string","required":true,"validators":{"minLength":{"value":1}}},
+            "email": {"dataType":"string","required":true,"validators":{"pattern":{"value":"^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"}}},
+            "password": {"dataType":"string","required":true,"validators":{"minLength":{"value":6}}},
         },
         "additionalProperties": false,
     },
@@ -414,8 +414,8 @@ const models: TsoaRoute.Models = {
     "LoginDto": {
         "dataType": "refObject",
         "properties": {
-            "email": {"dataType":"string","required":true},
-            "password": {"dataType":"string","required":true},
+            "email": {"dataType":"string","required":true,"validators":{"pattern":{"value":"^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"}}},
+            "password": {"dataType":"string","required":true,"validators":{"minLength":{"value":1}}},
         },
         "additionalProperties": false,
     },
@@ -434,7 +434,7 @@ const models: TsoaRoute.Models = {
     "RefreshTokenDto": {
         "dataType": "refObject",
         "properties": {
-            "refreshToken": {"dataType":"string","required":true},
+            "refreshToken": {"dataType":"string","required":true,"validators":{"minLength":{"value":1}}},
         },
         "additionalProperties": false,
     },

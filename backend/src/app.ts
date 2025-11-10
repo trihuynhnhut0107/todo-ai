@@ -6,6 +6,7 @@ import compression from "compression";
 import swaggerUi from "swagger-ui-express";
 import { RegisterRoutes } from "./generated/routes";
 import path from "path";
+import { errorHandler, notFoundHandler } from "./middleware/error-handler";
 
 const app = express();
 
@@ -67,5 +68,11 @@ app.get("/api/health", (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// 404 handler - must be after all routes
+app.use(notFoundHandler);
+
+// Global error handler - must be last
+app.use(errorHandler);
 
 export default app;
