@@ -48,7 +48,7 @@ const ChatScreen = () => {
     setIsResponding(true);
     addMessage(message.trim(), user?.id || null);
     getAIMessage(message.trim()).then((response) => {
-      addMessage(response, null);
+      addMessage(response.response, null);
       setIsResponding(false);
     });
     setMessage("");
