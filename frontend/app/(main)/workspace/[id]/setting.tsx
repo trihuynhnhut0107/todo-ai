@@ -1,11 +1,64 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import React from "react";
-import { router } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { ScrollView } from "react-native-gesture-handler";
 import CustomButton from "@/components/Input/CustomButton";
+import SettingTable from "@/components/UI/Setting/SettingTable";
+import { SettingItemProps } from "@/type";
+import { showMessage } from "react-native-flash-message";
+import { useDeleteWorkspace } from "@/query/workspace.query";
 
 const Setting = () => {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { mutate: deleteWorkspace, isPending: pendingDelete } =
+    useDeleteWorkspace(() => router.replace("/(main)/(tabs)/workspace"));
+
+  const settings: SettingItemProps[] = [
+    {
+      title: "Update workspace",
+      color: "black",
+      icon: "pencil",
+      url: `/(main)/workspace/${id}/form`,
+    },
+    {
+      title: "View members",
+      color: "",
+      icon: "people",
+      url: `/(main)/workspace/${id}/member`,
+    },
+    {
+      title: "Add member",
+      color: "",
+      icon: "add",
+      url: `/(main)/workspace/${id}/add_member`,
+    },
+    {
+      title: "Delete workspace",
+      color: "red",
+      icon: "trash",
+      onPress: () => {
+        Alert.alert("Delete workspace?", "This action cannot be undone.", [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => {
+              deleteWorkspace(id);
+            },
+          },
+        ]);
+      },
+    },
+    {
+      title: "Leave workspace",
+      color: "red",
+      icon: "log-out-outline",
+    },
+  ];
   return (
     <ScrollView contentContainerClassName="flex-1 p-4 gap-4">
       <View className="flex-row items-start justify-between">
@@ -19,9 +72,7 @@ const Setting = () => {
         <Text className="text-3xl font-bold text-white">Setting</Text>
       </View>
 
-      <View className="bg-white rounded-lg min-h-[300px]"></View>
-
-      <CustomButton title=" Leave Workspace" />
+      <SettingTable items={settings} />
     </ScrollView>
   );
 };

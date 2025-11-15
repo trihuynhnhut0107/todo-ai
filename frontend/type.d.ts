@@ -18,6 +18,17 @@ export interface ErrorControl {
 export interface MyCustomInput {
   label: string;
 }
+
+interface CustomColorPickerProps extends ErrorControl, MyCustomInput {
+  selectedColor: string | undefined;
+  onSelect: (color: string) => void;
+}
+
+interface CustomIconSelectorProps extends ErrorControl, MyCustomInput {
+  selectedIcon: string | undefined;
+  onSelect: (iconName: string) => void;
+}
+
 export interface CustomButtonProps {
   onPress?: () => void;
   title?: string;
@@ -31,6 +42,14 @@ export interface CustomInputProps
   extends TextInputProps,
     ErrorControl,
     MyCustomInput {}
+
+export interface CustomTagInputProps
+  extends TextInputProps,
+    ErrorControl,
+    MyCustomInput {
+  value: string[];
+  onListChange: (list: string[]) => void;
+}
 
 export interface CustomDateTimePickerProps
   extends BaseProps,
@@ -53,4 +72,16 @@ export interface DateWithEvents {
     end: string | DateTimeType;
   }[];
   active?: boolean;
+}
+
+export interface SettingTableProps {
+  items: SettingItemProps[];
+}
+
+export interface SettingItemProps {
+  title: string;
+  url?: string;
+  onPress?: any;
+  icon?: string;
+  color?: string;
 }

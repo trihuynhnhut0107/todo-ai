@@ -1,12 +1,12 @@
 import api from "@/lib/api";
 import { mockWorkspaces } from "@/lib/mock/workspace";
-import { Workspace } from "@/types/workspace";
+import { Workspace, WorkspacePayload } from "@/types/workspace";
 
 import { DateTimeType } from "@howljs/calendar-kit";
 
 export const getWorkspaces = async (): Promise<Workspace[]> => {
   try {
-    return await api.get(`api/workspaces`);
+    return await api.get(`/workspaces`);
   } catch (error) {
     return mockWorkspaces;
   }
@@ -15,36 +15,53 @@ export const getWorkspaces = async (): Promise<Workspace[]> => {
 export const getWorkspace = async (
   id: string
 ): Promise<Workspace | undefined> => {
-  try {
-    return await api.get(`api/workspaces/${id}`);
-  } catch (error) {
-    return mockWorkspaces.find((wp) => wp.id === id);
-  }
+  return await api.get(`/workspaces/${id}`);
 };
 
-// export const createEvent = async (
-//   start: DateTimeType,
-//   end: DateTimeType
-// ): Promise<Event> => {
-//   return new Promise(() => {
-//     return {
-//       id: Date.now().toString(),
-//       name: "New Event",
-//       description: "",
-//       start: start,
-//       end: end,
-//       status: "pending",
-//       location: "",
-//       color: "orange",
-//       isAllDay: false,
-//       recurrenceRule: "",
-//       tags: [],
-//       metadata: {},
-//       workspaceId: "workspace_1",
-//       createdById: "user_1",
-//       createdAt: new Date().toISOString(),
-//       updatedAt: new Date().toISOString(),
-//       assignees: [],
-//     };
-//   });
-// };
+export const getWorkspaceMember = async (
+  id: string
+): Promise<Workspace | undefined> => {
+  return await api.get(`/workspaces/${id}/members`);
+};
+
+export const addWorkspaceMember = async ({
+  id,
+  payload,
+}: {
+  id: string;
+  payload: {
+    userIds: string[];
+  };
+}) => {
+  return await api.post(`/workspaces/${id}/members`, payload);
+};
+
+export const deleteWorkspaceMember = async ({
+  id,
+  payload,
+}: {
+  id: string;
+  payload: {
+    userIds: string[];
+  };
+}) => {
+  return await api.delete(`/workspaces/${id}/members`, { data: payload });
+};
+
+export const createWorkspace = async (payload: WorkspacePayload) => {
+  return await api.post(`/workspaces`, payload);
+};
+
+export const updateWorkspace = async ({
+  id,
+  payload,
+}: {
+  id: string;
+  payload: WorkspacePayload;
+}) => {
+  return await api.put(`/workspaces/${id}`, payload);
+};
+
+export const deleteWorkspace = async (id: string): Promise<void> => {
+  return await api.delete(`/workspaces/${id}`);
+};

@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { clearTokens } from "@/store/storage";
-import { getUser, signOut } from "@/services/auth";
+import { clearTokens, getRefreshToken } from "@/store/storage";
+import { getToken, getUser, signOut } from "@/services/auth";
 import { User } from "@/types/auth";
 
 type AuthState = {
@@ -32,9 +32,15 @@ const useAuthStore = create<AuthState>((set) => ({
 
   fetchAuthenticatedUser: async () => {
     set({ isLoading: true });
+
     try {
-      const user = await getUser();
-      set({ isAuthenticated: !!user, user });
+      const refreshToken = await getRefreshToken();
+      if (refreshToken) {
+        const user = await getUser();
+        set({ isAuthenticated: !!user, user });
+      } else {
+        set({ isAuthenticated: false, user: null });
+      }
     } finally {
       set({ isLoading: false });
     }

@@ -14,10 +14,18 @@ import { images } from "@/lib/image";
 import { Ionicons } from "@expo/vector-icons";
 import { ScrollView } from "react-native-gesture-handler";
 import { Link, useRouter } from "expo-router";
+import { useQueryClient } from "@tanstack/react-query";
 
 const profile = () => {
   const { user, logout } = useAuthStore();
   const router = useRouter();
+
+  const queryClient = useQueryClient()
+
+  const handleLogOut = () => {
+    queryClient.clear()
+    logout()
+  }
 
   return (
     <ScrollView contentContainerClassName="items-center gap-4 p-4">
@@ -39,7 +47,7 @@ const profile = () => {
       <CustomButton
         title="Sign out"
         style="w-full"
-        onPress={logout}
+        onPress={handleLogOut}
       ></CustomButton>
     </ScrollView>
   );

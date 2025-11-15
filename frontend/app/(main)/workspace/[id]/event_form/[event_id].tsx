@@ -1,4 +1,10 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Platform,
+  KeyboardAvoidingView,
+} from "react-native";
 import React, { useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
@@ -8,15 +14,23 @@ import CustomInput from "@/components/Input/CustomInput";
 import CustomDateTimePicker from "@/components/Input/CustomDateTimePicker";
 import { useForm, Controller } from "react-hook-form";
 
-import { z } from "zod";
+import { string, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEventById } from "@/query/event.query";
+import {
+  useCreateEvent,
+  useEventById,
+  useUpdateEvent,
+} from "@/query/event.query";
+import { EventPayload } from "@/types/event";
+import CustomColorPicker from "@/components/Input/CustomColorPicker";
+import CustomTagInput from "@/components/Input/CustomTagInput";
 
 export const schema = z
   .object({
     name: z.string().min(1, "Please add a name"),
+    tags: z.array(z.string()).optional(),
     description: z.string().optional(),
-
+    color: z.string().optional(),
     start: z.date({
       required_error: "Please choose start time",
     }),
@@ -45,107 +59,157 @@ const event_form = () => {
     resolver: zodResolver(schema),
     defaultValues: {
       name: "",
+      tags: [],
       description: "",
       start: new Date(), // ✅ always give Date object
       end: new Date(), // ✅ same here
+      color: "#000000",
     },
   });
 
   const { data: event, isLoading: pendingEvent } = useEventById(event_id);
+  const { mutate: createEvent, isPending: pendingCreating } = useCreateEvent();
+  const { mutate: updateEvent, isPending: pendingUpdating } = useUpdateEvent();
 
   useEffect(() => {
-    reset({
-      name: event?.name,
-      description: event?.description,
-      start: event?.start,
-      end: event?.end,
-    });
+    if (event)
+      reset({
+        name: event?.name,
+        tags: event?.tags ?? [],
+        description: event?.description,
+        start: new Date(event?.start),
+        end: new Date(event?.end),
+        color: event?.color,
+      });
   }, [event]);
 
   const onSubmit = (data: any) => {
-    console.log("FORM DATA:", data);
+    const payload: EventPayload = {
+      name: data.name,
+      tags: data.tags,
+      description: data.description,
+      start: data.start,
+      end: data.end,
+      color: data.color,
+
+      // workspaceId: id
+    };
+    if (isEditmode) {
+      updateEvent({ id: event_id, payload });
+    } else {
+      createEvent({ ...payload, workspaceId: id });
+    }
   };
   return (
-    <ScrollView contentContainerClassName="flex-1 p-4 gap-4">
-      <View className="flex-row items-start justify-between">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className=" bg-white/30 rounded-full p-2 px-4 z-10 flex-row items-center gap-2 w-fit"
-        >
-          <Ionicons name="arrow-back" size={22} color="white" />
-          <Text className="text-white/70">back</Text>
-        </TouchableOpacity>
-      </View>
-      <Text className="text-3xl font-bold text-white">
-        {isEditmode ? "Edit Event" : "Add New Event"}
-      </Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <ScrollView contentContainerClassName="flex-1 p-4 gap-4">
+        <View className="flex-row items-start justify-between">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className=" bg-white/30 rounded-full p-2 px-4 z-10 flex-row items-center gap-2 w-fit"
+          >
+            <Ionicons name="arrow-back" size={22} color="white" />
+            <Text className="text-white/70">back</Text>
+          </TouchableOpacity>
 
-      <View className="bg-white rounded-lg min-h-[300px] p-4">
-        <Controller
-          control={control}
-          name="name"
-          render={({ field }) => (
-            <View>
+          <Text className="text-3xl font-bold text-white">
+            {isEditmode ? "Edit Event" : "Add New Event"}
+          </Text>
+        </View>
+
+        <View className="bg-white rounded-lg min-h-[300px] p-4">
+          <Controller
+            control={control}
+            name="name"
+            render={({ field }) => (
+              <View>
+                <CustomInput
+                  label="name"
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  error={!!errors.name}
+                />
+                <Text className="text-red-500">{errors.name?.message}</Text>
+              </View>
+            )}
+          />
+          <Controller
+            control={control}
+            name="description"
+            render={({ field }) => (
               <CustomInput
-                label="name"
+                label="description"
+                multiline={true}
                 value={field.value}
                 onChangeText={field.onChange}
-                error={!!errors.name}
               />
-              <Text className="text-red-500">{errors.name?.message}</Text>
-            </View>
-          )}
-        />
-        <Controller
-          control={control}
-          name="description"
-          render={({ field }) => (
-            <CustomInput
-              label="description"
-              multiline={true}
-              value={field.value}
-              onChangeText={field.onChange}
-            />
-          )}
-        />
-        <Controller
-          control={control}
-          name="start"
-          render={({ field }) => (
-            <View>
-              <CustomDateTimePicker
-                label="start at"
-                value={field.value}
-                onChange={field.onChange}
-                error={!!errors.start}
+            )}
+          />
+          <Controller
+            control={control}
+            name="tags"
+            render={({ field }) => (
+              <CustomTagInput
+                label="Tags"
+                value={field.value ?? []}
+                onListChange={field.onChange}
               />
-              <Text className="text-red-500">{errors.start?.message}</Text>
-            </View>
-          )}
-        />
+            )}
+          />
+          <Controller
+            control={control}
+            name="color"
+            render={({ field }) => (
+              <CustomColorPicker
+                label="Color"
+                selectedColor={field.value}
+                onSelect={field.onChange}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="start"
+            render={({ field }) => (
+              <View>
+                <CustomDateTimePicker
+                  label="start at"
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={!!errors.start}
+                />
+                <Text className="text-red-500">{errors.start?.message}</Text>
+              </View>
+            )}
+          />
 
-        <Controller
-          control={control}
-          name="end"
-          render={({ field }) => (
-            <View>
-              <CustomDateTimePicker
-                label="end at"
-                value={field.value}
-                onChange={field.onChange}
-                error={!!errors.end}
-              />
-              <Text className="text-red-500">{errors.end?.message}</Text>
-            </View>
-          )}
-        />
-      </View>
+          <Controller
+            control={control}
+            name="end"
+            render={({ field }) => (
+              <View>
+                <CustomDateTimePicker
+                  label="end at"
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={!!errors.end}
+                />
+                <Text className="text-red-500">{errors.end?.message}</Text>
+              </View>
+            )}
+          />
+        </View>
 
-      <CustomButton
-        title={isEditmode ? "Update Edvent" : "Add Event"}
-        onPress={handleSubmit(onSubmit)}
-      />
-    </ScrollView>
+        <CustomButton
+          isLoading={pendingCreating || pendingUpdating}
+          title={isEditmode ? "Update Edvent" : "Add Event"}
+          onPress={handleSubmit(onSubmit)}
+        />
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

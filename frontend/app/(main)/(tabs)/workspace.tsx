@@ -1,4 +1,4 @@
-import { View, Text, RefreshControl } from "react-native";
+import { View, Text, RefreshControl, TouchableOpacity } from "react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import CustomInput from "@/components/Input/CustomInput";
 import SearchInput from "@/components/Input/SearchInput";
@@ -7,6 +7,7 @@ import { FlatList, TextInput } from "react-native-gesture-handler";
 import { getWorkspaces } from "@/services/workspace";
 import WorkspaceCard from "@/components/UI/Workspace/WorkspaceCard";
 import { useWorkSpace } from "@/query/workspace.query";
+import { router } from "expo-router";
 
 const Calendar = () => {
   const [filterText, setFilterText] = useState("");
@@ -21,26 +22,32 @@ const Calendar = () => {
   }, [workspaces, filterText]);
 
   return (
-    <View className="p-4">
-      <Text className="font-bold text-white text-5xl ">Your Workspace</Text>
+    <View className="p-4 flex-1">
+      <Text style={{ fontWeight: "bold", color: "white", fontSize: 40 }}>
+        Your Workspace
+      </Text>
       <SearchInput
         value={filterText}
         onChangeText={setFilterText}
         placeholder="Search workspaces"
-        className="mt-4"
       />
-
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <WorkspaceCard workspace={item} />}
         ItemSeparatorComponent={() => <View className="h-4"></View>}
-        contentContainerClassName="mt-4 pb-48"
+        contentContainerClassName="pb-48 p-2"
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={refetch} />
         }
       />
+      <TouchableOpacity
+        onPress={() => router.push(`/(main)/workspace/create/form`)}
+        className="absolute right-5 bottom-5 flex-row items-center p-3 bg-orange-400 rounded-full "
+      >
+        <Ionicons name="add" size={32} color="white" />
+      </TouchableOpacity>
     </View>
   );
 };

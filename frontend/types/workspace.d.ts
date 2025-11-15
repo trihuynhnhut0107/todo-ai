@@ -14,3 +14,12 @@ export interface Workspace {
   memberCount: number;
   eventCount: number;
 }
+
+export interface WorkspacePayload {
+  name: string;
+  description: string;
+  timezoneCode: string;
+  color: string;
+  icon: string;
+  order: number;
+}
