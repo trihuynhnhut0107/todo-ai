@@ -3,6 +3,8 @@ import { LangchainService } from "./langchain.service";
 import { IntentType } from "../enums/chat.enum";
 import { Event } from "../types/event.types";
 import { EventService } from "./event.service";
+import { AskForMissingInfoPromptTemplate } from "../prompts/prompt-templates/ask-for-missing-info.prompt";
+import { BaseMessage } from "@langchain/core/messages";
 
 /**
  * Extended Event info with helper fields for lookups
@@ -20,7 +22,7 @@ const StateAnnotation = Annotation.Root({
     reducer: (left, right) => right ?? left,
     default: () => "",
   }),
-  messages: Annotation<string[]>({
+  messages: Annotation<BaseMessage[]>({
     reducer: (left, right) => [...(left || []), ...(right || [])],
     default: () => [],
   }),
@@ -49,7 +51,8 @@ const StateAnnotation = Annotation.Root({
     default: () => [],
   }),
   optionalFieldsMissing: Annotation<string[]>({
-    reducer: (left, right) => Array.from(new Set([...(left || []), ...(right || [])])),
+    reducer: (left, right) =>
+      Array.from(new Set([...(left || []), ...(right || [])])),
     default: () => [],
   }),
   // Validation state
@@ -102,6 +105,7 @@ export class LanggraphService {
   private async validateCreateEventNode(state: LanggraphState) {
     const { extractedInfo } = state;
     const missing: string[] = [];
+    const optionalSuggestions: string[] = [];
 
     // Required fields for creating an event
     if (!extractedInfo.name) missing.push("event name");
@@ -111,23 +115,36 @@ export class LanggraphService {
       missing.push("workspace");
     }
 
+    // Suggest useful optional fields that are not provided
+    if (!extractedInfo.description) optionalSuggestions.push("description");
+    if (!extractedInfo.location) optionalSuggestions.push("location");
+    if (!extractedInfo.assigneeNames && (!extractedInfo as any).assigneeIds) {
+      optionalSuggestions.push("assigneeIds");
+    }
+
     if (missing.length > 0) {
       return {
         isValid: false,
         requiredFieldsMissing: missing,
+        optionalFieldsMissing: optionalSuggestions,
         validationMessage: `To create an event, I need: ${missing.join(
           ", "
         )}. Please provide these details.`,
       };
     }
 
-    return { isValid: true, requiredFieldsMissing: [] };
+    return {
+      isValid: true,
+      requiredFieldsMissing: [],
+      optionalFieldsMissing: optionalSuggestions,
+    };
   }
 
   // Validation node: Check if all required fields for UPDATE are present
   private async validateUpdateEventNode(state: LanggraphState) {
     const { extractedInfo } = state;
     const missing: string[] = [];
+    const optionalSuggestions: string[] = [];
 
     // For update, we need to identify the event first
     if (!extractedInfo.id && !extractedInfo.eventName) {
@@ -149,17 +166,29 @@ export class LanggraphService {
       missing.push("fields to update (e.g., new time, description, location)");
     }
 
+    // Suggest additional fields that could be updated
+    if (hasUpdateFields) {
+      if (!extractedInfo.description) optionalSuggestions.push("description");
+      if (!extractedInfo.location) optionalSuggestions.push("location");
+      if (!extractedInfo.status) optionalSuggestions.push("status");
+    }
+
     if (missing.length > 0) {
       return {
         isValid: false,
         requiredFieldsMissing: missing,
+        optionalFieldsMissing: optionalSuggestions,
         validationMessage: `To update an event, I need: ${missing.join(
           ", "
         )}. Please provide these details.`,
       };
     }
 
-    return { isValid: true, requiredFieldsMissing: [] };
+    return {
+      isValid: true,
+      requiredFieldsMissing: [],
+      optionalFieldsMissing: optionalSuggestions,
+    };
   }
 
   // Validation node: Check if all required fields for DELETE are present
@@ -176,13 +205,18 @@ export class LanggraphService {
       return {
         isValid: false,
         requiredFieldsMissing: missing,
+        optionalFieldsMissing: [], // No optional fields for delete
         validationMessage: `To delete an event, I need: ${missing.join(
           ", "
         )}. Please provide the event name or ID.`,
       };
     }
 
-    return { isValid: true, requiredFieldsMissing: [] };
+    return {
+      isValid: true,
+      requiredFieldsMissing: [],
+      optionalFieldsMissing: [],
+    };
   }
 
   // Routing after validation: proceed or ask for info
@@ -192,9 +226,37 @@ export class LanggraphService {
 
   // Node: Ask user for missing information
   private async askForMissingInfoNode(state: LanggraphState) {
-    return {
-      response: state.validationMessage,
-    };
+    try {
+      // Prepare the context for the prompt
+      const promptContext = {
+        eventType: state.intent,
+        missingRequiredFields: JSON.stringify(
+          state.requiredFieldsMissing || []
+        ),
+        missingOptionalFields: JSON.stringify(
+          state.optionalFieldsMissing || []
+        ),
+        extractedInfo: JSON.stringify(state.extractedInfo || {}),
+      };
+
+      // Generate a contextual response using the prompt template
+      const response = await this.langchainService.generateResponse(
+        promptContext,
+        AskForMissingInfoPromptTemplate
+      );
+
+      return {
+        response,
+      };
+    } catch (error) {
+      console.error("Error in askForMissingInfoNode:", error);
+      // Fallback to validation message if generation fails
+      return {
+        response:
+          state.validationMessage ||
+          "I need more information to proceed. Please provide the required details.",
+      };
+    }
   }
 
   // Node: Create event
@@ -203,33 +265,32 @@ export class LanggraphService {
 
     try {
       // Resolve workspaceId from workspaceName if needed
-      let workspaceId = extractedInfo.workspaceId;
-      if (!workspaceId && extractedInfo.workspaceName) {
-        // You would need a helper method to look up workspace by name
-        // For now, we'll assume workspaceId is required from intent detection
-        return {
-          response: `Could not find workspace "${extractedInfo.workspaceName}". Please provide a valid workspace.`,
-        };
-      }
+      // let workspaceId = extractedInfo.workspaceId;
+      // if (!extractedInfo.workspaceName) {
+      //   // You would need a helper method to look up workspace by name
+      //   // For now, we'll assume workspaceId is required from intent detection
+      //   return {
+      //     response: `Could not find workspace "${extractedInfo.workspaceName}". Please provide a valid workspace.`,
+      //   };
+      // }
 
       // Commented out for testing - will be enabled later
-      // const createDto = {
-      //   name: extractedInfo.name!,
-      //   start: extractedInfo.start!,
-      //   end: extractedInfo.end!,
-      //   workspaceId: workspaceId!,
-      //   description: extractedInfo.description,
-      //   location: extractedInfo.location,
-      //   color: extractedInfo.color,
-      //   isAllDay: extractedInfo.isAllDay,
-      //   recurrenceRule: extractedInfo.recurrenceRule,
-      //   tags: extractedInfo.tags,
-      // };
-      // const event = await this.eventService.createEvent(userId, createDto);
+      const createDto = {
+        name: extractedInfo.name!,
+        start: extractedInfo.start!,
+        end: extractedInfo.end!,
+        workspaceId: "fcf38701-a8a6-44c2-bb18-be2a1ad0100b",
+        description: extractedInfo.description,
+        location: extractedInfo.location,
+        color: extractedInfo.color,
+        isAllDay: extractedInfo.isAllDay,
+        recurrenceRule: extractedInfo.recurrenceRule,
+        tags: extractedInfo.tags,
+      };
+      const event = await this.eventService.createEvent(userId, createDto);
 
-      // Mock response for testing
       return {
-        response: `✅ [TEST MODE] Event "${extractedInfo.name}" would be created successfully!\n📅 Start: ${extractedInfo.start}\n📅 End: ${extractedInfo.end}\n👤 User: ${userId}`,
+        response: `✅ Event "${event.name}" created successfully!\n📅 Start: ${event.start}\n📅 End: ${event.end}\n👤 User: ${userId}`,
       };
     } catch (error: any) {
       return {

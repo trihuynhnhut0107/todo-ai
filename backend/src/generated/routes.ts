@@ -281,24 +281,41 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ApiResponse__response-string__": {
+    "CreateMessageDto": {
+        "dataType": "refObject",
+        "properties": {
+            "sessionId": {"dataType":"string","required":true},
+            "senderId": {"dataType":"string","required":true},
+            "content": {"dataType":"string","required":true},
+            "senderType": {"ref":"SenderType","required":true},
+            "metadata": {"ref":"Record_string.unknown_"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "GenerateResponseResultDto": {
+        "dataType": "refObject",
+        "properties": {
+            "response": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse_GenerateResponseResultDto_": {
         "dataType": "refObject",
         "properties": {
             "success": {"dataType":"boolean","required":true},
             "message": {"dataType":"string","required":true},
-            "data": {"dataType":"nestedObjectLiteral","nestedProperties":{"response":{"dataType":"string","required":true}}},
+            "data": {"ref":"GenerateResponseResultDto"},
             "timestamp": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ApiResponse__intent-string--confidence-number--extractedInfo-Record_string.unknown_--missingRequiredFields-string-Array--reasoning-string__": {
+    "GenerateResponseDto": {
         "dataType": "refObject",
         "properties": {
-            "success": {"dataType":"boolean","required":true},
             "message": {"dataType":"string","required":true},
-            "data": {"dataType":"nestedObjectLiteral","nestedProperties":{"reasoning":{"dataType":"string","required":true},"missingRequiredFields":{"dataType":"array","array":{"dataType":"string"},"required":true},"extractedInfo":{"ref":"Record_string.unknown_","required":true},"confidence":{"dataType":"double","required":true},"intent":{"dataType":"string","required":true}}},
-            "timestamp": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -326,6 +343,14 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CreateSessionDto": {
+        "dataType": "refObject",
+        "properties": {
+            "userId": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ApiResponse__sessions-SessionResponse-Array--total-number__": {
         "dataType": "refObject",
         "properties": {
@@ -333,18 +358,6 @@ const models: TsoaRoute.Models = {
             "message": {"dataType":"string","required":true},
             "data": {"dataType":"nestedObjectLiteral","nestedProperties":{"total":{"dataType":"double","required":true},"sessions":{"dataType":"array","array":{"dataType":"refObject","ref":"SessionResponse"},"required":true}}},
             "timestamp": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "CreateMessageDto": {
-        "dataType": "refObject",
-        "properties": {
-            "sessionId": {"dataType":"string","required":true},
-            "senderId": {"dataType":"string","required":true},
-            "content": {"dataType":"string","required":true},
-            "senderType": {"ref":"SenderType","required":true},
-            "metadata": {"ref":"Record_string.unknown_"},
         },
         "additionalProperties": false,
     },
@@ -968,7 +981,7 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsChatController_handleChat: Record<string, TsoaRoute.ParameterSchema> = {
-                input: {"in":"body","name":"input","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"message":{"dataType":"string","required":true}}},
+                createMessageDto: {"in":"body","name":"createMessageDto","required":true,"ref":"CreateMessageDto"},
         };
         app.post('/api/chat',
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
@@ -998,7 +1011,7 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsChatController_generateResponse: Record<string, TsoaRoute.ParameterSchema> = {
-                input: {"in":"body","name":"input","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"message":{"dataType":"string","required":true}}},
+                generateDto: {"in":"body","name":"generateDto","required":true,"ref":"GenerateResponseDto"},
         };
         app.post('/api/chat/generate',
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
@@ -1027,37 +1040,8 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsChatController_detectIntent: Record<string, TsoaRoute.ParameterSchema> = {
-                input: {"in":"body","name":"input","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"messages":{"dataType":"array","array":{"dataType":"string"},"required":true}}},
-        };
-        app.post('/api/chat/detect-intent',
-            ...(fetchMiddlewares<RequestHandler>(ChatController)),
-            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.detectIntent)),
-
-            async function ChatController_detectIntent(request: ExRequest, response: ExResponse, next: any) {
-
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_detectIntent, request, response });
-
-                const controller = new ChatController();
-
-              await templateService.apiHandler({
-                methodName: 'detectIntent',
-                controller,
-                response,
-                next,
-                validatedArgs,
-                successStatus: 200,
-              });
-            } catch (err) {
-                return next(err);
-            }
-        });
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsChatController_createSession: Record<string, TsoaRoute.ParameterSchema> = {
+                createSessionDto: {"in":"body","name":"createSessionDto","required":true,"ref":"CreateSessionDto"},
         };
         app.post('/api/chat/sessions',
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
