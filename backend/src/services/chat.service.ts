@@ -7,9 +7,11 @@ import {
   MessageResponse,
   SessionResponse,
   GetSessionMessagesDto,
+  CreateSessionDto,
 } from "../dtos/chat.dto";
 import LanggraphService, { LanggraphState } from "./langgraph.service";
 import { SenderType } from "../enums/role.enum";
+import { AIMessage, HumanMessage } from "@langchain/core/messages";
 
 export class ChatService {
   constructor(private langgraphService: LanggraphService) {}
@@ -22,9 +24,14 @@ export class ChatService {
 
   /**
    * Create a new session
+   * @param userId User ID who owns this session
    */
-  async createSession(): Promise<SessionResponse> {
-    const session = this.sessionRepository.create({});
+  async createSession(
+    createSessionDto: CreateSessionDto
+  ): Promise<SessionResponse> {
+    const session = this.sessionRepository.create({
+      userId: createSessionDto.userId,
+    });
 
     const savedSession = await this.sessionRepository.save(session);
 
@@ -364,10 +371,27 @@ export class ChatService {
     return response;
   }
 
-  public async handleChat(input: string): Promise<MessageResponse> {
+  public async handleChat(
+    createMessageDto: CreateMessageDto
+  ): Promise<MessageResponse> {
+    await this.createMessage(createMessageDto);
+    const sessionMessages = await this.getSessionMessages(
+      createMessageDto.sessionId
+    );
+    const baseMessages = sessionMessages.messages
+      .map((m) => {
+        if (m.senderType === SenderType.USER) {
+          return new HumanMessage(m.content);
+        }
+        if (m.senderType === SenderType.BOT) {
+          return new AIMessage(m.content);
+        }
+        return undefined;
+      })
+      .filter((msg): msg is HumanMessage | AIMessage => msg !== undefined);
     const state: LanggraphState = {
-      userId: "",
-      messages: [input],
+      userId: createMessageDto.senderId,
+      messages: baseMessages,
       intent: "",
       response: "",
       extractedInfo: {},
@@ -380,15 +404,14 @@ export class ChatService {
     };
     const graphResult = await this.langgraphService.processMessage(state);
     console.log("Graph result:::", graphResult);
-    const response: MessageResponse = {
-      id: "",
-      sessionId: "",
-      senderId: "",
+
+    const createdBotMessage: CreateMessageDto = {
+      sessionId: createMessageDto.sessionId,
+      senderId: `${createMessageDto.sessionId}-bot`,
       content: graphResult.response,
       senderType: SenderType.BOT,
-      createdAt: new Date(),
-      updatedAt: new Date(),
     };
+    const response = await this.createMessage(createdBotMessage);
     return response;
   }
 }

@@ -1,12 +1,13 @@
 require("dotenv").config();
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { DetectIntentPromptTemplate } from "../prompts/detect-intent.prompt";
+import { DetectIntentPromptTemplate } from "../prompts/prompt-templates/detect-intent.prompt";
 import {
   BaseMessage,
   HumanMessage,
   SystemMessage,
 } from "@langchain/core/messages";
 import { IntentType } from "../enums/chat.enum";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
 
 export class LangchainService {
   private responseModel: ChatGoogleGenerativeAI;
@@ -27,13 +28,27 @@ export class LangchainService {
     });
   }
 
-  async generateResponse(input: string): Promise<string> {
+  async generateResponse(
+    input: string | Record<string, any>,
+    promptTemplate?: ChatPromptTemplate
+  ): Promise<string> {
     try {
-      const messages = [
-        new HumanMessage({
-          content: input,
-        }),
-      ];
+      let messages: BaseMessage[];
+
+      if (promptTemplate) {
+        // If a prompt template is provided, format it with the input values
+        const formattedMessages = await promptTemplate.formatMessages(
+          typeof input === "string" ? { input } : input
+        );
+        messages = formattedMessages;
+      } else {
+        // Default behavior: treat input as a simple string message
+        messages = [
+          new HumanMessage({
+            content: typeof input === "string" ? input : JSON.stringify(input),
+          }),
+        ];
+      }
 
       const response = await this.responseModel.invoke(messages);
       console.log(response);
@@ -46,7 +61,7 @@ export class LangchainService {
     }
   }
 
-  async detectIntent(messages: string[]): Promise<{
+  async detectIntent(messages: BaseMessage[]): Promise<{
     intent: IntentType;
     confidence: number;
     extractedInfo: Record<string, unknown>;
@@ -54,20 +69,28 @@ export class LangchainService {
     reasoning: string;
   }> {
     try {
-      // Convert string array to HumanMessage array
-      const humanMessages: BaseMessage[] = messages.map(
-        (msg) => new HumanMessage(msg)
-      );
+      // Convert BaseMessage array to formatted string for the prompt
+      const formattedMessages = messages
+        .map((msg) => {
+          const role = msg instanceof HumanMessage ? "User" : "Assistant";
+          return `${role}: ${msg.content}`;
+        })
+        .join("\n");
+      // Get current date in UTC
+      const currentUTC = new Date().toISOString();
 
       // Create system prompt for intent detection
       const systemPrompt = await DetectIntentPromptTemplate.format({
-        messages: messages,
+        messages: formattedMessages,
+        currentUTC: currentUTC,
       });
+
+      console.log("System prompt:::", systemPrompt);
 
       // Build message array with system prompt
       const messageList: BaseMessage[] = [
         new SystemMessage(systemPrompt),
-        ...humanMessages,
+        new HumanMessage("Detect intent and extract event information."),
       ];
 
       const response = await this.detectIntentModel.invoke(messageList);
@@ -91,7 +114,9 @@ export class LangchainService {
       const intentValue = parsedResult.intent as string;
       if (!Object.values(IntentType).includes(intentValue as IntentType)) {
         throw new Error(
-          `Invalid intent type: ${intentValue}. Expected one of: ${Object.values(IntentType).join(", ")}`
+          `Invalid intent type: ${intentValue}. Expected one of: ${Object.values(
+            IntentType
+          ).join(", ")}`
         );
       }
 
@@ -103,8 +128,13 @@ export class LangchainService {
         reasoning: parsedResult.reasoning,
       };
     } catch (error) {
-      console.error("Error detecting intent in detectIntent method. Input messages:", messages, "\nError details:", error);
-      throw new Error("Failed to detect user intent", { cause: error });
+      console.error(
+        "Error detecting intent in detectIntent method. Input messages:",
+        messages,
+        "\nError details:",
+        error
+      );
+      throw new Error("Failed to detect user intent");
     }
   }
 }

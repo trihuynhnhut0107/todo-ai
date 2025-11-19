@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { AppDataSource } from "../data-source";
 import { User } from "../entities/user.entity";
+import { Workspace } from "../entities/workspace.entity";
 import {
   RegisterDto,
   LoginDto,
@@ -11,6 +12,7 @@ import {
 
 export class AuthService {
   private userRepository = AppDataSource.getRepository(User);
+  private workspaceRepository = AppDataSource.getRepository(Workspace);
   private readonly JWT_SECRET = process.env.JWT_SECRET!;
   private readonly JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
   private readonly JWT_EXPIRES_IN: string | number =
@@ -45,6 +47,19 @@ export class AuthService {
     });
 
     const savedUser = await this.userRepository.save(user);
+
+    // Create default workspace for the new user
+    const defaultWorkspace = this.workspaceRepository.create({
+      name: "Default",
+      description: "Default workspace for events",
+      timezoneCode: "UTC",
+      color: "#3B82F6",
+      isArchived: false,
+      ownerId: savedUser.id,
+      order: 0,
+    });
+
+    await this.workspaceRepository.save(defaultWorkspace);
 
     // Generate tokens
     const { accessToken, refreshToken } = this.generateTokens({
