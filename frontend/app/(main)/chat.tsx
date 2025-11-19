@@ -1,8 +1,15 @@
-import { Link } from "expo-router";
+import BubbleMessage from "@/components/UI/Chat/BubbleMessage";
+import TypingBubble from "@/components/UI/Chat/TypingBubble";
+import { getAIMessage } from "@/services/chat";
+import useAuthStore from "@/store/auth.store";
+import { useMessageStore } from "@/store/message.store";
 import { Ionicons } from "@expo/vector-icons";
+import { add } from "date-fns";
 import { LinearGradient } from "expo-linear-gradient";
+import { Link } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  FlatList,
   Keyboard,
   KeyboardAvoidingView,
   Platform, // Thêm StatusBar
@@ -12,90 +19,18 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
-  FlatList,
-  Animated,
+  View
 } from "react-native";
-import { getAIMessage } from "@/services/chat";
-
-// --- (Component BubbleMessage của bạn giữ nguyên) ---
-const BubbleMessage: React.FC<{ author: string; message: string }> = ({
-  author,
-  message,
-}) => {
-  return (
-    <View
-      className={`max-w-[70%] mb-3 p-3 rounded-lg ${
-        author === "user"
-          ? "bg-red-500 self-end rounded-br-none"
-          : "bg-gray-200 self-start rounded-bl-none"
-      }`}
-    >
-      <Text className={`${author === "user" ? "text-white" : "text-gray-800"}`}>
-        {message}
-      </Text>
-    </View>
-  );
-};
-
-const TypingBubble: React.FC = () => {
-  const dot1 = React.useRef(new Animated.Value(0.3)).current;
-  const dot2 = React.useRef(new Animated.Value(0.3)).current;
-  const dot3 = React.useRef(new Animated.Value(0.3)).current;
-
-  useEffect(() => {
-    const a1 = Animated.loop(
-      Animated.sequence([
-        Animated.timing(dot1, { toValue: 1, duration: 350, useNativeDriver: true }),
-        Animated.timing(dot1, { toValue: 0.3, duration: 350, useNativeDriver: true }),
-      ])
-    );
-    const a2 = Animated.loop(
-      Animated.sequence([
-        Animated.delay(150),
-        Animated.timing(dot2, { toValue: 1, duration: 350, useNativeDriver: true }),
-        Animated.timing(dot2, { toValue: 0.3, duration: 350, useNativeDriver: true }),
-      ])
-    );
-    const a3 = Animated.loop(
-      Animated.sequence([
-        Animated.delay(300),
-        Animated.timing(dot3, { toValue: 1, duration: 350, useNativeDriver: true }),
-        Animated.timing(dot3, { toValue: 0.3, duration: 350, useNativeDriver: true }),
-      ])
-    );
-
-    a1.start();
-    a2.start();
-    a3.start();
-
-    return () => {
-      a1.stop();
-      a2.stop();
-      a3.stop();
-    };
-  }, [dot1, dot2, dot3]);
-
-  return (
-    <View
-      className={`max-w-[70%] mb-3 p-3 rounded-lg bg-gray-200 self-start rounded-bl-none`}
-    >
-      <View style={{ flexDirection: "row", width: 36, justifyContent: "space-between", alignItems: "center" }}>
-        <Animated.View style={{ width: 6, height: 6, borderRadius: 6, backgroundColor: "#374151", opacity: dot1 }} />
-        <Animated.View style={{ width: 6, height: 6, borderRadius: 6, backgroundColor:"#374151", opacity: dot2 }} />
-        <Animated.View style={{ width: 6, height: 6, borderRadius: 6, backgroundColor:"#374151", opacity: dot3 }} />
-      </View>
-    </View>
-  );
-};
 
 const ChatScreen = () => {
   const inputRef = React.useRef<TextInput>(null);
   const [isResponding, setIsResponding] = useState(false);
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<
-    { author: string; message: string }[]
-  >([]);
+
+  const user = useAuthStore((state) => state.user);
+
+  const messages = useMessageStore((state) => state.messages);
+  const addMessage = useMessageStore((state) => state.addMessage);
 
   // useEffect của bạn để theo dõi keyboard (isKeyboardVisible) không cần thiết
   // vì KeyboardAvoidingView sẽ tự xử lý, nhưng cứ để đó nếu bạn cần
@@ -111,12 +46,9 @@ const ChatScreen = () => {
   const handleSendMessage = () => {
     if (message.trim() === "") return;
     setIsResponding(true);
-    setMessages((prev) => [
-      ...prev,
-      { author: "user", message: message.trim() },
-    ]);
+    addMessage(message.trim(), user?.id || null);
     getAIMessage(message.trim()).then((response) => {
-      setMessages((prev) => [...prev, { author: "ai", message: response }]);
+      addMessage(response.response, null);
       setIsResponding(false);
     });
     setMessage("");
@@ -239,7 +171,7 @@ const ChatScreen = () => {
             <FlatList
               data={messages}
               renderItem={({ item }) => (
-                <BubbleMessage author={item.author} message={item.message} />
+                <BubbleMessage author={item.author} message={item.text} />
               )}
               keyExtractor={(_, index) => index.toString()}
               className="flex-1 mt-24" // SỬA LỖI 3: Thêm flex-1 để lấp đầy không gian

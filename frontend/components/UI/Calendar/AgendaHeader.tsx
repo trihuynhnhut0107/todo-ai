@@ -70,7 +70,9 @@ const AgendaHeader = ({ workspace, events }: AgendaHeaderProps) => {
   }, [selected, monthDates]);
 
   return (
-    <View className="border-b-[1px]">
+    <View className="border-b-[2px] bg-white" style={{
+      borderColor: workspace?.color
+    }}>
       <View className="p-2">
         <View className="flex-row items-center justify-between">
           <TouchableOpacity

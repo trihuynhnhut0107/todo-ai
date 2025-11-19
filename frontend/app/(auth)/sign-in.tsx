@@ -1,4 +1,3 @@
-
 import { signIn } from "@/services/auth";
 import useAuthStore from "@/store/auth.store";
 
@@ -8,50 +7,83 @@ import { Alert, Text, View } from "react-native";
 import { modalContext } from "./_layout";
 import CustomInput from "@/components/Input/CustomInput";
 import CustomButton from "@/components/Input/CustomButton";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { useSignIn } from "@/query/auth.query";
+
+export const schema = z.object({
+  email: z.string().email().min(1, "Please enter email"),
+  password: z.string().min(1, "Please enter password"),
+});
 
 const SignIn = () => {
   const { setOpen } = useContext(modalContext);
-  const { fetchAuthenticatedUser } = useAuthStore();
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ email: "", password: "" });
+  const { mutate: signIn, isPending } = useSignIn();
 
-  async function Submit() {
-    const { email, password } = form;
-    if (!email || !password)
-      return Alert.alert("Error", "Please enter valid email or password");
-    setLoading(true);
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-    try {
-      await signIn(email, password);
-      setOpen(true);
-    } catch (error: any) {
-      Alert.alert("Error", error.message);
-    } finally {
-      setLoading(false);
-    }
+  async function onSubmit(data: any) {
+    signIn({ email: data.email, password: data.password });
   }
+
   return (
     <View className="gap-5 rounded-lg px-5 bg-white backdrop:blur-sm p-4 ">
-      <CustomInput
-        label="Email"
-        value={form.email}
-        onChangeText={(text) => setForm((prev) => ({ ...prev, email: text }))}
-        placeholder="Enter your email"
+      <Controller
+        control={control}
+        name="email"
+        render={({ field }) => (
+          <View>
+            <CustomInput
+              label="Email"
+              value={field.value}
+              onChangeText={field.onChange}
+              error={!!errors.email}
+            />
+            <Text className="text-red-500">{errors.email?.message}</Text>
+          </View>
+        )}
       />
-      <CustomInput
-        label="Password"
-        value={form.password}
-        onChangeText={(text) =>
-          setForm((prev) => ({ ...prev, password: text }))
-        }
-        placeholder="Enter your password"
-        secureTextEntry={true}
+      <Controller
+        control={control}
+        name="password"
+        render={({ field }) => (
+          <View>
+            <CustomInput
+              label="Password"
+              value={field.value}
+              onChangeText={field.onChange}
+              error={!!errors.password}
+              secureTextEntry
+            />
+            <Text className="text-red-500">{errors.password?.message}</Text>
+          </View>
+        )}
       />
-      <CustomButton title="Sign in" isLoading={loading} onPress={Submit} />
+
+      <CustomButton
+        title="Sign in"
+        isLoading={isPending}
+        onPress={handleSubmit(onSubmit)}
+      />
 
       <Text className="base-regular text-center">
         Don't have an account?{" "}
-        <Link href={"/sign-up"} className="base-bold text-primary text-orange-500">
+        <Link
+          href={"/sign-up"}
+          className="base-bold text-primary text-orange-500"
+        >
           Sign up
         </Link>
       </Text>

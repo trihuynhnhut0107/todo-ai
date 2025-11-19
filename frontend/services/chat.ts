@@ -1,9 +1,14 @@
+import api from "@/lib/api";
+
 export async function getAIMessage(
   message: string
-): Promise<string> {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve("This is a dummy AI response.");
-        }, 3000);
-    });
+): Promise<any> {
+    try {
+        const res=await api.post("/chat/generate", { message });
+        console.log("AI Response:", res);   
+        return res;
+    } catch (error) {
+        throw error;
+    }
 }
+
