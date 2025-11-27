@@ -5,6 +5,8 @@ import { Event } from "../types/event.types";
 import { EventService } from "./event.service";
 import { AskForMissingInfoPromptTemplate } from "../prompts/prompt-templates/ask-for-missing-info.prompt";
 import { BaseMessage } from "@langchain/core/messages";
+import { EventQueryDto } from "../dtos/event.dto";
+import { WorkspaceService } from "./workspace.service";
 
 /**
  * Extended Event info with helper fields for lookups
@@ -73,7 +75,8 @@ export class LanggraphService {
 
   constructor(
     private langchainService: LangchainService,
-    private eventService: EventService
+    private eventService: EventService,
+    private workspaceService: WorkspaceService
   ) {
     this.compiledGraph = this.buildGraph();
   }
@@ -304,6 +307,29 @@ export class LanggraphService {
     const { extractedInfo, userId } = state;
 
     try {
+      if (extractedInfo.workspaceName) {
+        const foundWorkspace = await this.workspaceService.findWorkspaceByName(
+          userId,
+          extractedInfo.workspaceName
+        );
+        console.log("Found workspace:::", foundWorkspace);
+        if (foundWorkspace) {
+          extractedInfo.workspaceId = foundWorkspace?.id;
+        }
+      }
+
+      const eventQuery: EventQueryDto = {
+        workspaceId: extractedInfo.workspaceId,
+        startDate: extractedInfo.start
+          ? new Date(extractedInfo.start).toISOString()
+          : undefined,
+        endDate: extractedInfo.end
+          ? new Date(extractedInfo.end).toISOString()
+          : undefined,
+      };
+      const foundEvent = await this.eventService.getEvents(userId, eventQuery);
+      console.log("Found event:::", foundEvent);
+
       // Commented out for testing - will be enabled later
       // let eventId = extractedInfo.id;
       // if (!eventId && extractedInfo.eventName) {
@@ -397,27 +423,39 @@ export class LanggraphService {
     const { extractedInfo, userId } = state;
 
     try {
-      // Commented out for testing - will be enabled later
-      // const query: any = {};
-      // if (extractedInfo.workspaceId) query.workspaceId = extractedInfo.workspaceId;
-      // if (extractedInfo.start) query.startDate = extractedInfo.start;
-      // if (extractedInfo.end) query.endDate = extractedInfo.end;
-      // if (extractedInfo.status) query.status = extractedInfo.status;
-      // const events = await this.eventService.getEvents(userId, query);
+      console.log("Extracted info:::", extractedInfo);
+      if (!extractedInfo.start || !extractedInfo.end) {
+        throw new Error("Start or end time is not provided");
+      }
+      const events = await this.eventService.getEventsByTime(
+        userId,
+        new Date(extractedInfo.start),
+        new Date(extractedInfo.end),
+        "fcf38701-a8a6-44c2-bb18-be2a1ad0100b"
+      );
 
-      // Mock response for testing
-      const queryInfo = [];
-      if (extractedInfo.workspaceId)
-        queryInfo.push(`Workspace: ${extractedInfo.workspaceId}`);
-      if (extractedInfo.start) queryInfo.push(`Start: ${extractedInfo.start}`);
-      if (extractedInfo.end) queryInfo.push(`End: ${extractedInfo.end}`);
-      if (extractedInfo.status)
-        queryInfo.push(`Status: ${extractedInfo.status}`);
+      // Format the response with actual event data
+      if (events.length === 0) {
+        return {
+          response: `📋 No events found between ${extractedInfo.start} and ${extractedInfo.end}`,
+        };
+      }
+
+      const eventsList = events
+        .map(
+          (event) =>
+            `• ${event.name}\n  📅 ${event.start} → ${event.end}${
+              event.location ? `\n  📍 ${event.location}` : ""
+            }${event.description ? `\n  📝 ${event.description}` : ""}`
+        )
+        .join("\n\n");
 
       return {
-        response: `📋 [TEST MODE] Would list events with filters:\n${
-          queryInfo.length > 0 ? queryInfo.join("\n") : "No filters"
-        }\n👤 User: ${userId}`,
+        response: `📋 Found ${events.length} event${
+          events.length > 1 ? "s" : ""
+        } between ${extractedInfo.start} and ${
+          extractedInfo.end
+        }:\n\n${eventsList}`,
       };
     } catch (error: any) {
       return {

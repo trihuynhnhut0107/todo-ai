@@ -2,6 +2,7 @@ import { AppDataSource } from "../data-source";
 import { Workspace } from "../entities/workspace.entity";
 import { User } from "../entities/user.entity";
 import { In } from "typeorm";
+import { search } from "fast-fuzzy";
 import {
   CreateWorkspaceDto,
   UpdateWorkspaceDto,
@@ -71,6 +72,32 @@ export class WorkspaceService {
     }
 
     return this.formatWorkspaceResponse(workspace);
+  }
+
+  /**
+   * Find workspace by name using fuzzy matching
+   * @param userId - User ID to filter workspaces they own or are member of
+   * @param query - Partial or full workspace name to search for
+   * @param threshold - Minimum match score (0-1), default 0.6
+   * @returns Top matching workspace or null if no match found
+   */
+  async findWorkspaceByName(
+    userId: string,
+    query: string,
+    threshold: number = 0.6
+  ): Promise<WorkspaceResponse | null> {
+    const workspaces = await this.getUserWorkspaces(userId);
+
+    if (!workspaces.length) {
+      return null;
+    }
+
+    const matches = search(query, workspaces, {
+      keySelector: (workspace) => workspace.name,
+      threshold,
+    });
+
+    return matches.length > 0 ? matches[0] : null;
   }
 
   /**

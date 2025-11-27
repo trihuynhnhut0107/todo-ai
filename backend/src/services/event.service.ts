@@ -2,7 +2,7 @@ import { AppDataSource } from "../data-source";
 import { Event } from "../entities/event.entity";
 import { Workspace } from "../entities/workspace.entity";
 import { User } from "../entities/user.entity";
-import { In, Between, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
+import { In } from "typeorm";
 import {
   CreateEventDto,
   UpdateEventDto,
@@ -23,7 +23,7 @@ export class EventService {
     createDto: CreateEventDto
   ): Promise<EventResponse> {
     // Verify workspace exists and user has access
-    const workspace = await this.verifyWorkspaceAccess(
+    await this.verifyWorkspaceAccess(
       createDto.workspaceId,
       userId
     );
@@ -35,6 +35,9 @@ export class EventService {
     if (end <= start) {
       throw new Error("End time must be after start time");
     }
+
+    // Check for overlapping events (including partial overlaps and boundary touches)
+    await this.checkEventOverlap(createDto.workspaceId, start, end);
 
     // Get assignees if provided
     let assignees: User[] = [];
@@ -75,6 +78,20 @@ export class EventService {
     userId: string,
     query: EventQueryDto
   ): Promise<EventResponse[]> {
+    if (
+      !query.status &&
+      !query.assigneeId &&
+      query.startDate &&
+      query.endDate &&
+      query.workspaceId
+    ) {
+      return this.getEventsByTime(
+        userId,
+        new Date(query.startDate),
+        new Date(query.endDate),
+        query.workspaceId
+      );
+    }
     const queryBuilder = this.eventRepository
       .createQueryBuilder("event")
       .leftJoinAndSelect("event.workspace", "workspace")
@@ -91,18 +108,23 @@ export class EventService {
       });
     }
 
-    // Filter by date range
+    // Filter by date range (find events that overlap the range)
     if (query.startDate && query.endDate) {
       const startDate = new Date(query.startDate);
       const endDate = new Date(query.endDate);
-      queryBuilder.andWhere("event.start >= :startDate", { startDate });
-      queryBuilder.andWhere("event.end <= :endDate", { endDate });
+      queryBuilder.andWhere(
+        "(event.start < :endDate AND event.end > :startDate)",
+        {
+          startDate,
+          endDate,
+        }
+      );
     } else if (query.startDate) {
       const startDate = new Date(query.startDate);
-      queryBuilder.andWhere("event.start >= :startDate", { startDate });
+      queryBuilder.andWhere("event.end > :startDate", { startDate });
     } else if (query.endDate) {
       const endDate = new Date(query.endDate);
-      queryBuilder.andWhere("event.end <= :endDate", { endDate });
+      queryBuilder.andWhere("event.start < :endDate", { endDate });
     }
 
     // Filter by status
@@ -150,6 +172,155 @@ export class EventService {
   }
 
   /**
+   * Get events by specific day
+   * @param workspaceId - Optional workspace ID to filter events
+   * @param userId - User ID to verify access
+   * @param date - Date to get events for
+   */
+  async getEventsByDay(
+    userId: string,
+    date: Date,
+    workspaceId?: string
+  ): Promise<EventResponse[]> {
+    const dayStart = new Date(date);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(date);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    return this.getEvents(userId, {
+      workspaceId,
+      startDate: dayStart.toISOString(),
+      endDate: dayEnd.toISOString(),
+    });
+  }
+
+  /**
+   * Get events by date range with overlap detection
+   * Returns all events that overlap with the specified date range
+   * @param userId - User ID to verify access
+   * @param startDate - Start of date range
+   * @param endDate - End of date range
+   * @param workspaceId - Optional workspace ID to filter events
+   */
+  async getEventsByDateRange(
+    userId: string,
+    startDate: Date,
+    endDate: Date,
+    workspaceId?: string
+  ): Promise<EventResponse[]> {
+    return this.getEvents(userId, {
+      workspaceId,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+    });
+  }
+
+  /**
+   * Get events that overlap with the given time range
+   * If start === end: returns events containing that timestamp
+   * If start !== end: returns events overlapping that range
+   * @param userId - User ID to verify access
+   * @param start - Start of time range
+   * @param end - End of time range
+   * @param workspaceId - Optional workspace ID to filter events
+   */
+  async getEventsByTime(
+    userId: string,
+    start: Date,
+    end: Date,
+    workspaceId?: string
+  ): Promise<EventResponse[]> {
+    const queryBuilder = this.eventRepository
+      .createQueryBuilder("event")
+      .leftJoinAndSelect("event.workspace", "workspace")
+      .leftJoinAndSelect("workspace.members", "workspaceMember")
+      .leftJoinAndSelect("event.assignees", "assignee")
+      .where("(workspace.ownerId = :userId OR workspaceMember.id = :userId)", {
+        userId,
+      })
+      .andWhere("(event.start <= :end AND event.end >= :start)", { start, end });
+
+    // Filter by workspace if provided
+    if (workspaceId) {
+      queryBuilder.andWhere("event.workspaceId = :workspaceId", { workspaceId });
+    }
+
+    queryBuilder.orderBy("event.start", "ASC");
+
+    const events = await queryBuilder.getMany();
+
+    return events.map((event) => this.formatEventResponse(event));
+  }
+
+  /**
+   * Get upcoming events (future events)
+   * @param userId - User ID to verify access
+   * @param limit - Maximum number of events to return
+   * @param workspaceId - Optional workspace ID to filter events
+   */
+  async getUpcomingEvents(
+    userId: string,
+    limit: number = 10,
+    workspaceId?: string
+  ): Promise<EventResponse[]> {
+    const now = new Date();
+
+    const queryBuilder = this.eventRepository
+      .createQueryBuilder("event")
+      .leftJoinAndSelect("event.workspace", "workspace")
+      .leftJoinAndSelect("workspace.members", "workspaceMember")
+      .leftJoinAndSelect("event.assignees", "assignee")
+      .where("(workspace.ownerId = :userId OR workspaceMember.id = :userId)", {
+        userId,
+      })
+      .andWhere("event.start > :now", { now });
+
+    // Filter by workspace if provided
+    if (workspaceId) {
+      queryBuilder.andWhere("event.workspaceId = :workspaceId", { workspaceId });
+    }
+
+    const events = await queryBuilder
+      .orderBy("event.start", "ASC")
+      .take(limit)
+      .getMany();
+
+    return events.map((event) => this.formatEventResponse(event));
+  }
+
+  /**
+   * Get current event (event happening right now)
+   * @param userId - User ID to verify access
+   * @param workspaceId - Optional workspace ID to filter events
+   */
+  async getCurrentEvent(
+    userId: string,
+    workspaceId?: string
+  ): Promise<EventResponse | null> {
+    const now = new Date();
+
+    const queryBuilder = this.eventRepository
+      .createQueryBuilder("event")
+      .leftJoinAndSelect("event.workspace", "workspace")
+      .leftJoinAndSelect("workspace.members", "workspaceMember")
+      .leftJoinAndSelect("event.assignees", "assignee")
+      .where("(workspace.ownerId = :userId OR workspaceMember.id = :userId)", {
+        userId,
+      })
+      .andWhere("event.start <= :now", { now })
+      .andWhere("event.end > :now", { now });
+
+    // Filter by workspace if provided
+    if (workspaceId) {
+      queryBuilder.andWhere("event.workspaceId = :workspaceId", { workspaceId });
+    }
+
+    const event = await queryBuilder.orderBy("event.start", "DESC").getOne();
+
+    return event ? this.formatEventResponse(event) : null;
+  }
+
+  /**
    * Update event
    */
   async updateEvent(
@@ -182,6 +353,9 @@ export class EventService {
       if (end <= start) {
         throw new Error("End time must be after start time");
       }
+
+      // Check for overlapping events with other events (excluding current event)
+      await this.checkEventOverlap(event.workspaceId, start, end, eventId);
 
       event.start = start;
       event.end = end;
@@ -304,6 +478,44 @@ export class EventService {
     const updatedEvent = await this.eventRepository.save(event);
 
     return this.formatEventResponse(updatedEvent);
+  }
+
+  /**
+   * Check for event conflicts (overlaps and boundary touches)
+   * Throws error if conflict found, otherwise returns without error
+   * @param workspaceId - Workspace to check within
+   * @param start - Event start time
+   * @param end - Event end time
+   * @param excludeEventId - Optional event ID to exclude from check (for updates)
+   */
+  private async checkEventOverlap(
+    workspaceId: string,
+    start: Date,
+    end: Date,
+    excludeEventId?: string
+  ): Promise<void> {
+    let query = this.eventRepository
+      .createQueryBuilder("event")
+      .where("event.workspaceId = :workspaceId", { workspaceId })
+      // Check for any overlap: existing event starts before new event ends AND existing event ends after new event starts
+      .andWhere("(event.start < :end AND event.end > :start)", { start, end });
+
+    // If updating, exclude the current event from conflict check
+    if (excludeEventId) {
+      query = query.andWhere("event.id != :excludeEventId", {
+        excludeEventId,
+      });
+    }
+
+    const conflictingEvent = await query.getOne();
+
+    if (conflictingEvent) {
+      throw new Error(
+        `An event already exists during this time period. Conflicting event: "${
+          conflictingEvent.name
+        }" from ${conflictingEvent.start.toLocaleString()} to ${conflictingEvent.end.toLocaleString()}`
+      );
+    }
   }
 
   /**

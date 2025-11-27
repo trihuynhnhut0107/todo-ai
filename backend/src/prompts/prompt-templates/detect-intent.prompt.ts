@@ -62,12 +62,16 @@ User wants to view, search, or query events.
 - status: Filter by event status ("pending", "in_progress", "completed", "cancelled")
 - workspaceName: Filter by workspace name (not ID)
 - tags: Filter by tags
-- startDate: Filter events starting from this date
-- endDate: Filter events ending before this date
+- start: Filter events starting from this date (or use as both start and end if only single time detected)
+- end: Filter events ending before this date (or use same as start if only single time detected)
 - assigneeNames: Filter by assignee names (not IDs)
 - isAllDay: Filter by all-day events
 - limit: Max results to return
 - offset: Pagination offset
+**Time handling for list_events**:
+- If user asks for events at a specific time (e.g., "What do I have at 4pm?"), extract that single time as both start and end
+- Maintain GMT+7 to UTC conversion: start/end should be in UTC format
+- Example: "What do I have at 4pm?" → start: "2024-01-15T09:00:00Z", end: "2024-01-15T09:00:00Z" (4pm GMT+7 = 09:00 UTC)
 
 ### "general_chat"
 User is making general conversation or asking questions not related to event management.
@@ -199,11 +203,25 @@ Response JSON:
   "extractedInfo": {{
     "status": "pending",
     "workspaceName": "Work",
-    "startDate": "2024-01-15T00:00:00Z",
-    "endDate": "2024-01-22T23:59:59Z"
+    "start": "2024-01-15T00:00:00Z",
+    "end": "2024-01-22T23:59:59Z"
   }},
   "missingRequiredFields": [],
   "reasoning": "User wants to query events with status, workspace, and date range filters. All relevant filters extracted."
+}}
+
+**Example 3b: List events at a specific time (single time)**
+Messages: ["What do I have at 4pm?"]
+Response JSON:
+{{
+  "intent": "list_events",
+  "confidence": 0.9,
+  "extractedInfo": {{
+    "start": "2024-01-15T09:00:00Z",
+    "end": "2024-01-15T09:00:00Z"
+  }},
+  "missingRequiredFields": [],
+  "reasoning": "User wants to query events at a specific time (4pm). Only a single time is detected (not a time range), so extracting it as both start and end to find events at exactly 4pm. Time converted from GMT+7 to UTC (4pm GMT+7 = 09:00 UTC)."
 }}
 
 Remember: Always respond with valid JSON format, not the descriptive format shown in examples.`,
