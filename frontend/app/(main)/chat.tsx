@@ -1,10 +1,9 @@
 import BubbleMessage from "@/components/UI/Chat/BubbleMessage";
 import TypingBubble from "@/components/UI/Chat/TypingBubble";
-import { getAIMessage } from "@/services/chat";
+import { getAIMessage, getCachedSession, getOrCreateSession } from "@/services/chat";
 import useAuthStore from "@/store/auth.store";
 import { useMessageStore } from "@/store/message.store";
 import { Ionicons } from "@expo/vector-icons";
-import { add } from "date-fns";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -32,8 +31,6 @@ const ChatScreen = () => {
   const messages = useMessageStore((state) => state.messages);
   const addMessage = useMessageStore((state) => state.addMessage);
 
-  // useEffect của bạn để theo dõi keyboard (isKeyboardVisible) không cần thiết
-  // vì KeyboardAvoidingView sẽ tự xử lý, nhưng cứ để đó nếu bạn cần
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", () => {});
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {});
@@ -42,6 +39,29 @@ const ChatScreen = () => {
       hideSub.remove();
     };
   }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    async function initSession() {
+      if (!user?.id) return;
+      console.log("Initializing chat session for user:", user.id);
+      const cached = getCachedSession();
+      if (cached && cached.userId === user.id) {
+        console.log("Using cached chat session:", cached);
+        return;
+      }
+      try {
+        const session = await getOrCreateSession(user.id);
+        console.log("Created chat session:", session);
+      } catch (err) {
+        console.warn("Failed to create chat session:", err);
+      }
+    }
+    initSession();
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]);
 
   const handleSendMessage = () => {
     if (message.trim() === "") return;

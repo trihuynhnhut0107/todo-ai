@@ -21,16 +21,11 @@ export const useSignIn = () => {
   const mutation = useMutation({
     mutationFn: (payload: SignInPayload) => 
     {
-      // Temporarily bypass API — return hardcoded user
-      return Promise.resolve({
-        id: "demo-1",
-        name: "Demo User",
-        email: payload.email,
-        avatar:"jd.jpg"
-      });
+      return signIn(payload);
     },
     onSuccess: (user) => {
       if (user) {
+        console.log("User signed in:", user);
         setUser(user);
         setIsAuthenticated(true);
         showMessage({ message: "Signed in!", type: "success" });
