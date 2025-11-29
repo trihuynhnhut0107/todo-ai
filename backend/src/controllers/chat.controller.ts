@@ -18,6 +18,9 @@ import { LanggraphService } from "../services/langgraph.service";
 import { EventService } from "../services/event.service";
 import {
   CreateMessageDto,
+  CreateSessionDto,
+  GenerateResponseDto,
+  GenerateResponseResultDto,
   UpdateMessageDto,
   MessageResponse,
   SessionResponse,
@@ -57,15 +60,18 @@ export class ChatController extends Controller {
   @Response<ErrorResponse>("400", "Validation Error")
   @Response<ErrorResponse>("500", "Internal Server Error")
   public async handleChat(
-    @Body() input: { message: string }
+    @Body() createMessageDto: CreateMessageDto
   ): Promise<ApiResponse<MessageResponse>> {
     try {
-      if (!input.message || input.message.trim().length === 0) {
+      if (
+        !createMessageDto.content ||
+        createMessageDto.content.trim().length === 0
+      ) {
         this.setStatus(400);
         throw new Error("Message field is required and cannot be empty");
       }
 
-      const response = await this.chatService.handleChat(input.message);
+      const response = await this.chatService.handleChat(createMessageDto);
 
       return {
         success: true,
@@ -86,7 +92,7 @@ export class ChatController extends Controller {
   /**
    * Generate response from user message
    * @summary Generate AI response
-   * @param input User message input
+   * @param generateDto User message input
    * @returns Generated response
    */
   @Post("generate")
@@ -94,16 +100,16 @@ export class ChatController extends Controller {
   @Response<ErrorResponse>("400", "Validation Error")
   @Response<ErrorResponse>("500", "Internal Server Error")
   public async generateResponse(
-    @Body() input: { message: string }
-  ): Promise<ApiResponse<{ response: string }>> {
+    @Body() generateDto: GenerateResponseDto
+  ): Promise<ApiResponse<GenerateResponseResultDto>> {
     try {
-      if (!input.message || input.message.trim().length === 0) {
+      if (!generateDto.message || generateDto.message.trim().length === 0) {
         this.setStatus(400);
         throw new Error("Message field is required and cannot be empty");
       }
 
       const response = await this.langchainService.generateResponse(
-        input.message
+        generateDto.message
       );
 
       return {
@@ -122,70 +128,81 @@ export class ChatController extends Controller {
     }
   }
 
-  /**
-   * Detect intent from messages
-   * @summary Detect user intent and extract information
-   * @param messages Array of message strings to analyze
-   * @returns Intent detection result
-   */
-  @Post("detect-intent")
-  @SuccessResponse("200", "Intent detected successfully")
-  @Response<ErrorResponse>("400", "Validation Error")
-  @Response<ErrorResponse>("500", "Internal Server Error")
-  public async detectIntent(
-    @Body() input: { messages: string[] }
-  ): Promise<
-    ApiResponse<{
-      intent: string;
-      confidence: number;
-      extractedInfo: Record<string, unknown>;
-      missingRequiredFields: string[];
-      reasoning: string;
-    }>
-  > {
-    try {
-      if (!input.messages || input.messages.length === 0) {
-        this.setStatus(400);
-        throw new Error("Messages array is required and cannot be empty");
-      }
+  // /**
+  //  * Detect intent from messages
+  //  * @summary Detect user intent and extract information
+  //  * @param messages Array of message strings to analyze
+  //  * @returns Intent detection result
+  //  */
+  // @Post("detect-intent")
+  // @SuccessResponse("200", "Intent detected successfully")
+  // @Response<ErrorResponse>("400", "Validation Error")
+  // @Response<ErrorResponse>("500", "Internal Server Error")
+  // public async detectIntent(@Body() input: { messages: string[] }): Promise<
+  //   ApiResponse<{
+  //     intent: string;
+  //     confidence: number;
+  //     extractedInfo: Record<string, unknown>;
+  //     missingRequiredFields: string[];
+  //     reasoning: string;
+  //   }>
+  // > {
+  //   try {
+  //     if (!input.messages || input.messages.length === 0) {
+  //       this.setStatus(400);
+  //       throw new Error("Messages array is required and cannot be empty");
+  //     }
 
-      const intentResult = await this.langchainService.detectIntent(
-        input.messages
-      );
+  //     const intentResult = await this.langchainService.detectIntent(
+  //       input.messages
+  //     );
 
-      return {
-        success: true,
-        message: "Intent detected successfully",
-        data: {
-          intent: intentResult.intent,
-          confidence: intentResult.confidence,
-          extractedInfo: intentResult.extractedInfo || {},
-          missingRequiredFields: intentResult.missingRequiredFields || [],
-          reasoning: intentResult.reasoning || "",
-        },
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      if (error instanceof Error && error.message.includes("required")) {
-        this.setStatus(400);
-      } else {
-        this.setStatus(500);
-      }
-      throw error;
-    }
-  }
+  //     return {
+  //       success: true,
+  //       message: "Intent detected successfully",
+  //       data: {
+  //         intent: intentResult.intent,
+  //         confidence: intentResult.confidence,
+  //         extractedInfo: intentResult.extractedInfo || {},
+  //         missingRequiredFields: intentResult.missingRequiredFields || [],
+  //         reasoning: intentResult.reasoning || "",
+  //       },
+  //       timestamp: new Date().toISOString(),
+  //     };
+  //   } catch (error) {
+  //     if (error instanceof Error && error.message.includes("required")) {
+  //       this.setStatus(400);
+  //     } else {
+  //       this.setStatus(500);
+  //     }
+  //     throw error;
+  //   }
+  // }
 
   /**
    * Create a new chat session
    * @summary Create a new session
+   * @param createSessionDto Session creation details
    * @returns Newly created session
    */
   @Post("sessions")
   @SuccessResponse("201", "Session created successfully")
+  @Response<ErrorResponse>("400", "Validation Error")
   @Response<ErrorResponse>("500", "Internal Server Error")
-  public async createSession(): Promise<ApiResponse<SessionResponse>> {
+  public async createSession(
+    @Body() createSessionDto: CreateSessionDto
+  ): Promise<ApiResponse<SessionResponse>> {
     try {
-      const session = await this.chatService.createSession();
+      // Validate required fields
+      if (
+        !createSessionDto.userId ||
+        createSessionDto.userId.trim().length === 0
+      ) {
+        this.setStatus(400);
+        throw new Error("userId is required and cannot be empty");
+      }
+
+      const session = await this.chatService.createSession(createSessionDto);
 
       this.setStatus(201);
       return {
@@ -195,7 +212,11 @@ export class ChatController extends Controller {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.setStatus(500);
+      if (error instanceof Error && error.message.includes("required")) {
+        this.setStatus(400);
+      } else {
+        this.setStatus(500);
+      }
       throw error;
     }
   }

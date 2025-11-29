@@ -350,11 +350,7 @@ export class EventService {
       createdById: event.createdById,
       createdAt: event.createdAt,
       updatedAt: event.updatedAt,
-      assignees: event.assignees?.map((assignee) => ({
-        id: assignee.id,
-        name: assignee.name,
-        email: assignee.email,
-      })),
+      assigneeIds: event.assignees?.map((assignee) => assignee.id),
     };
   }
 }

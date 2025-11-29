@@ -15,9 +15,9 @@ You MUST return the intent as one of these EXACT enum values:
 User wants to create a new event/task.
 **Required info to extract:**
 - name: Event name/title
-- start: Start date/time (ISO string or parseable date)
-- end: End date/time (ISO string or parseable date)
-- workspaceName: Name of workspace (not ID, we'll look up the ID later)
+- start: Start date/time (ISO string or parseable date). **Extract ONLY if user explicitly provides it. Set to null if not mentioned.**
+- end: End date/time (ISO string or parseable date). **Extract ONLY if user explicitly provides it or can be precisely inferred from duration (e.g., "for 30 minutes", "until 3pm"). Set to null if not mentioned.**
+- workspaceName: Name of workspace (not ID, we'll look up the ID later). **If no workspace is mentioned, use "Default" as the fallback value.**
 
 **Optional info to extract:**
 - description: Event details or notes
@@ -85,6 +85,8 @@ Respond with a JSON object containing the following fields:
 
 ## Context Analysis Guidelines
 
+**IMPORTANT: Message Array Order**: The session messages are ordered chronologically from oldest to newest (createdAt: ASC). The last message in the array is the most recent user input.
+
 1. **Analyze the full conversation**: Consider all messages in the session, not just the latest
 2. **Look for context clues**: Users may provide information across multiple messages
 3. **Infer from natural language**: Extract structured data from conversational text
@@ -92,8 +94,20 @@ Respond with a JSON object containing the following fields:
 5. **Date parsing**: Be flexible with date formats (relative: "tomorrow", "next Monday"; absolute: "March 15", "2024-03-15"). Parse to ISO 8601 format.
 6. **Default values**: Don't assume defaults for required fields - mark as missing if not explicit
 7. **Name extraction**: Always extract names (workspaceName, assigneeNames, eventName) instead of IDs. Backend will handle ID lookups.
-8. **Workspace context**: If workspaceName is not mentioned, mark as missing required field for create_event
-9. **Time handling**: If only date is provided without time, infer reasonable defaults (start: beginning of day, end: end of day, or use isAllDay: true)
+8. **Workspace fallback**: If workspaceName is not mentioned in create_event intent, use "Default" as the workspace name instead of marking it as missing
+9. **Time handling - CRITICAL**:
+   - **DO NOT assume duration**: If user says "meeting tomorrow at 2pm" without specifying end time, set start time but leave end as null
+   - **Only infer end time when explicit**: e.g., "from 2pm to 3pm", "at 2pm for 30 minutes", "2pm-3pm"
+   - **Duration keywords**: "for X minutes/hours" allows calculation of end time from start
+   - **All-day events**: If only date mentioned without time (e.g., "meeting on Friday"), set isAllDay: true and use full day boundaries
+   - **Don't guess**: Better to ask user for missing time than to assume an arbitrary duration
+   - **Timezone conversion (MANDATORY)**: User is in GMT+7 timezone. All times provided by the user are in GMT+7 and MUST be converted to UTC for storage.
+     - Conversion formula: UTC = GMT+7 - 7 hours
+     - Example: User says "7pm" → 19:00 GMT+7 → 12:00 UTC (subtract 7 hours)
+     - Example: User says "2pm tomorrow" → 14:00 GMT+7 → 07:00 UTC same day
+     - Example: User says "9am" → 09:00 GMT+7 → 02:00 UTC same day
+   - **Always output in ISO 8601 UTC format**: e.g., "2024-01-15T12:00:00Z"
+
 
 ## Examples
 
@@ -105,12 +119,61 @@ Response JSON:
   "confidence": 0.95,
   "extractedInfo": {{
     "name": "Team Meeting",
-    "start": "2024-01-15T14:00:00Z",
-    "end": "2024-01-15T15:00:00Z",
+    "start": "2024-01-15T07:00:00Z",
+    "end": "2024-01-15T08:00:00Z",
     "workspaceName": "Work"
   }},
   "missingRequiredFields": [],
-  "reasoning": "User wants to create a new event with clear name, time range, and workspace. All required fields are present."
+  "reasoning": "User wants to create a new event with clear name, time range, and workspace. Times converted from GMT+7 to UTC (2pm GMT+7 = 07:00 UTC, 3pm GMT+7 = 08:00 UTC). All required fields are present."
+}}
+
+**Example 1b: Create event with explicit duration**
+Messages: ["Create an event called 'Morning Standup'", "Tomorrow at 9am for 30 minutes"]
+Response JSON:
+{{
+  "intent": "create_event",
+  "confidence": 0.9,
+  "extractedInfo": {{
+    "name": "Morning Standup",
+    "start": "2024-01-15T02:00:00Z",
+    "end": "2024-01-15T02:30:00Z",
+    "workspaceName": "Default"
+  }},
+  "missingRequiredFields": [],
+  "reasoning": "User wants to create a new event with name, start time, and explicit duration (30 minutes). Times converted from GMT+7 to UTC (9am GMT+7 = 02:00 UTC). End time calculated from start + duration. No workspace mentioned, so defaulting to 'Default' workspace."
+}}
+
+**Example 1c: Create event without end time (don't assume)**
+Messages: ["Create a meeting called 'Client Call'", "Tomorrow at 2pm"]
+Response JSON:
+{{
+  "intent": "create_event",
+  "confidence": 0.85,
+  "extractedInfo": {{
+    "name": "Client Call",
+    "start": "2024-01-15T07:00:00Z",
+    "end": null,
+    "workspaceName": "Default"
+  }},
+  "missingRequiredFields": ["end"],
+  "reasoning": "User wants to create a new event with name and start time. Start time converted from GMT+7 to UTC (2pm GMT+7 = 07:00 UTC). End time not specified and no duration mentioned, so marking as missing rather than assuming arbitrary duration."
+}}
+
+**Example 1d: Create all-day event**
+Messages: ["Add 'Team Offsite' on Friday"]
+Response JSON:
+{{
+  "intent": "create_event",
+  "confidence": 0.9,
+  "extractedInfo": {{
+    "name": "Team Offsite",
+    "start": "2024-01-18T17:00:00Z",
+    "end": "2024-01-19T16:59:59Z",
+    "isAllDay": true,
+    "workspaceName": "Default"
+  }},
+  "missingRequiredFields": [],
+  "reasoning": "User wants to create an all-day event. Only date mentioned without specific times, so setting as all-day event. For GMT+7, the full day (00:00 to 23:59:59 local) converts to UTC (previous day 17:00 to current day 16:59:59 UTC)."
 }}
 
 **Example 2: Update event**
@@ -149,4 +212,5 @@ Remember: Always respond with valid JSON format, not the descriptive format show
     "human",
     "Session messages:\n{messages}\n\nDetect intent and extract event information.",
   ],
+  ["human", "Current UTC Date for reference: \n{currentUTC}\n"],
 ]);
