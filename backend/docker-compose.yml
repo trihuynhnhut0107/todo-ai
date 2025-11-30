@@ -22,7 +22,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: todoai-redis
-    command: redis-server --requirepass password --user default on >password ~* allcommands
+    command: redis-server --requirepass password
     ports:
       - "6379:6379"
     volumes:
