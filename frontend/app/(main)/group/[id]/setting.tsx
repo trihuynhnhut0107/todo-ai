@@ -7,38 +7,38 @@ import CustomButton from "@/components/Input/CustomButton";
 import SettingTable from "@/components/UI/Setting/SettingTable";
 import { SettingItemProps } from "@/type";
 import { showMessage } from "react-native-flash-message";
-import { useDeleteWorkspace } from "@/query/workspace.query";
+import { useDeleteGroup } from "@/query/group.query";
 
 const Setting = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { mutate: deleteWorkspace, isPending: pendingDelete } =
-    useDeleteWorkspace(() => router.replace("/(main)/(tabs)/workspace"));
+  const { mutate: deleteGroup, isPending: pendingDelete } =
+    useDeleteGroup(() => router.replace("/(main)/(tabs)/groups"));
 
   const settings: SettingItemProps[] = [
     {
-      title: "Update workspace",
-      color: "black",
+      title: "Update group",
+      color: "",
       icon: "pencil",
-      url: `/(main)/workspace/${id}/form`,
+      url: `/(main)/group/${id}/form`,
     },
     {
       title: "View members",
       color: "",
       icon: "people",
-      url: `/(main)/workspace/${id}/member`,
+      url: `/(main)/group/${id}/member`,
     },
     {
       title: "Add member",
       color: "",
       icon: "add",
-      url: `/(main)/workspace/${id}/add_member`,
+      url: `/(main)/group/${id}/add_member`,
     },
     {
-      title: "Delete workspace",
+      title: "Delete group",
       color: "red",
       icon: "trash",
       onPress: () => {
-        Alert.alert("Delete workspace?", "This action cannot be undone.", [
+        Alert.alert("Delete group?", "This action cannot be undone.", [
           {
             text: "Cancel",
             style: "cancel",
@@ -47,7 +47,7 @@ const Setting = () => {
             text: "Delete",
             style: "destructive",
             onPress: () => {
-              deleteWorkspace(id);
+              deleteGroup(id);
             },
           },
         ]);
@@ -60,7 +60,7 @@ const Setting = () => {
     },
   ];
   return (
-    <ScrollView contentContainerClassName="flex-1 p-4 gap-4">
+    <View className="flex-1 p-4 gap-4">
       <View className="flex-row items-start justify-between">
         <TouchableOpacity
           onPress={() => router.back()}
@@ -73,7 +73,7 @@ const Setting = () => {
       </View>
 
       <SettingTable items={settings} />
-    </ScrollView>
+    </View>
   );
 };
 

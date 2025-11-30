@@ -1,16 +1,18 @@
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { use, useContext, useEffect, useMemo, useRef, useState } from "react";
 import AgendaHeaderItem from "./AgendaHeaderItem";
 import { AgendaHeaderProps, DateWithEvents } from "@/type";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
 import { useSelectedDate } from "@/context/selectedDate";
+import useThemeColor from "@/hooks/useThemeColor";
 
-const AgendaHeader = ({ workspace, events }: AgendaHeaderProps) => {
+const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
   const { selectDate, selected } = useSelectedDate();
   const listRef = useRef<FlatList<DateWithEvents>>(null);
   const [loaded, setLoaded] = useState(false);
+  const color = useThemeColor()
   // Generate array of all days in the same month as `selected`
 
   const monthDates: DateWithEvents[] = useMemo(() => {
@@ -70,36 +72,36 @@ const AgendaHeader = ({ workspace, events }: AgendaHeaderProps) => {
   }, [selected, monthDates]);
 
   return (
-    <View className="border-b-[2px] bg-white" style={{
-      borderColor: workspace?.color
+    <View className="bg-surface" style={{
+      borderColor: group?.color
     }}>
       <View className="p-2">
         <View className="flex-row items-center justify-between">
           <TouchableOpacity
-            onPress={() => router.push("/(main)/(tabs)/workspace")}
+            onPress={() => router.push("/(main)/(tabs)/groups")}
             className="justify-center rounded-md p-2 z-10 flex-row items-center gap-2"
           >
-            <Ionicons name="list" size={22} color="orange" />
+            <Ionicons name="list" size={22} color={color.accent} />
           </TouchableOpacity>
 
           <View className="flex-row items-center gap-2">
-            <Text className="text-orange-500">{workspace?.name}</Text>
+            <Text className="text-accent">{group?.name}</Text>
             <TouchableOpacity
               onPress={() =>
-                router.push(`/(main)/workspace/${workspace?.id}/setting`)
+                router.push(`/(main)/group/${group?.id}/setting`)
               }
               className=" justify-center rounded-md p-2 z-10 flex-row items-center gap-2"
             >
-              <Ionicons name="settings" size={22} color="orange" />
+              <Ionicons name="settings" size={22} color={color.accent} />
             </TouchableOpacity>
           </View>
         </View>
         <View className="flex-row justify-between items-center">
           <View className=" flex flex-row gap-2">
-            <Text className="font-semibold text-3xl">
+            <Text className="font-semibold text-3xl text-text">
               {format(new Date(selected), "MMMM")}
             </Text>
-            <Text className="text-orange-500 font-semibold text-3xl">
+            <Text className="text-accent font-semibold text-3xl">
               {format(new Date(selected), "yyyy")}
             </Text>
           </View>
@@ -125,7 +127,7 @@ const AgendaHeader = ({ workspace, events }: AgendaHeaderProps) => {
         )}
       />
 
-      <Text className="text-center text-sm pb-2">
+      <Text className="text-center text-text-secondary text-sm pb-2">
         {format(new Date(selected), "EEEE, MMMM dd yyyy")}
       </Text>
     </View>

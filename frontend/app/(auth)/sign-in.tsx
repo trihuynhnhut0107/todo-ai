@@ -19,7 +19,7 @@ export const schema = z.object({
 
 const SignIn = () => {
   const { setOpen } = useContext(modalContext);
-  const { mutate: signIn, isPending } = useSignIn();
+  const { mutate: signIn, isPending } = useSignIn(()=>setOpen("signIn"));
 
   const {
     control,
@@ -39,7 +39,7 @@ const SignIn = () => {
   }
 
   return (
-    <View className="gap-5 rounded-lg px-5 bg-white backdrop:blur-sm p-4 ">
+    <View className="gap-5 rounded-lg px-5 bg-surface backdrop:blur-sm p-4 ">
       <Controller
         control={control}
         name="email"
@@ -78,7 +78,7 @@ const SignIn = () => {
         onPress={handleSubmit(onSubmit)}
       />
 
-      <Text className="base-regular text-center">
+      <Text className="base-regular text-center text-text-tertiary">
         Don't have an account?{" "}
         <Link
           href={"/sign-up"}

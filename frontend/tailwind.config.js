@@ -10,17 +10,23 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        brand: {
-          DEFAULT: "#FF6B00", // brand-primary
-          light: "#FF8C3A",
-          dark: "#CC5600",
-        },
-        slate: {
-          950: "#0A0A0F",
-        },
-        accent: "#4F46E5", // single custom color
+        primary: "var(--color-primary)",
+        secondary: "var(--color-secondary)",
+        accent: "var(--color-accent)",
+        background: "var(--color-background)",
+        surface: "var(--color-surface)",
+        card: "var(--color-card)",
+        text: "var(--color-text)",
+        "text-secondary": "var(--color-text-secondary)",
+        "text-tertiary": "var(--color-text-tertiary)",
+        border: "var(--color-border)",
+        muted: "var(--color-muted)",
+        success: "var(--color-success)",
+        error: "var(--color-error)",
+        warning: "var(--color-warning)",
       },
     },
   },
   plugins: [],
+  darkMode: "class",
 };

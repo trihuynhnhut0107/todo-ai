@@ -9,28 +9,40 @@ body {
   /* Đảm bảo background bao phủ toàn bộ màn hình */
   min-height: 100vh;
 
-  /* 1. Màu nền cơ bản (màu xám nhạt ở dưới cùng) */
-  background-color: #f2f2f7;
-
-  /* 2. Xếp chồng các lớp gradient lên trên */
-  background-image: 
-                /* Lớp 1: Vầng sáng màu cam chính ở trên cùng */
-    radial-gradient(
-      ellipse 80% 70% at 50% 0%,
-      /* Hình elip, căn ở giữa-trên */ rgba(255, 120, 70, 0.5),
-      /* Màu cam-đỏ, mờ 50% */ transparent 70% /* Mờ dần về trong suốt */
-    ),
-    /* Lớp 2: Thêm một vầng sáng hồng/đỏ nhẹ ở trên-phải */
-      radial-gradient(
-        ellipse 50% 50% at 90% 10%,
-        /* Elip nhỏ hơn, ở góc trên-phải */ rgba(255, 100, 100, 0.4),
-        /* Màu đỏ nhạt, mờ 40% */ transparent 70%
-      );
-
-  /* Đảm bảo gradient không lặp lại */
-  background-repeat: no-repeat;
-
-  /* Giữ background cố định khi cuộn trang (quan trọng) */
-  background-attachment: fixed;
+  
 }
 
+
+:root {
+  --color-primary: #f97316;       /* Tomato Red */
+  --color-secondary: #8A2BE2;     /* Blue Violet */
+  --color-accent: #FFA500;        /* Orange accent */
+  --color-background: #FFFFFF;
+  --color-surface: #F9FAFB;
+  --color-card: #FFFFFF;
+  --color-text: #111827;
+  --color-text-secondary: #6B7280;
+  --color-text-tertiary: #9CA3AF;
+  --color-border: #E5E7EB;
+  --color-muted: #F3F4F6;
+  --color-success: #10B981;
+  --color-error: #EF4444;
+  --color-warning: #F59E0B;
+}
+
+.dark {
+  --color-primary: #f97316;       /* Lighter tomato for dark mode */
+  --color-secondary: #A78BFA;     /* Lighter purple for better contrast */
+  --color-accent: #FBBF24;        /* Lighter orange */
+  --color-background: #262624;    /* Very dark blue-black */
+  --color-surface: #2b2b29;       /* Dark slate with slight blue */
+  --color-card: #1E1E2E;          /* Elevated card surface */
+  --color-text: #F8FAFC;          /* Off-white for less eye strain */
+  --color-text-secondary: #CBD5E1; /* Light slate */
+  --color-text-tertiary: #94A3B8;  /* Medium slate */
+  --color-border: #41413e;        /* Subtle border */
+  --color-muted: #16161D;
+  --color-success: #34D399;
+  --color-error: #F87171;
+  --color-warning: #FBBF24;
+}

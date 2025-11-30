@@ -1,4 +1,4 @@
-export interface Workspace {
+export interface Group {
   id: string;
   name: string;
   description: string;
@@ -15,7 +15,7 @@ export interface Workspace {
   eventCount: number;
 }
 
-export interface WorkspacePayload {
+export interface GroupPayload {
   name: string;
   description: string;
   timezoneCode: string;

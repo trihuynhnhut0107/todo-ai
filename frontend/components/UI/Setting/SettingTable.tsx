@@ -6,14 +6,20 @@ import { FlatList } from "react-native-gesture-handler";
 
 const SettingTable = ({ items }: SettingTableProps) => {
   return (
-    <View className="bg-white rounded-lg flex-col">
-      {items?.map((i, idx) => (
-        <View key={idx}>
-          {idx !== 0 && <View className="h-[1px] w-full bg-gray-200" />}
-          <SettingItem item={i} />
+    <FlatList
+      data={items}
+      keyExtractor={(item) => item.title}
+      renderItem={({ item }) => (
+        <View className="flex-1">
+          <SettingItem item={item} />
         </View>
-      ))}
-    </View>
+      )}
+      ItemSeparatorComponent={() => <View className="h-4"></View>}
+      contentContainerClassName="pb-48 px-1"
+      showsVerticalScrollIndicator={false}
+      numColumns={2}
+      columnWrapperStyle={{ gap: 8 }}
+    />
   );
 };
 

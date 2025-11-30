@@ -18,12 +18,13 @@ export const createEvent = async (payload: EventPayload): Promise<Event> => {
 
 export const updateEvent = async ({
   id,
+  workspaceId,
   payload,
 }: {
   id: string;
+  workspaceId: string;
   payload: EventPayload;
 }): Promise<Event> => {
-  console.log(payload)
   return await api.put(`/events/${id}`, payload);
 };
 

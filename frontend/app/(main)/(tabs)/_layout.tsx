@@ -1,10 +1,11 @@
 // import { images } from "@/constants";
+import useThemeColor from "@/hooks/useThemeColor";
 import useAuthStore from "@/store/auth.store";
 import { TabBarIconProps } from "@/type";
 import { Ionicons } from "@expo/vector-icons";
 import cn from "clsx";
 import { BlurView } from "expo-blur";
-import { Redirect, Tabs } from "expo-router";
+import { Link, Redirect, Tabs } from "expo-router";
 import { navigate } from "expo-router/build/global-state/routing";
 import React from "react";
 import {
@@ -22,30 +23,37 @@ const TabBarIcon = ({
   icon,
   acactive_icon,
   title,
-}: TabBarIconProps) => (
-  <View className={"flex items-center  w-[100px]"}>
-    {focused ? (
-      <Ionicons name={acactive_icon} size={28} color="orange" />
-    ) : (
-      <Ionicons name={icon} size={28} color="orange" />
-    )}
+}: TabBarIconProps) => {
+  const color = useThemeColor();
+  return (
+    <View className={"flex items-center  w-[100px]"}>
+      {focused ? (
+        <Ionicons name={acactive_icon} size={28} color={color.primary} />
+      ) : (
+        <Ionicons name={icon} size={28} color={color.primary} />
+      )}
 
-    {/* <Text className={cn("text-xs", focused ? "text-orange-400" : "")}>
+      {/* <Text className={cn("text-xs", focused ? "text-orange-400" : "")}>
       {title}
     </Text> */}
-  </View>
-);
+    </View>
+  );
+};
 
 const TabLayout = () => {
+  const color = useThemeColor();
   return (
     <Tabs
       screenOptions={{
+        animation: "shift",
         headerShown: false,
         tabBarShowLabel: false,
         sceneStyle: {
           backgroundColor: "transparent",
         },
         tabBarStyle: {
+          backgroundColor: color.surface,
+          borderTopWidth: 0,
           //   borderRadius: 20,
           //   overflow: "hidden",
           //   marginHorizontal: 20,
@@ -83,12 +91,12 @@ const TabLayout = () => {
         }}
       />
       <Tabs.Screen
-        name="workspace"
+        name="groups"
         options={{
-          title: "Workspaces",
+          title: "Groups",
           tabBarIcon: ({ focused }) => (
             <TabBarIcon
-              title="Workspaces"
+              title="Groups"
               icon="calendar-clear-outline"
               acactive_icon="calendar-clear"
               focused={focused}
@@ -101,16 +109,24 @@ const TabLayout = () => {
         options={{
           title: "",
           tabBarIcon: ({ focused }) => (
-            <View className="absolute rounded-full p-2 mb-4 bg-white">
-              <Pressable
-                className="bg-orange-400 w-16 h-16 rounded-full items-center justify-center "
-                onPress={() => {
-                  navigate("/(main)/chat"); // programmatic navigation
-                }}
-              >
-                <Ionicons name="sparkles-sharp" size={32} color="white" />
-              </Pressable>
-            </View>
+            <Link href={"/(main)/chat"}>
+              <TabBarIcon
+                title="Chat"
+                icon="sparkles-outline"
+                acactive_icon="sparkles"
+                focused={focused}
+              />
+            </Link>
+            // <View className="absolute rounded-full p-2 mb-4 bg-surface">
+            //   <Pressable
+            //     className="bg-primary w-16 h-16 rounded-full items-center justify-center "
+            //     onPress={() => {
+            //       navigate("/(main)/chat"); // programmatic navigation
+            //     }}
+            //   >
+            //     <Ionicons name="sparkles-sharp" size={32} color="white" />
+            //   </Pressable>
+            // </View>
           ),
         }}
       />
@@ -136,26 +152,6 @@ const TabLayout = () => {
           //     aspectRatio:1/1,
           //     transform: "translateY(10px), translateX(5px)",
           //   },
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ focused }) => (
-            <TabBarIcon
-              title="Profile"
-              icon="person-circle-outline"
-              acactive_icon="person-circle"
-              focused={focused}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="edit_profile"
-        options={{
-          href: null,
         }}
       />
     </Tabs>

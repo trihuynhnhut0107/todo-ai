@@ -38,13 +38,17 @@ async function refreshAccessToken() {
 api.interceptors.request.use(async (config) => {
   const token = await getAccessToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
-
+  console.log("config", config);
   return config;
 });
 
 api.interceptors.response.use(
-  (response) => response.data.data,
+  (response) => {
+    console.log("response", response);
+    return response.data.data;
+  },
   async (error) => {
+    console.log(error);
     if (error?.response?.status === 401) {
       const newToken = await refreshAccessToken();
 
@@ -54,10 +58,10 @@ api.interceptors.response.use(
       }
     }
     showMessage({
-      message: error.message,
+      message: error.response?.data?.message || error.message, // ✅ Access the API's error message
       type: "danger",
     });
-    return Promise.reject(error);
+    return Promise.reject(error.response?.data?.message || error.message,);
     // return Promise.reject(error);
   }
 );

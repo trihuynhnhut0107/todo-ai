@@ -14,33 +14,15 @@ type SignUpPayload = {
   password: string;
 };
 
-export const useSignIn = () => {
-  const setUser = useAuthStore((s) => s.setUser);
-  const setIsAuthenticated = useAuthStore((s) => s.setIsAuthenticated);
-
+export const useSignIn = (callback: any) => {
   const mutation = useMutation({
-    mutationFn: (payload: SignInPayload) => 
-    {
-      // Temporarily bypass API — return hardcoded user
-      return Promise.resolve({
-        id: "demo-1",
-        name: "Demo User",
-        email: payload.email,
-        avatar:"jd.jpg"
-      });
-    },
+    mutationFn: (payload: SignInPayload) => signIn(payload),
     onSuccess: (user) => {
       if (user) {
-        setUser(user);
-        setIsAuthenticated(true);
-        showMessage({ message: "Signed in!", type: "success" });
+        callback && callback();
       } else {
         showMessage({ message: "Sign in failed", type: "danger" });
       }
-    },
-    onError: (err: any) => {
-      const message = err?.message || err?.response?.data?.message || "Sign in failed";
-      showMessage({ message, type: "danger" });
     },
   });
 
@@ -49,24 +31,16 @@ export const useSignIn = () => {
   return { ...m, isPending: m.isLoading ?? m.isPending ?? false };
 };
 
-export const useSignUp = () => {
-  const setUser = useAuthStore((s) => s.setUser);
-  const setIsAuthenticated = useAuthStore((s) => s.setIsAuthenticated);
+export const useSignUp = (callback: any) => {
 
   const mutation = useMutation({
     mutationFn: (payload: SignUpPayload) => signUp(payload),
     onSuccess: (user) => {
       if (user) {
-        setUser(user);
-        setIsAuthenticated(true);
-        showMessage({ message: "Account created!", type: "success" });
+        callback && callback();
       } else {
         showMessage({ message: "Sign up failed", type: "danger" });
       }
-    },
-    onError: (err: any) => {
-      const message = err?.message || err?.response?.data?.message || "Sign up failed";
-      showMessage({ message, type: "danger" });
     },
   });
 
