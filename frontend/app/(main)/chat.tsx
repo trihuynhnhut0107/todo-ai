@@ -82,9 +82,9 @@ const ChatScreen = () => {
         additionalProp2: "string",
         additionalProp3: "string",
       },
-    })
-    getAIMessage(message.trim()).then((response) => {
-      addMessage(response.response, null);
+    }).then((response) => {
+      console.log("AI response:", response);
+      addMessage(response.content, null);
       setIsResponding(false);
     });
     setMessage("");
