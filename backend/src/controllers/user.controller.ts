@@ -122,7 +122,7 @@ export class UserController extends Controller {
     @Request() request: express.Request,
     @Body() updatePushTokenDto: UpdatePushTokenDto
   ): Promise<ApiResponse<null>> {
-    const userId = (request as any).user.id;
+    const userId = request.user!.userId;
     await this.userService.updatePushToken(
       userId,
       updatePushTokenDto.pushToken
@@ -148,7 +148,7 @@ export class UserController extends Controller {
   public async clearPushToken(
     @Request() request: express.Request
   ): Promise<ApiResponse<null>> {
-    const userId = (request as any).user.id;
+    const userId = request.user!.userId;
     await this.userService.clearPushToken(userId);
 
     return {

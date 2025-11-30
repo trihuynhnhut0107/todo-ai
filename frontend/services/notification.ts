@@ -85,13 +85,20 @@ export async function registerAndSavePushToken(): Promise<boolean> {
       console.log("No push token obtained");
       return false;
     }
-
     // Save token to backend
     await api.post("/users/push-token", { pushToken: token });
     console.log("Push token saved to backend");
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to register/save push token:", error);
+    console.error("Error details:", {
+      message: error?.message,
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      url: error?.config?.url,
+      baseURL: error?.config?.baseURL,
+    });
     return false;
   }
 }

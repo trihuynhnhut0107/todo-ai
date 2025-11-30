@@ -1,4 +1,4 @@
-import { signUp } from "@/services/auth";
+import { signIn, signUp } from "@/services/auth";
 import { registerAndSavePushToken } from "@/services/notification";
 import { useMutation } from "@tanstack/react-query";
 import { showMessage } from "react-native-flash-message";
@@ -20,15 +20,7 @@ export const useSignIn = () => {
   const setIsAuthenticated = useAuthStore((s) => s.setIsAuthenticated);
 
   const mutation = useMutation({
-    mutationFn: (payload: SignInPayload) => {
-      // Temporarily bypass API — return hardcoded user
-      return Promise.resolve({
-        id: "demo-1",
-        name: "Demo User",
-        email: payload.email,
-        avatar: "jd.jpg",
-      });
-    },
+    mutationFn: (payload: SignInPayload) => signIn(payload),
     onSuccess: (user) => {
       if (user) {
         setUser(user);
