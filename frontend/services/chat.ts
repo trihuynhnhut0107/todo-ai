@@ -1,4 +1,6 @@
 import api from "@/lib/api";
+import { ChatMessageReq } from "@/types/chat";
+import { th } from "zod/v4/locales";
 
 let cachedSession: any = null;
 
@@ -7,6 +9,15 @@ export async function getAIMessage(
 ): Promise<any> {
     try {
         const res=await api.post("/chat/generate", { message });
+        return res;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function getAIMessage2(params:ChatMessageReq): Promise<any> {
+    try {
+        const res=await api.post("/chat", params);
         return res;
     } catch (error) {
         throw error;

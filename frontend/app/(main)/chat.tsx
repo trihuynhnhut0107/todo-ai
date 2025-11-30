@@ -1,6 +1,11 @@
 import BubbleMessage from "@/components/UI/Chat/BubbleMessage";
 import TypingBubble from "@/components/UI/Chat/TypingBubble";
-import { getAIMessage, getCachedSession, getOrCreateSession } from "@/services/chat";
+import {
+  getAIMessage,
+  getAIMessage2,
+  getCachedSession,
+  getOrCreateSession,
+} from "@/services/chat";
 import useAuthStore from "@/store/auth.store";
 import { useMessageStore } from "@/store/message.store";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,7 +23,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 const ChatScreen = () => {
@@ -67,6 +72,17 @@ const ChatScreen = () => {
     if (message.trim() === "") return;
     setIsResponding(true);
     addMessage(message.trim(), user?.id || null);
+    getAIMessage2({
+      sessionId: getCachedSession()?.id || "",
+      senderId: user?.id || "",
+      content: message.trim(),
+      senderType: "user",
+      metadata: {
+        additionalProp1: "string",
+        additionalProp2: "string",
+        additionalProp3: "string",
+      },
+    })
     getAIMessage(message.trim()).then((response) => {
       addMessage(response.response, null);
       setIsResponding(false);
@@ -197,7 +213,9 @@ const ChatScreen = () => {
               className="flex-1 mt-24" // SỬA LỖI 3: Thêm flex-1 để lấp đầy không gian
               showsVerticalScrollIndicator={false}
               extraData={isResponding}
-              ListFooterComponent={() => (isResponding ? <TypingBubble /> : null)}
+              ListFooterComponent={() =>
+                isResponding ? <TypingBubble /> : null
+              }
             />
           )}
 

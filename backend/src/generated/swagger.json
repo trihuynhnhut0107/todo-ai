@@ -592,7 +592,7 @@
 				"type": "string"
 			},
 			"MessageResponse": {
-				"description": "Message Response DTO\nResponse object containing complete message information from the API",
+				"description": "Message Response DTO\r\nResponse object containing complete message information from the API",
 				"properties": {
 					"id": {
 						"type": "string",
@@ -666,7 +666,7 @@
 				"additionalProperties": false
 			},
 			"CreateMessageDto": {
-				"description": "Create Message DTO\nData transfer object for creating a new message in a session",
+				"description": "Create Message DTO\r\nData transfer object for creating a new message in a session",
 				"properties": {
 					"sessionId": {
 						"type": "string",
@@ -699,7 +699,7 @@
 				"additionalProperties": false
 			},
 			"GenerateResponseResultDto": {
-				"description": "Generate Response Result DTO\nResponse containing the generated text",
+				"description": "Generate Response Result DTO\r\nResponse containing the generated text",
 				"properties": {
 					"response": {
 						"type": "string",
@@ -737,7 +737,7 @@
 				"additionalProperties": false
 			},
 			"GenerateResponseDto": {
-				"description": "Generate Response DTO\nData transfer object for generating a response from a message",
+				"description": "Generate Response DTO\r\nData transfer object for generating a response from a message",
 				"properties": {
 					"message": {
 						"type": "string",
@@ -751,7 +751,7 @@
 				"additionalProperties": false
 			},
 			"SessionResponse": {
-				"description": "Session Response DTO\nResponse object containing complete session information from the API",
+				"description": "Session Response DTO\r\nResponse object containing complete session information from the API",
 				"properties": {
 					"id": {
 						"type": "string",
@@ -814,7 +814,7 @@
 				"additionalProperties": false
 			},
 			"CreateSessionDto": {
-				"description": "Create Session DTO\nData transfer object for creating a new chat session",
+				"description": "Create Session DTO\r\nData transfer object for creating a new chat session",
 				"properties": {
 					"userId": {
 						"type": "string",
@@ -908,7 +908,7 @@
 				"additionalProperties": false
 			},
 			"UpdateMessageDto": {
-				"description": "Update Message DTO\nData transfer object for updating an existing message",
+				"description": "Update Message DTO\r\nData transfer object for updating an existing message",
 				"properties": {
 					"content": {
 						"type": "string",
