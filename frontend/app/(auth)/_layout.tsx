@@ -3,6 +3,7 @@ import { images } from "@/lib/image";
 import useAuthStore from "@/store/auth.store";
 import { useThemeStore } from "@/store/theme.store";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
+import { useQueryClient } from "@tanstack/react-query";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { Redirect, Slot } from "expo-router";
@@ -39,6 +40,7 @@ const AuthLayout = () => {
   const sheetRef = useRef<BottomSheetModal>(null);
   const { isAuthenticated, fetchAuthenticatedUser, logout } = useAuthStore();
   const [isOpen, setOpen] = useState("");
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     Keyboard.dismiss();
@@ -148,12 +150,15 @@ const AuthLayout = () => {
             </Text>
             <CustomButton
               title="Go to Homepage"
-              onPress={fetchAuthenticatedUser}
+              onPress={async () => {
+                await queryClient.invalidateQueries();
+                fetchAuthenticatedUser();
+              }}
             />
             <CustomButton
               title="Cancel"
               style="bg-surface border border-primary"
-              textStyle="!text-primary-500"
+              textStyle="!text-primary"
               onPress={async () => {
                 await logout();
                 setOpen("");

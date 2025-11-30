@@ -61,7 +61,6 @@ const mainLayout = () => {
             backgroundColor: "transparent",
           },
         }}
-        
       >
         <Stack.Screen
           name="chat"
@@ -71,6 +70,7 @@ const mainLayout = () => {
             animationTypeForReplace: "push",
           }}
         />
+     
 
         <Stack.Screen
           name="(tabs)"

@@ -17,7 +17,7 @@ export interface ErrorControl {
 }
 
 export interface MyCustomInput {
-  label: string;
+  label?: string;
 }
 
 interface CustomColorPickerProps extends ErrorControl, MyCustomInput {

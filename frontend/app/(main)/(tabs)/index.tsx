@@ -1,17 +1,56 @@
-import { FontAwesome6, Ionicons } from "@expo/vector-icons";
+import { AntDesign, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { registerForPushNotificationsAsync } from "../../../services/notification";
 import React, { useEffect, useState } from "react";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Modal,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import useAuthStore from "@/store/auth.store";
 import SearchInput from "@/components/Input/SearchInput";
 import { Link, router } from "expo-router";
 import { format } from "date-fns";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useThemeStore } from "@/store/theme.store";
+import useThemeColor from "@/hooks/useThemeColor";
+import CustomInput from "@/components/Input/CustomInput";
+import CustomButton from "@/components/Input/CustomButton";
+import { useUpdateProfile } from "@/query/user.query";
+import z from "zod";
+import { Controller, Form, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
+
+const profileScheme = z.object({
+  name: z.string().min(1, "Please enter your name"),
+});
 
 const Header = () => {
+  const queryClient = useQueryClient();
   const { user, logout } = useAuthStore();
-  const color = useThemeStore();
+  const [isEdit, setEdit] = useState(false);
+  const { mutate: update, isPending: pendingUpdate } = useUpdateProfile();
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(profileScheme),
+    defaultValues: {
+      name: "",
+    },
+  });
+  useEffect(() => {
+    if (user) {
+      reset({ name: user.name });
+    }
+  }, [user]);
+  const color = useThemeColor();
+
   const confirmLogout = () => {
     Alert.alert(
       "Confirm Logout",
@@ -25,12 +64,17 @@ const Header = () => {
           text: "Logout",
           style: "destructive",
           onPress: () => {
+            queryClient.clear();
             logout(); // your logout function here
           },
         },
       ],
       { cancelable: true }
     );
+  };
+
+  const handleUpdate = (data: z.infer<typeof profileScheme>) => {
+    update({ id: user?.id as string, payload: { name: data.name } });
   };
 
   return (
@@ -44,7 +88,6 @@ const Header = () => {
                 {format(new Date(), "MMM dd,yyyy")}
               </Text>
             </View>
-            <Text className="text-white text-xs">{user?.email}</Text>
           </View>
           <View className="ml-4 flex-row gap-3 items-center bg-white/30 p-1 rounded-lg">
             <ThemeToggle />
@@ -61,6 +104,64 @@ const Header = () => {
               <Ionicons name="log-out-outline" size={20} color={"white"} />
             </TouchableOpacity>
           </View>
+        </View>
+
+        <View className="bg-surface p-2 rounded-full flex-col gap-2">
+          <View className="flex-row items-center gap-2">
+            <Ionicons
+              name="person-circle-outline"
+              size={40}
+              color={color.text}
+            />
+            <View>
+              <Text className="text-accent">{user?.name}</Text>
+              <Text className="text-text-secondary opacity-70 text-sm">
+                {user?.email}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setEdit((prev) => !prev)}
+              className="w-10 h-10 bg-white/30 rounded-full flex items-center justify-center ml-auto"
+            >
+              <AntDesign name="edit" size={24} color={color.text} />
+            </TouchableOpacity>
+          </View>
+
+          <Modal visible={isEdit} animationType="fade" transparent>
+            {/* backdrop */}
+            <TouchableOpacity
+              className="flex-1 bg-black/40"
+              activeOpacity={1}
+              onPress={() => setEdit(false)}
+            />
+            <View className="absolute left-6 right-6 top-36 rounded-2xl p-4 shadow-xl gap-2 bg-surface border-2 border-border">
+              <Text className="font-semibold mb-3 text-center text-text text-xl">
+                Edit Your Profile
+              </Text>
+
+              <Controller
+                control={control}
+                name="name"
+                render={({ field }) => (
+                  <View>
+                    <CustomInput
+                      value={field.value}
+                      onChangeText={field.onChange}
+                      label="Username"
+                      placeholder="Enter your username"
+                      error={!!errors.name}
+                    />
+                    <Text className="text-red-500">{errors.name?.message}</Text>
+                  </View>
+                )}
+              />
+              <CustomButton
+                isLoading={pendingUpdate}
+                onPress={handleSubmit(handleUpdate)}
+                title="Update"
+              />
+            </View>
+          </Modal>
         </View>
         <Text className="text-5xl font-bold text-white">
           Good afternoon, {user?.name}
