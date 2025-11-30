@@ -9,6 +9,10 @@ import {
   EventResponse,
   EventQueryDto,
 } from "../dtos/event.dto";
+import {
+  scheduleEventNotification,
+  cancelEventNotification,
+} from "./notification-queue.service";
 
 export class EventService {
   private eventRepository = AppDataSource.getRepository(Event);
@@ -64,6 +68,9 @@ export class EventService {
     });
 
     const savedEvent = await this.eventRepository.save(event);
+
+    // Schedule notification for the event (15 minutes before)
+    await scheduleEventNotification(savedEvent.id, savedEvent.start);
 
     return this.formatEventResponse(savedEvent);
   }
@@ -202,6 +209,14 @@ export class EventService {
 
     const updatedEvent = await this.eventRepository.save(event);
 
+    // Reschedule notification if start time changed or event was updated
+    if (updatedEvent.status !== "cancelled") {
+      await scheduleEventNotification(updatedEvent.id, updatedEvent.start);
+    } else {
+      // Cancel notification if event is cancelled
+      await cancelEventNotification(updatedEvent.id);
+    }
+
     return this.formatEventResponse(updatedEvent);
   }
 
@@ -225,6 +240,9 @@ export class EventService {
     if (!hasAccess) {
       throw new Error("Access denied");
     }
+
+    // Cancel scheduled notification before deleting
+    await cancelEventNotification(eventId);
 
     await this.eventRepository.remove(event);
   }
