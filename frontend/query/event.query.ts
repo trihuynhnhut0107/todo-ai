@@ -47,10 +47,10 @@ export const useUpdateEvent = () => {
   return useMutation({
     mutationFn: updateEvent,
 
-    onSuccess: (_, { id, payload }) => {
+    onSuccess: (_, { id, workspaceId }) => {
       queryClient.invalidateQueries({ queryKey: ["event", id] });
       queryClient.invalidateQueries({
-        queryKey: ["workspace", payload.workspaceId, "events"],
+        queryKey: ["workspace", workspaceId, "events"],
       });
       showMessage({
         message: "Event updated!",

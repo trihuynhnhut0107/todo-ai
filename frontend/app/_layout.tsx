@@ -11,6 +11,9 @@ import {
 } from "@gorhom/bottom-sheet";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import FlashMessage from "react-native-flash-message";
+import ThemeProvider from "@/components/theme/ThemeProvider";
+import Loader from "@/components/UI/Loader";
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -28,18 +31,25 @@ export default function RootLayout() {
 
   if (isLoading)
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" className="text-primary" />
-      </SafeAreaView>
+      <ThemeProvider>
+        <SafeAreaView className="flex-1 justify-center items-center bg-background">
+          <Loader />
+        </SafeAreaView>
+      </ThemeProvider>
     );
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <BottomSheetModalProvider>
-          <Stack screenOptions={{ headerShown: false }} />
-
-          <FlashMessage position="top" />
-        </BottomSheetModalProvider>
+        <ThemeProvider>
+          <BottomSheetModalProvider>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+              }}
+            />
+            <FlashMessage position="top" />
+          </BottomSheetModalProvider>
+        </ThemeProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>
   );

@@ -5,12 +5,13 @@ import { images } from "@/lib/image";
 import { Ionicons } from "@expo/vector-icons";
 import { EventCardProps } from "@/type";
 import { format } from "date-fns";
+import { getColorFromString, getReadableTextColor } from "@/lib/utils";
 
 const EventCard = ({ event }: { event: EventCardProps }) => {
   return (
     <Link href={`/(main)/event/${event.id}`}>
       <View
-        className="flex-row items-start p-3 gap-2 border-2 rounded-lg bg-white "
+        className="flex-row items-start p-3 gap-2 border-2 rounded-lg bg-surface "
         style={{
           borderColor: event.color,
           width: "100%",
@@ -25,19 +26,14 @@ const EventCard = ({ event }: { event: EventCardProps }) => {
         ></View>
         <View className="flex-col flex-1">
           <View className="flex-col items-start gap-1 overflow-hidden">
-            <Text className="text-xl text-black">{event.name}</Text>
-            <Text className="text-gray-500 text-sm">{`${format(
+            <Text className="text-xl text-text">{event.name}</Text>
+            <Text className="text-text-secondary text-sm">{`${format(
               new Date(event.displayStart),
               "HH:mm"
             )} - ${format(new Date(event.displayEnd), "HH:mm")}`}</Text>
             <View className="flex-row relative justify-start">
               {event.assignees?.map((m: any, idx: number) => (
-                <Image
-                  key={idx}
-                  source={images.john_doe}
-                  className="rounded-full size-5 -mr-2"
-                  resizeMode="cover"
-                />
+                <Text>{m.name}</Text>
               ))}
             </View>
           </View>
@@ -45,8 +41,12 @@ const EventCard = ({ event }: { event: EventCardProps }) => {
           <View className="flex-row flex-wrap items-center gap-2 overflow-hidden">
             {event?.tags?.map((t: string, idx: number) => (
               <Text
-                className="bg-black/20 rounded-lg p-1 px-2 text-black text-xs"
+                className=" rounded-lg p-1 px-2 text-xs"
                 key={idx}
+                style={{
+                  backgroundColor: getColorFromString(t),
+                  color: getReadableTextColor(getColorFromString(t)),
+                }}
               >
                 {t}
               </Text>

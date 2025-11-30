@@ -11,7 +11,7 @@ const CustomButton = ({
   isLoading = false,
 }: CustomButtonProps) => {
   return (
-    <TouchableOpacity className={cn("bg-orange-500 border-2 border-orange-400 p-2 rounded-md", style)} onPress={onPress}>
+    <TouchableOpacity className={cn("bg-primary border-2 border-primary p-2 rounded-md", style)} onPress={onPress}>
       {leftIcon}
       <View className="items-center">
         {isLoading ? (

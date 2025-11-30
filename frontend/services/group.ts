@@ -1,10 +1,10 @@
 import api from "@/lib/api";
 import { mockWorkspaces } from "@/lib/mock/workspace";
-import { Workspace, WorkspacePayload } from "@/types/workspace";
+import { Group, GroupMember, GroupPayload } from "@/types/group";
 
 import { DateTimeType } from "@howljs/calendar-kit";
 
-export const getWorkspaces = async (): Promise<Workspace[]> => {
+export const getGroups = async (): Promise<Group[]> => {
   try {
     return await api.get(`/workspaces`);
   } catch (error) {
@@ -12,19 +12,19 @@ export const getWorkspaces = async (): Promise<Workspace[]> => {
   }
 };
 
-export const getWorkspace = async (
+export const getGroup = async (
   id: string
-): Promise<Workspace | undefined> => {
+): Promise<Group | undefined> => {
   return await api.get(`/workspaces/${id}`);
 };
 
-export const getWorkspaceMember = async (
+export const getGroupMember = async (
   id: string
-): Promise<Workspace | undefined> => {
+): Promise<GroupMember[]> => {
   return await api.get(`/workspaces/${id}/members`);
 };
 
-export const addWorkspaceMember = async ({
+export const addGroupMember = async ({
   id,
   payload,
 }: {
@@ -36,7 +36,7 @@ export const addWorkspaceMember = async ({
   return await api.post(`/workspaces/${id}/members`, payload);
 };
 
-export const deleteWorkspaceMember = async ({
+export const deleteGroupMember = async ({
   id,
   payload,
 }: {
@@ -48,20 +48,20 @@ export const deleteWorkspaceMember = async ({
   return await api.delete(`/workspaces/${id}/members`, { data: payload });
 };
 
-export const createWorkspace = async (payload: WorkspacePayload) => {
+export const createGroup = async (payload: GroupPayload) => {
   return await api.post(`/workspaces`, payload);
 };
 
-export const updateWorkspace = async ({
+export const updateGroup= async ({
   id,
   payload,
 }: {
   id: string;
-  payload: WorkspacePayload;
+  payload: GroupPayload;
 }) => {
   return await api.put(`/workspaces/${id}`, payload);
 };
 
-export const deleteWorkspace = async (id: string): Promise<void> => {
+export const deleteGroup= async (id: string): Promise<void> => {
   return await api.delete(`/workspaces/${id}`);
 };
