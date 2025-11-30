@@ -1,13 +1,16 @@
-import { View, Text, StatusBar, KeyboardAvoidingView } from "react-native";
+import { StatusBar, StyleSheet } from "react-native";
 import React from "react";
 import useAuthStore from "@/store/auth.store";
 import { Redirect, Slot } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleSheet } from "react-native";
+import { useNotificationListeners } from "@/hooks/useNotificationListeners";
 
-const mainLayout = () => {
+const MainLayout = () => {
   const { isAuthenticated } = useAuthStore();
+
+  // Set up notification listeners for handling taps
+  useNotificationListeners();
 
   if (!isAuthenticated) return <Redirect href="/sign-in" />;
 
@@ -44,4 +47,4 @@ const mainLayout = () => {
   );
 };
 
-export default mainLayout;
+export default MainLayout;

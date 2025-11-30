@@ -25,6 +25,9 @@ export class User {
   @Column({ default: "user" })
   role!: string;
 
+  @Column({ type: "text", nullable: true })
+  pushToken?: string;
+
   @OneToMany(() => Session, (session) => session.user)
   sessions: Session[];
 
