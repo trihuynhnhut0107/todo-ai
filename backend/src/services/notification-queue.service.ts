@@ -4,27 +4,45 @@ import { NotificationService } from "./notification.service";
 import { AppDataSource } from "../data-source";
 import { Event } from "../entities/event.entity";
 
-// Redis connection for BullMQ
-const redisConnection = new Redis(
-  process.env.REDIS_URL || "redis://localhost:6379",
-  {
-    maxRetriesPerRequest: null,
-  }
-);
+// Lazy-initialized Redis connection and Queue
+let redisConnection: Redis | null = null;
+let notificationQueue: Queue | null = null;
 
-// Queue for event reminder notifications
-export const notificationQueue = new Queue("event-reminders", {
-  connection: redisConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    removeOnFail: 100, // Keep last 100 failed jobs for debugging
-    attempts: 3,
-    backoff: {
-      type: "exponential",
-      delay: 1000,
-    },
-  },
-});
+/**
+ * Get or create the Redis connection lazily
+ */
+function getRedisConnection(): Redis {
+  if (!redisConnection) {
+    redisConnection = new Redis(
+      process.env.REDIS_URL || "redis://localhost:6379",
+      {
+        maxRetriesPerRequest: null,
+      }
+    );
+  }
+  return redisConnection;
+}
+
+/**
+ * Get or create the notification queue lazily
+ */
+function getNotificationQueue(): Queue {
+  if (!notificationQueue) {
+    notificationQueue = new Queue("event-reminders", {
+      connection: getRedisConnection(),
+      defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: 100, // Keep last 100 failed jobs for debugging
+        attempts: 3,
+        backoff: {
+          type: "exponential",
+          delay: 1000,
+        },
+      },
+    });
+  }
+  return notificationQueue;
+}
 
 /**
  * Schedule a notification for an event
@@ -55,7 +73,7 @@ export async function scheduleEventNotification(
   await cancelEventNotification(eventId);
 
   // Schedule new notification job
-  await notificationQueue.add(
+  await getNotificationQueue().add(
     "send-reminder",
     { eventId, reminderMinutes },
     {
@@ -77,7 +95,7 @@ export async function cancelEventNotification(eventId: string): Promise<void> {
   const jobId = `event-reminder-${eventId}`;
 
   try {
-    const job = await notificationQueue.getJob(jobId);
+    const job = await getNotificationQueue().getJob(jobId);
     if (job) {
       await job.remove();
       console.log(`Cancelled notification for event ${eventId}`);
@@ -148,7 +166,7 @@ export function initializeNotificationWorker(): Worker {
         `Sent ${pushTokens.length} notification(s) for event ${eventId}`
       );
     },
-    { connection: redisConnection }
+    { connection: getRedisConnection() }
   );
 
   worker.on("completed", (job) => {
