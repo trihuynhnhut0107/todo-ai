@@ -1,5 +1,4 @@
 import api from "@/lib/api";
-import { mockUser } from "@/lib/mock/auth";
 import { saveAccessToken, saveRefreshToken } from "@/store/storage";
 import { User } from "@/types/auth";
 
