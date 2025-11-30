@@ -1,8 +1,11 @@
 import Expo, { ExpoPushMessage, ExpoPushTicket } from "expo-server-sdk";
 import { Event } from "../entities/event.entity";
+import { AppDataSource } from "../data-source";
+import { User } from "../entities/user.entity";
 
 export class NotificationService {
   private expo: Expo;
+  private userRepository = AppDataSource.getRepository(User);
 
   constructor() {
     this.expo = new Expo();
@@ -91,19 +94,26 @@ export class NotificationService {
     messages: ExpoPushMessage[]
   ): Promise<void> {
     const chunks = this.expo.chunkPushNotifications(messages);
-    const tickets: ExpoPushTicket[] = [];
+    const ticketsWithTokens: { ticket: ExpoPushTicket; token: string }[] = [];
 
     for (const chunk of chunks) {
       try {
         const ticketChunk = await this.expo.sendPushNotificationsAsync(chunk);
-        tickets.push(...ticketChunk);
+        // Map tickets to their corresponding tokens
+        ticketChunk.forEach((ticket, index) => {
+          const token = chunk[index].to as string;
+          ticketsWithTokens.push({ ticket, token });
+        });
       } catch (error) {
         console.error("Error sending push notification chunk:", error);
       }
     }
 
+    // Collect invalid tokens for cleanup
+    const invalidTokens: string[] = [];
+
     // Log any errors from tickets
-    for (const ticket of tickets) {
+    for (const { ticket, token } of ticketsWithTokens) {
       if (ticket.status === "error") {
         console.error(
           `Push notification error: ${ticket.message}`,
@@ -112,10 +122,40 @@ export class NotificationService {
 
         // Handle specific error types
         if (ticket.details?.error === "DeviceNotRegistered") {
-          // TODO: Remove invalid token from database
-          console.log("Device not registered, should remove token");
+          console.log(`Device not registered, removing token: ${token}`);
+          invalidTokens.push(token);
         }
       }
+    }
+
+    // Remove invalid tokens from database
+    if (invalidTokens.length > 0) {
+      await this.removeInvalidTokens(invalidTokens);
+    }
+  }
+
+  /**
+   * Remove invalid push tokens from the database
+   * @param tokens - Array of invalid tokens to remove
+   */
+  private async removeInvalidTokens(tokens: string[]): Promise<void> {
+    if (tokens.length === 0) {
+      return;
+    }
+
+    try {
+      await this.userRepository
+        .createQueryBuilder()
+        .update(User)
+        .set({ pushToken: undefined })
+        .where("pushToken IN (:...tokens)", { tokens })
+        .execute();
+
+      console.log(
+        `Removed ${tokens.length} invalid push token(s) from database`
+      );
+    } catch (error) {
+      console.error("Error removing invalid push tokens:", error);
     }
   }
 
