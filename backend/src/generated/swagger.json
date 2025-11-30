@@ -78,7 +78,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_WorkspaceResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -150,7 +150,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_WorkspaceResponse-Array_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -208,7 +208,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_void_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -257,7 +257,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse__id-string--name-string--email-string--role-string_-Array_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -300,6 +300,150 @@
 					"message",
 					"timestamp"
 				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserResponseDto": {
+				"description": "Response DTO for user information",
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					},
+					"role": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"email",
+					"role",
+					"createdAt",
+					"updatedAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UsersListResponseDto": {
+				"description": "Response DTO for paginated users list",
+				"properties": {
+					"users": {
+						"items": {
+							"$ref": "#/components/schemas/UserResponseDto"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"limit": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"users",
+					"total",
+					"page",
+					"limit",
+					"totalPages"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_UsersListResponseDto_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"$ref": "#/components/schemas/UsersListResponseDto"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_UserResponseDto_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"$ref": "#/components/schemas/UserResponseDto"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateUserDto": {
+				"description": "DTO for updating user information",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "User's full name",
+						"example": "John Doe",
+						"minLength": 1
+					},
+					"email": {
+						"type": "string",
+						"description": "User's email address",
+						"example": "john.doe@example.com",
+						"format": "email",
+						"pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+					},
+					"role": {
+						"type": "string",
+						"description": "User's role",
+						"example": "user"
+					}
+				},
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -394,7 +538,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_EventResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -478,7 +622,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_EventResponse-Array_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -592,7 +736,7 @@
 				"type": "string"
 			},
 			"MessageResponse": {
-				"description": "Message Response DTO\nResponse object containing complete message information from the API",
+				"description": "Message Response DTO\r\nResponse object containing complete message information from the API",
 				"properties": {
 					"id": {
 						"type": "string",
@@ -642,7 +786,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_MessageResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -666,7 +810,7 @@
 				"additionalProperties": false
 			},
 			"CreateMessageDto": {
-				"description": "Create Message DTO\nData transfer object for creating a new message in a session",
+				"description": "Create Message DTO\r\nData transfer object for creating a new message in a session",
 				"properties": {
 					"sessionId": {
 						"type": "string",
@@ -699,7 +843,7 @@
 				"additionalProperties": false
 			},
 			"GenerateResponseResultDto": {
-				"description": "Generate Response Result DTO\nResponse containing the generated text",
+				"description": "Generate Response Result DTO\r\nResponse containing the generated text",
 				"properties": {
 					"response": {
 						"type": "string",
@@ -713,7 +857,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_GenerateResponseResultDto_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -737,7 +881,7 @@
 				"additionalProperties": false
 			},
 			"GenerateResponseDto": {
-				"description": "Generate Response DTO\nData transfer object for generating a response from a message",
+				"description": "Generate Response DTO\r\nData transfer object for generating a response from a message",
 				"properties": {
 					"message": {
 						"type": "string",
@@ -751,7 +895,7 @@
 				"additionalProperties": false
 			},
 			"SessionResponse": {
-				"description": "Session Response DTO\nResponse object containing complete session information from the API",
+				"description": "Session Response DTO\r\nResponse object containing complete session information from the API",
 				"properties": {
 					"id": {
 						"type": "string",
@@ -790,7 +934,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_SessionResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -814,7 +958,7 @@
 				"additionalProperties": false
 			},
 			"CreateSessionDto": {
-				"description": "Create Session DTO\nData transfer object for creating a new chat session",
+				"description": "Create Session DTO\r\nData transfer object for creating a new chat session",
 				"properties": {
 					"userId": {
 						"type": "string",
@@ -828,7 +972,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse__sessions-SessionResponse-Array--total-number__": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -868,7 +1012,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse__messages-MessageResponse-Array--total-number__": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -908,7 +1052,7 @@
 				"additionalProperties": false
 			},
 			"UpdateMessageDto": {
-				"description": "Update Message DTO\nData transfer object for updating an existing message",
+				"description": "Update Message DTO\r\nData transfer object for updating an existing message",
 				"properties": {
 					"content": {
 						"type": "string",
@@ -923,7 +1067,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_MessageResponse-Array_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -990,7 +1134,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_AuthResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -1067,7 +1211,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse__accessToken-string__": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -1138,7 +1282,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_UserResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -1763,6 +1907,243 @@
 						}
 					}
 				]
+			}
+		},
+		"/api/users": {
+			"get": {
+				"operationId": "GetAllUsers",
+				"responses": {
+					"200": {
+						"description": "Users retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_UsersListResponseDto_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get all users in the system with pagination",
+				"summary": "Get all users",
+				"tags": [
+					"Users"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "Page number (default: 1)",
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"default": 1,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Number of users per page (default: 10)",
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 10,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/users/{userId}": {
+			"get": {
+				"operationId": "GetUserById",
+				"responses": {
+					"200": {
+						"description": "User retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_UserResponseDto_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "User not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get a specific user by ID",
+				"summary": "Get user by ID",
+				"tags": [
+					"Users"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The user's unique identifier",
+						"in": "path",
+						"name": "userId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdateUser",
+				"responses": {
+					"200": {
+						"description": "User updated successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_UserResponseDto_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "User not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "Email already in use",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Update user information",
+				"summary": "Update user",
+				"tags": [
+					"Users"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The user's unique identifier",
+						"in": "path",
+						"name": "userId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "User update details",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateUserDto",
+								"description": "User update details"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/api/events": {
