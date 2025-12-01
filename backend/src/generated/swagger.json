@@ -375,7 +375,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_UsersListResponseDto_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -399,7 +399,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_UserResponseDto_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -444,6 +444,49 @@
 						"example": "user"
 					}
 				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_null_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdatePushTokenDto": {
+				"description": "DTO for updating push token",
+				"properties": {
+					"pushToken": {
+						"type": "string",
+						"description": "Expo push token for notifications",
+						"example": "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]"
+					}
+				},
+				"required": [
+					"pushToken"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -2144,6 +2187,122 @@
 						}
 					}
 				}
+			}
+		},
+		"/api/users/push-token": {
+			"post": {
+				"operationId": "UpdatePushToken",
+				"responses": {
+					"200": {
+						"description": "Push token updated successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_null_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Update the current user's push token for notifications",
+				"summary": "Update push token",
+				"tags": [
+					"Users"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "Push token details",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdatePushTokenDto",
+								"description": "Push token details"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "ClearPushToken",
+				"responses": {
+					"200": {
+						"description": "Push token cleared successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_null_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Clear the current user's push token (e.g., on logout)",
+				"summary": "Clear push token",
+				"tags": [
+					"Users"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
 			}
 		},
 		"/api/events": {

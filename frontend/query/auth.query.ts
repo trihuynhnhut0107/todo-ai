@@ -1,4 +1,5 @@
 import { signIn, signUp } from "@/services/auth";
+import { registerAndSavePushToken } from "@/services/notification";
 import { useMutation } from "@tanstack/react-query";
 import { showMessage } from "react-native-flash-message";
 import useAuthStore from "@/store/auth.store";
@@ -15,14 +16,28 @@ type SignUpPayload = {
 };
 
 export const useSignIn = (callback: any) => {
+  const { setIsAuthenticated,setUser } = useAuthStore();
   const mutation = useMutation({
     mutationFn: (payload: SignInPayload) => signIn(payload),
     onSuccess: (user) => {
       if (user) {
         callback && callback();
+        setUser(user);
+        setIsAuthenticated(true);
+        showMessage({ message: "Signed in!", type: "success" });
+
+        // Register for push notifications after successful login
+        registerAndSavePushToken().catch((err) => {
+          console.warn("Failed to register push notifications:", err);
+        });
       } else {
         showMessage({ message: "Sign in failed", type: "danger" });
       }
+    },
+    onError: (err: any) => {
+      const message =
+        err?.message || err?.response?.data?.message || "Sign in failed";
+      showMessage({ message, type: "danger" });
     },
   });
 
@@ -32,15 +47,28 @@ export const useSignIn = (callback: any) => {
 };
 
 export const useSignUp = (callback: any) => {
-
+ const { setIsAuthenticated,setUser } = useAuthStore();
   const mutation = useMutation({
     mutationFn: (payload: SignUpPayload) => signUp(payload),
     onSuccess: (user) => {
       if (user) {
         callback && callback();
+        setUser(user);
+        setIsAuthenticated(true);
+        showMessage({ message: "Account created!", type: "success" });
+
+        // Register for push notifications after successful signup
+        registerAndSavePushToken().catch((err) => {
+          console.warn("Failed to register push notifications:", err);
+        });
       } else {
         showMessage({ message: "Sign up failed", type: "danger" });
       }
+    },
+    onError: (err: any) => {
+      const message =
+        err?.message || err?.response?.data?.message || "Sign up failed";
+      showMessage({ message, type: "danger" });
     },
   });
 
