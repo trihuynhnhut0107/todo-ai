@@ -84,12 +84,7 @@ const ChatScreen = () => {
       sessionId: getCachedSession()?.id || "",
       senderId: user?.id || "",
       content: message.trim(),
-      senderType: "user",
-      metadata: {
-        additionalProp1: "string",
-        additionalProp2: "string",
-        additionalProp3: "string",
-      },
+      senderType: "user"
     }).then((response) => {
       console.log("AI response:", response);
       addMessage(response.content, null);
@@ -117,9 +112,9 @@ const ChatScreen = () => {
 
     // Start speech recognition
     ExpoSpeechRecognitionModule.start({
-      lang: "vi-VN", // đổi sang tiếng Việt
-      interimResults: true, // nhận partial text
-      continuous: false,   // false nếu muốn tự stop sau khi nói xong
+      lang: "vi-VN", 
+      interimResults: true, 
+      continuous: false,  
     });
   };
 
@@ -150,11 +145,8 @@ const ChatScreen = () => {
       {/* KAV là cha bọc toàn bộ nội dung cần điều chỉnh */}
       <KeyboardAvoidingView
         className="flex-1"
-        // SỬA LỖI 1: Chỉ định behavior cho Android
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        // SỬA LỖI 2: Bỏ keyboardVerticalOffset={500}
-        // Thêm offset nếu có header CỐ ĐỊNH, ở đây header cuộn theo nên không cần
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        behavior={Platform.OS === "ios" ? "padding" : "padding"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 20}
       >
         {/* View này chứa toàn bộ nội dung (header, list, input) */}
         <View className="flex-1 p-5">
