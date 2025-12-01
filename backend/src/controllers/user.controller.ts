@@ -1,10 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Path,
+  Post,
   Put,
   Query,
+  Request,
   Response,
   Route,
   Security,
@@ -14,10 +17,12 @@ import {
 import { UserService } from "../services/user.service";
 import {
   UpdateUserDto,
+  UpdatePushTokenDto,
   UserResponseDto,
   UsersListResponseDto,
 } from "../dtos/user.dto";
 import { ApiResponse, ErrorResponse } from "../types/api-response.types";
+import * as express from "express";
 
 @Route("api/users")
 @Tags("Users")
@@ -98,6 +103,58 @@ export class UserController extends Controller {
       success: true,
       message: "User updated successfully",
       data: result,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Update the current user's push token for notifications
+   * @summary Update push token
+   * @param updatePushTokenDto Push token details
+   * @returns Success message
+   */
+  @Post("push-token")
+  @SuccessResponse("200", "Push token updated successfully")
+  @Response<ErrorResponse>("401", "Unauthorized")
+  @Response<ErrorResponse>("422", "Validation Error")
+  @Response<ErrorResponse>("500", "Internal Server Error")
+  public async updatePushToken(
+    @Request() request: express.Request,
+    @Body() updatePushTokenDto: UpdatePushTokenDto
+  ): Promise<ApiResponse<null>> {
+    const userId = request.user!.userId;
+    await this.userService.updatePushToken(
+      userId,
+      updatePushTokenDto.pushToken
+    );
+
+    return {
+      success: true,
+      message: "Push token updated successfully",
+      data: null,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Clear the current user's push token (e.g., on logout)
+   * @summary Clear push token
+   * @returns Success message
+   */
+  @Delete("push-token")
+  @SuccessResponse("200", "Push token cleared successfully")
+  @Response<ErrorResponse>("401", "Unauthorized")
+  @Response<ErrorResponse>("500", "Internal Server Error")
+  public async clearPushToken(
+    @Request() request: express.Request
+  ): Promise<ApiResponse<null>> {
+    const userId = request.user!.userId;
+    await this.userService.clearPushToken(userId);
+
+    return {
+      success: true,
+      message: "Push token cleared successfully",
+      data: null,
       timestamp: new Date().toISOString(),
     };
   }

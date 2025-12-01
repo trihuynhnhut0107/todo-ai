@@ -25,6 +25,17 @@ export interface UpdateUserDto {
 }
 
 /**
+ * DTO for updating push token
+ */
+export interface UpdatePushTokenDto {
+  /**
+   * Expo push token for notifications
+   * @example "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]"
+   */
+  pushToken: string;
+}
+
+/**
  * Response DTO for user information
  */
 export interface UserResponseDto {

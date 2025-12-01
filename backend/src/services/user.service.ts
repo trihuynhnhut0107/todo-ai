@@ -115,4 +115,36 @@ export class UserService {
       updatedAt: updatedUser.updatedAt,
     };
   }
+
+  /**
+   * Update user's push token for notifications
+   */
+  async updatePushToken(userId: string, pushToken: string): Promise<void> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    user.pushToken = pushToken;
+    await this.userRepository.save(user);
+  }
+
+  /**
+   * Clear user's push token (e.g., on logout)
+   */
+  async clearPushToken(userId: string): Promise<void> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    user.pushToken = undefined;
+    await this.userRepository.save(user);
+  }
 }

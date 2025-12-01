@@ -1,5 +1,3 @@
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-
 import axios from "axios";
 import {
   clearTokens,
@@ -9,6 +7,7 @@ import {
 } from "@/store/storage";
 import { navigate } from "expo-router/build/global-state/routing";
 import { showMessage } from "react-native-flash-message";
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const api = axios.create({
   baseURL: BASE_URL,

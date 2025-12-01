@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { clearTokens, getRefreshToken } from "@/store/storage";
-import { getToken, getUser, signOut } from "@/services/auth";
+import { getUser } from "@/services/auth";
+import { clearPushToken } from "@/services/notification";
 import { User } from "@/types/auth";
 
 type AuthState = {
@@ -26,6 +27,13 @@ const useAuthStore = create<AuthState>((set) => ({
   setLoading: (isLoading) => set({ isLoading }),
 
   logout: async () => {
+    // Clear push token from backend before logging out
+    try {
+      await clearPushToken();
+    } catch (error) {
+      console.warn("Failed to clear push token:", error);
+    }
+
     set({ user: null, isAuthenticated: false });
     await clearTokens();
   },
