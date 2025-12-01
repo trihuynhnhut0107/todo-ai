@@ -1,6 +1,5 @@
 import api from "@/lib/api";
 import { ChatMessageReq } from "@/types/chat";
-import { th } from "zod/v4/locales";
 
 let cachedSession: any = null;
 

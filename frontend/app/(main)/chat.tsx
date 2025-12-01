@@ -1,10 +1,9 @@
 import BubbleMessage from "@/components/UI/Chat/BubbleMessage";
 import TypingBubble from "@/components/UI/Chat/TypingBubble";
 import {
-  getAIMessage,
   getAIMessage2,
   getCachedSession,
-  getOrCreateSession,
+  getOrCreateSession
 } from "@/services/chat";
 import useAuthStore from "@/store/auth.store";
 import { useMessageStore } from "@/store/message.store";
@@ -26,6 +25,11 @@ import {
   View,
 } from "react-native";
 
+// import {
+//   ExpoSpeechRecognitionModule,
+//   useSpeechRecognitionEvent,
+// } from "expo-speech-recognition";
+
 const ChatScreen = () => {
   const inputRef = React.useRef<TextInput>(null);
   const [isResponding, setIsResponding] = useState(false);
@@ -35,6 +39,9 @@ const ChatScreen = () => {
 
   const messages = useMessageStore((state) => state.messages);
   const addMessage = useMessageStore((state) => state.addMessage);
+
+  // const [recognizing, setRecognizing] = useState(false);
+  // const [transcript, setTranscript] = useState("");
 
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", () => {});
@@ -89,6 +96,36 @@ const ChatScreen = () => {
     });
     setMessage("");
   };
+
+  // useSpeechRecognitionEvent("start", () => setRecognizing(true));
+  //   useSpeechRecognitionEvent("end", () => setRecognizing(false));
+  //   useSpeechRecognitionEvent("result", (event) => {
+  //   setTranscript(event.results[0]?.transcript ?? "");
+  // });
+  // useSpeechRecognitionEvent("error", (event) => {
+  //   console.log("Speech error:", event.error, event.message);
+  // });
+
+  // // --- Start Speech Recognition ---
+  // const handleStart = async () => {
+  //   const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+  //   if (!result.granted) {
+  //     console.warn("Permissions not granted", result);
+  //     return;
+  //   }
+
+  //   // Start speech recognition
+  //   ExpoSpeechRecognitionModule.start({
+  //     lang: "vi-VN", // đổi sang tiếng Việt
+  //     interimResults: true, // nhận partial text
+  //     continuous: false,   // false nếu muốn tự stop sau khi nói xong
+  //   });
+  // };
+
+  // // --- Stop Speech Recognition ---
+  // const handleStop = () => {
+  //   ExpoSpeechRecognitionModule.stop();
+  // };
 
   return (
     <View className="flex-1 bg-white">
@@ -230,7 +267,7 @@ const ChatScreen = () => {
                 className="flex-1 text-gray-800 pl-4 text-base"
                 placeholder="Type a message..."
                 placeholderTextColor="#9CA3AF"
-                value={message}
+                value={ message}
                 onChangeText={setMessage}
                 returnKeyType="send"
               />
