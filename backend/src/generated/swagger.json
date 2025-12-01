@@ -2952,8 +2952,8 @@
 						}
 					}
 				},
-				"description": "Handle chat message through LangGraph",
-				"summary": "Process chat message",
+				"description": "Handle chat message through LangChain Agent",
+				"summary": "Process chat message with event management agent",
 				"tags": [
 					"Chat"
 				],
