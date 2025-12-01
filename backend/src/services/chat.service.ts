@@ -10,11 +10,15 @@ import {
   CreateSessionDto,
 } from "../dtos/chat.dto";
 import LanggraphService, { LanggraphState } from "./langgraph.service";
+import { LangchainService } from "./langchain.service";
 import { SenderType } from "../enums/role.enum";
 import { AIMessage, HumanMessage } from "@langchain/core/messages";
 
 export class ChatService {
-  constructor(private langgraphService: LanggraphService) {}
+  constructor(
+    private langgraphService: LanggraphService,
+    private langchainService?: LangchainService
+  ) {}
   private messageRepository = AppDataSource.getRepository(Message);
   private sessionRepository = AppDataSource.getRepository(Session);
 
@@ -411,6 +415,56 @@ export class ChatService {
       content: graphResult.response,
       senderType: SenderType.BOT,
     };
+    const response = await this.createMessage(createdBotMessage);
+    return response;
+  }
+
+  public async handleChatWithAgent(
+    createMessageDto: CreateMessageDto
+  ): Promise<MessageResponse> {
+    // Validate langchainService is available
+    if (!this.langchainService) {
+      throw new Error("LangchainService is not available");
+    }
+
+    // Create message record from user input
+    await this.createMessage(createMessageDto);
+
+    const sessionMessages = await this.getSessionMessages(
+      createMessageDto.sessionId
+    );
+
+    const baseMessages = sessionMessages.messages
+      .map((m) => {
+        if (m.senderType === SenderType.USER) {
+          return new HumanMessage(m.content);
+        }
+        if (m.senderType === SenderType.BOT) {
+          return new AIMessage(m.content);
+        }
+        return undefined;
+      })
+      .filter((msg): msg is HumanMessage | AIMessage => msg !== undefined);
+
+    // Invoke agent with user message and userId for context
+    const agentResult = await this.langchainService.generateAgentResponse(
+      baseMessages,
+      createMessageDto.senderId
+    );
+
+    // Create a record for the agent response
+    const createdBotMessage: CreateMessageDto = {
+      sessionId: createMessageDto.sessionId,
+      senderId: `${createMessageDto.sessionId}-agent`,
+      content: agentResult.response,
+      senderType: SenderType.BOT,
+      metadata: {
+        toolsUsed: agentResult.toolsUsed,
+        type: "agent",
+      },
+    };
+
+    // Save agent response to database
     const response = await this.createMessage(createdBotMessage);
     return response;
   }

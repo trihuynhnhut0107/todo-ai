@@ -1,6 +1,7 @@
 require("dotenv").config();
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { DetectIntentPromptTemplate } from "../prompts/prompt-templates/detect-intent.prompt";
+import { agentAssistantPrompt } from "../prompts/agent-response.prompt";
 import {
   BaseMessage,
   HumanMessage,
@@ -8,10 +9,13 @@ import {
 } from "@langchain/core/messages";
 import { IntentType } from "../enums/chat.enum";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { allTools } from "../tools/index";
+import { createAgent } from "langchain";
 
 export class LangchainService {
   private responseModel: ChatGoogleGenerativeAI;
   private detectIntentModel: ChatGoogleGenerativeAI;
+  private agent: any;
 
   constructor() {
     this.responseModel = new ChatGoogleGenerativeAI({
@@ -25,6 +29,18 @@ export class LangchainService {
       temperature: 0,
       maxRetries: 2,
       apiKey: process.env.GOOGLE_API_KEY,
+    });
+
+    // Create agent with tools for event management
+    const agentModel = new ChatGoogleGenerativeAI({
+      model: "gemini-2.5-flash-lite",
+      maxRetries: 2,
+      apiKey: process.env.GOOGLE_API_KEY,
+    });
+
+    this.agent = createAgent({
+      model: agentModel,
+      tools: allTools,
     });
   }
 
@@ -135,6 +151,76 @@ export class LangchainService {
         error
       );
       throw new Error("Failed to detect user intent");
+    }
+  }
+
+  /**
+   * Generate response using agent with tool access
+   * Handles event creation, querying, and management through natural language
+   *
+   * @param sessionMessages Array of LangChain BaseMessage objects with full conversation history
+   * @param userId The ID of the user making the request
+   * @returns Agent response and list of tools used
+   */
+  async generateAgentResponse(
+    sessionMessages: BaseMessage[],
+    userId: string
+  ): Promise<{
+    response: string;
+    toolsUsed: string[];
+  }> {
+    try {
+      // Convert session messages to formatted string for context
+      let formattedSessionMessages = sessionMessages
+        .map((msg) => {
+          const role = msg instanceof HumanMessage ? "User" : "Assistant";
+          const content =
+            typeof msg.content === "string"
+              ? msg.content
+              : JSON.stringify(msg.content);
+          return `${role}: ${content}`;
+        })
+        .join("\n");
+
+      // Add userId context to the formatted messages for the agent
+      formattedSessionMessages = `User ID: ${userId}\n\n${formattedSessionMessages}`;
+
+      // Format messages using the agent assistant prompt template
+      const promptMessages = await agentAssistantPrompt.formatMessages({
+        messages: formattedSessionMessages,
+      });
+
+      const input = {
+        messages: promptMessages,
+      };
+
+      // Invoke the agent with formatted prompt and full session history
+      const result = await this.agent.invoke(input);
+
+      // Extract the final message from the agent
+      const lastMessage = result.messages[result.messages.length - 1];
+      const response =
+        typeof lastMessage.content === "string"
+          ? lastMessage.content
+          : JSON.stringify(lastMessage.content);
+
+      // Extract tool names used during execution
+      const toolsUsed: string[] = [];
+      for (const message of result.messages) {
+        if (message.tool_calls && Array.isArray(message.tool_calls)) {
+          toolsUsed.push(
+            ...message.tool_calls.map((call: any) => call.name || "unknown")
+          );
+        }
+      }
+
+      return {
+        response,
+        toolsUsed: [...new Set(toolsUsed)], // Remove duplicates
+      };
+    } catch (error) {
+      console.error("Error generating agent response:", error);
+      throw new Error("Failed to generate agent response");
     }
   }
 }
