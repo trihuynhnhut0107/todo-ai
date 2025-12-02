@@ -1,8 +1,9 @@
 import React from "react";
 import { View, Text } from "react-native";
+import AIMessageRenderer from "./AIMessageRenderer";
 
 type BubbleProps = {
-  author: string|null|undefined;
+  author: string | null | undefined;
   message: string;
 };
 
@@ -15,9 +16,13 @@ const BubbleMessage: React.FC<BubbleProps> = ({ author, message }) => {
           : "bg-gray-200 self-start rounded-bl-none"
       }`}
     >
-      <Text className={`${author !== null ? "text-white" : "text-gray-800"}`}>
-        {message}
-      </Text>
+      {author !== null ? (
+        <Text className="text-white">
+          {message}
+        </Text>
+      ) : (
+        <AIMessageRenderer content={message} />
+      )}
     </View>
   );
 };

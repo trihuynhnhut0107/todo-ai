@@ -1,6 +1,7 @@
 import BubbleMessage from "@/components/UI/Chat/BubbleMessage";
 import TypingBubble from "@/components/UI/Chat/TypingBubble";
 import {
+  getAIMessage,
   getAIMessage2,
   getCachedSession,
   getOrCreateSession
