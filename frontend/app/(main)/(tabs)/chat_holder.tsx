@@ -3,7 +3,7 @@ import React from 'react'
 import { Redirect } from 'expo-router'
 
 const chat_holder = () => {
-  return null
+  return <Redirect href="/(main)/chat"  />
   
 }
 

@@ -15,14 +15,13 @@ type SignUpPayload = {
   password: string;
 };
 
-export const useSignIn = () => {
-  const setUser = useAuthStore((s) => s.setUser);
-  const setIsAuthenticated = useAuthStore((s) => s.setIsAuthenticated);
-
+export const useSignIn = (callback: any) => {
+  const { setIsAuthenticated,setUser } = useAuthStore();
   const mutation = useMutation({
     mutationFn: (payload: SignInPayload) => signIn(payload),
     onSuccess: (user) => {
       if (user) {
+        callback && callback();
         setUser(user);
         setIsAuthenticated(true);
         showMessage({ message: "Signed in!", type: "success" });
@@ -47,14 +46,13 @@ export const useSignIn = () => {
   return { ...m, isPending: m.isLoading ?? m.isPending ?? false };
 };
 
-export const useSignUp = () => {
-  const setUser = useAuthStore((s) => s.setUser);
-  const setIsAuthenticated = useAuthStore((s) => s.setIsAuthenticated);
-
+export const useSignUp = (callback: any) => {
+ const { setIsAuthenticated,setUser } = useAuthStore();
   const mutation = useMutation({
     mutationFn: (payload: SignUpPayload) => signUp(payload),
     onSuccess: (user) => {
       if (user) {
+        callback && callback();
         setUser(user);
         setIsAuthenticated(true);
         showMessage({ message: "Account created!", type: "success" });

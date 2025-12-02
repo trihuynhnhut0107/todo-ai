@@ -1,6 +1,8 @@
 import AgendaHeader from "@/components/UI/Calendar/AgendaHeader";
 import EventCard from "@/components/UI/Calendar/EventCard";
+import Loader from "@/components/UI/Loader";
 import { SelectedDateContext } from "@/context/selectedDate";
+import useThemeColor from "@/hooks/useThemeColor";
 import { getDatesBetween, spreadEvent } from "@/lib/utils";
 import {
   useCreateEvent,
@@ -8,7 +10,7 @@ import {
   useEvents,
   useUpdateEvent,
 } from "@/query/event.query";
-import { useWorkSpaceById } from "@/query/workspace.query";
+import { useGroupById } from "@/query/group.query";
 import { EventPayload } from "@/types/event";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
@@ -45,6 +47,7 @@ import {
 } from "react-native-gesture-handler";
 
 const workspaceDetail = () => {
+  const color = useThemeColor()
   const { id } = useLocalSearchParams<{ id: string }>();
   const sheetRef = useRef<BottomSheetModal>(null);
   const calendarRef = useRef<CalendarKitHandle>(null);
@@ -55,10 +58,10 @@ const workspaceDetail = () => {
   const [isOpen, setOpen] = useState(false);
   const [calendarLoaded, setCalendarLoaded] = useState(false);
   const {
-    data: workspace,
+    data: group,
     isLoading: pendingWorkspace,
     refetch: refetchWorkspace,
-  } = useWorkSpaceById(id);
+  } = useGroupById(id);
 
   const {
     data: events,
@@ -151,7 +154,7 @@ const workspaceDetail = () => {
       value={{ selected, selectDate: handleSelectDate }}
     >
       <View className="flex-1 ">
-        <View className="overflow-display shadow-sm bg-white z-50">
+        <View className="overflow-display shadow-sm z-50">
           <ScrollView
             contentContainerStyle={{ flexGrow: 0 }}
             refreshControl={
@@ -161,25 +164,33 @@ const workspaceDetail = () => {
               />
             }
           >
-            <AgendaHeader workspace={workspace} events={events} />
+            <AgendaHeader group={group} events={events} />
           </ScrollView>
         </View>
 
         <View className="flex-1">
           <View
-            className="flex-1 absolute size-full items-center justify-center bg-white"
+            className="flex-1 absolute size-full items-center justify-center bg-background"
             style={{
               display: !pendingEvents && calendarLoaded ? "none" : "flex",
             }}
           >
-            <ActivityIndicator size={"large"} color={"black"} />
+             <Loader />
           </View>
           <CalendarContainer
             onLoad={() => setCalendarLoaded(true)}
             theme={{
               colors: {
-                // background:"transparent",
+                background:color.background,
                 // surface:"white"
+                text: color.text,
+                border: color.border,
+                onBackground: color.text,
+                onPrimary: color.text,
+                onSurface: color.text,
+              },
+              textStyle: {
+                color: color.text,
               },
               eventContainerStyle: {
                 backgroundColor: "transparent",
@@ -206,7 +217,7 @@ const workspaceDetail = () => {
           // snapPoints={snapPoints}
           enablePanDownToClose
           backgroundComponent={() => (
-            <View className=" absolute top-0 left-0 right-0 bottom-0 bg-orange-500/80 shadow-xl rounded-t-3xl"></View>
+            <View className=" absolute top-0 left-0 right-0 bottom-0 bg-surface shadow-xl rounded-t-3xl"></View>
           )}
           backdropComponent={() => (
             <BlurView
@@ -236,13 +247,13 @@ const workspaceDetail = () => {
               headerStyle={{}}
               theme={{
                 calendarBackground: "transparent",
-                textSectionTitleColor: "white",
-                selectedDayBackgroundColor: "white",
-                monthTextColor: "white",
-                selectedDayTextColor: "orange",
-                todayTextColor: "white",
-                dayTextColor: "white",
-                textDisabledColor: "green",
+                textSectionTitleColor: color.text,
+                selectedDayBackgroundColor: color.accent,
+                selectedDayTextColor: "white",
+                monthTextColor: color.text,
+                todayTextColor: color.text,
+                dayTextColor: color.text,
+                textDisabledColor: color.muted,
 
                 textMonthFontWeight: "bold",
                 textMonthFontSize: 32,
@@ -258,16 +269,16 @@ const workspaceDetail = () => {
 
         <TouchableOpacity
           onPress={() =>
-            router.push(`/(main)/workspace/${id}/event_form/create`)
+            router.push(`/(main)/group/${id}/event_form/create`)
           }
-          className="absolute left-5 bottom-5 flex-row items-center p-3 bg-orange-400 rounded-full "
+          className="absolute left-5 bottom-5 flex-row items-center p-3 bg-primary rounded-full "
         >
           <Ionicons name="add" size={32} color="white" />
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => setOpen(true)}
-          className="absolute right-5 bottom-5 flex-row items-center p-3 bg-orange-400 rounded-full "
+          className="absolute right-5 bottom-5 flex-row items-center p-3 bg-primary rounded-full "
         >
           <Ionicons name="calendar" size={32} color="white" />
         </TouchableOpacity>

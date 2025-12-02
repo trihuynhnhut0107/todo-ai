@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Modal } from "react-native";
 import ColorPicker from "react-native-wheel-color-picker";
 import cn from "clsx";
+import CustomButton from "./CustomButton";
 export default function CustomColorPicker({
   label,
   error,
@@ -13,12 +14,12 @@ export default function CustomColorPicker({
   const [color, setColor] = useState(selectedColor || "#F97316");
 
   return (
-    <View>
+    <View className="w-full">
       {label && (
         <Text
           className={cn(
-            "text-base text-start w-full font-quicksand-medium text-gray-500 pl-2",
-            open && "text-orange-500 font-bold",
+            "text-base text-start w-full font-quicksand-medium text-text-secondary pl-2",
+            open && "!text-primary",
             error && "text-red-500"
           )}
         >
@@ -27,13 +28,15 @@ export default function CustomColorPicker({
       )}
       <TouchableOpacity
         onPress={() => setOpen(true)}
-        className="border-2 border-gray-300 rounded-lg p-2 flex-row items-center gap-3 bg-white"
+        className="border-2 border-border rounded-lg  p-2 flex-row items-center gap-3 "
       >
         <View
           style={{ backgroundColor: selectedColor || "#ddd" }}
-          className="w-6 h-6 rounded-full"
+          className="w-6 h-6 rounded-lg flex-1"
         />
-        <Text>{selectedColor || "Select color"}</Text>
+        <Text className="text-text-tertiary">
+          {selectedColor || "Select color"}
+        </Text>
       </TouchableOpacity>
 
       <Modal visible={open} animationType="fade" transparent>
@@ -45,8 +48,8 @@ export default function CustomColorPicker({
         />
 
         {/* color picker panel */}
-        <View className="absolute left-6 right-6 top-36 bg-white rounded-2xl p-4 shadow-xl">
-          <Text className="font-semibold mb-3 text-center">Pick a Color</Text>
+        <View className="absolute left-6 right-6 top-36 rounded-2xl p-4 shadow-xl gap-2 bg-surface border-2 border-border">
+          <Text className="font-semibold mb-3 text-center text-text text-xl">Pick a Color</Text>
 
           <ColorPicker
             color={color}
@@ -57,15 +60,13 @@ export default function CustomColorPicker({
             onColorChange={setColor}
           />
 
-          <TouchableOpacity
+          <CustomButton
             onPress={() => {
               onSelect(color);
               setOpen(false);
             }}
-            className="mt-5 bg-orange-500 py-2 rounded-lg"
-          >
-            <Text className="text-center text-white font-semibold">Select</Text>
-          </TouchableOpacity>
+            title="Select"
+          />
         </View>
       </Modal>
     </View>

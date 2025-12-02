@@ -14,13 +14,16 @@ import { useSignUp } from "@/query/auth.query";
 
 export const schema = z.object({
   name: z.string().min(1, "Please enter name"),
-  email: z.string().email().min(1, "Please enter email"),
-  password: z.string().min(1, "Please enter password"),
+  email: z
+    .string()
+    .min(1, "Please enter email")
+    .email("Please enter a valid email"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 const SignUp = () => {
   const { setOpen } = useContext(modalContext);
-  const { mutate: signUp, isPending } = useSignUp();
+  const { mutate: signUp, isPending } = useSignUp(() => setOpen("signUp"));
   const {
     control,
     handleSubmit,
@@ -38,7 +41,7 @@ const SignUp = () => {
     signUp({ name: data.name, email: data.email, password: data.password });
   }
   return (
-    <View className="gap-5 rounded-lg px-5 bg-white backdrop:blur-sm p-4 ">
+    <View className="gap-5 rounded-lg px-5 bg-surface backdrop:blur-sm p-4 ">
       <Controller
         control={control}
         name="name"
@@ -91,7 +94,7 @@ const SignUp = () => {
         onPress={handleSubmit(onSubmit)}
       />
 
-      <Text className="base-regular text-center">
+      <Text className="base-regular text-center text-text-tertiary">
         Already have an account?{" "}
         <Link href={"/sign-in"} className="base-bold text-orange-500">
           Sign in

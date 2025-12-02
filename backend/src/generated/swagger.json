@@ -78,7 +78,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_WorkspaceResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -150,7 +150,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_WorkspaceResponse-Array_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -208,7 +208,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_void_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -257,7 +257,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse__id-string--name-string--email-string--role-string_-Array_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -375,7 +375,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_UsersListResponseDto_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -399,7 +399,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_UserResponseDto_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -581,7 +581,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_EventResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -665,7 +665,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_EventResponse-Array_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -779,7 +779,7 @@
 				"type": "string"
 			},
 			"MessageResponse": {
-				"description": "Message Response DTO\nResponse object containing complete message information from the API",
+				"description": "Message Response DTO\r\nResponse object containing complete message information from the API",
 				"properties": {
 					"id": {
 						"type": "string",
@@ -829,7 +829,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_MessageResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -853,7 +853,7 @@
 				"additionalProperties": false
 			},
 			"CreateMessageDto": {
-				"description": "Create Message DTO\nData transfer object for creating a new message in a session",
+				"description": "Create Message DTO\r\nData transfer object for creating a new message in a session",
 				"properties": {
 					"sessionId": {
 						"type": "string",
@@ -886,7 +886,7 @@
 				"additionalProperties": false
 			},
 			"GenerateResponseResultDto": {
-				"description": "Generate Response Result DTO\nResponse containing the generated text",
+				"description": "Generate Response Result DTO\r\nResponse containing the generated text",
 				"properties": {
 					"response": {
 						"type": "string",
@@ -900,7 +900,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_GenerateResponseResultDto_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -924,7 +924,7 @@
 				"additionalProperties": false
 			},
 			"GenerateResponseDto": {
-				"description": "Generate Response DTO\nData transfer object for generating a response from a message",
+				"description": "Generate Response DTO\r\nData transfer object for generating a response from a message",
 				"properties": {
 					"message": {
 						"type": "string",
@@ -938,7 +938,7 @@
 				"additionalProperties": false
 			},
 			"SessionResponse": {
-				"description": "Session Response DTO\nResponse object containing complete session information from the API",
+				"description": "Session Response DTO\r\nResponse object containing complete session information from the API",
 				"properties": {
 					"id": {
 						"type": "string",
@@ -977,7 +977,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_SessionResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -1001,7 +1001,7 @@
 				"additionalProperties": false
 			},
 			"CreateSessionDto": {
-				"description": "Create Session DTO\nData transfer object for creating a new chat session",
+				"description": "Create Session DTO\r\nData transfer object for creating a new chat session",
 				"properties": {
 					"userId": {
 						"type": "string",
@@ -1015,7 +1015,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse__sessions-SessionResponse-Array--total-number__": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -1055,7 +1055,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse__messages-MessageResponse-Array--total-number__": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -1095,7 +1095,7 @@
 				"additionalProperties": false
 			},
 			"UpdateMessageDto": {
-				"description": "Update Message DTO\nData transfer object for updating an existing message",
+				"description": "Update Message DTO\r\nData transfer object for updating an existing message",
 				"properties": {
 					"content": {
 						"type": "string",
@@ -1110,7 +1110,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_MessageResponse-Array_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -1177,7 +1177,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_AuthResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -1254,7 +1254,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse__accessToken-string__": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -1325,7 +1325,7 @@
 				"additionalProperties": false
 			},
 			"ApiResponse_UserResponse_": {
-				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"description": "Standard API Response wrapper\r\nUsed by all TSOA controllers",
 				"properties": {
 					"success": {
 						"type": "boolean"

@@ -1,4 +1,4 @@
-import { Workspace } from "@/types/workspace";
+import { Workspace } from "@/types/group";
 
 
 const sampleColors = [

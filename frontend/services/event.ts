@@ -3,8 +3,16 @@ import { mockEvents } from "@/lib/mock/event";
 import { Event, EventPayload } from "@/types/event";
 import { DateOrDateTime, DateTimeType } from "@howljs/calendar-kit";
 
-export const getEvents = async (wp_id?: string): Promise<Event[]> => {
-  const params = wp_id ? { workspaceId: wp_id } : {};
+export const getEvents = async ({
+  wp_id,
+  user_id,
+}: {
+  wp_id?: string;
+  user_id?: string;
+}): Promise<Event[]> => {
+  const params: Record<string, string> = {};
+  if (wp_id) params.workspaceId = wp_id;
+  if (user_id) params.userId = user_id;
   return await api.get("/events", { params });
 };
 
@@ -18,12 +26,13 @@ export const createEvent = async (payload: EventPayload): Promise<Event> => {
 
 export const updateEvent = async ({
   id,
+  workspaceId,
   payload,
 }: {
   id: string;
+  workspaceId: string;
   payload: EventPayload;
 }): Promise<Event> => {
-  console.log(payload)
   return await api.put(`/events/${id}`, payload);
 };
 

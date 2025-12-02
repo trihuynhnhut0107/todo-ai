@@ -1,7 +1,9 @@
 import CustomButton from "@/components/Input/CustomButton";
 import { images } from "@/lib/image";
 import useAuthStore from "@/store/auth.store";
+import { useThemeStore } from "@/store/theme.store";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
+import { useQueryClient } from "@tanstack/react-query";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { Redirect, Slot } from "expo-router";
@@ -29,14 +31,16 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export const modalContext = createContext<{
-  isOpen: boolean;
-  setOpen: Dispatch<SetStateAction<boolean>>;
-}>({ isOpen: false, setOpen: () => {} });
+  isOpen: "signIn" | "signUp" | string;
+  setOpen: Dispatch<SetStateAction<"signIn" | "signUp" | string>>;
+}>({ isOpen: "", setOpen: () => {} });
 
 const AuthLayout = () => {
+  const { theme } = useThemeStore();
   const sheetRef = useRef<BottomSheetModal>(null);
   const { isAuthenticated, fetchAuthenticatedUser, logout } = useAuthStore();
-  const [isOpen, setOpen] = useState(false);
+  const [isOpen, setOpen] = useState("");
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     Keyboard.dismiss();
@@ -58,11 +62,16 @@ const AuthLayout = () => {
         <ScrollView
           contentContainerClassName=" h-full"
           keyboardShouldPersistTaps="handled"
+          className="bg-background"
         >
           {/* Lớp 1: Vầng sáng cam-đỏ chính */}
           <LinearGradient
             // Bắt đầu bằng màu cam MỜ, mờ dần sang TRONG SUỐT
-            colors={["rgba(255, 120, 70, 0.5)", "rgba(255, 120, 70, 0.1)"]}
+            colors={
+              theme === "dark"
+                ? ["rgba(0, 0, 0, 0.3)", "rgba(0, 0, 0, 0.05)"]
+                : ["rgba(255, 120, 70, 0.5)", "rgba(255, 120, 70, 0.1)"]
+            }
             style={StyleSheet.absoluteFill}
             // Vị trí: 0% là màu, 60% là trong suốt
             locations={[0, 0.6]}
@@ -74,7 +83,11 @@ const AuthLayout = () => {
           {/* Lớp 2: Vầng sáng hồng nhẹ ở trên-phải */}
           <LinearGradient
             // Bắt đầu bằng màu hồng MỜ, mờ dần sang TRONG SUỐT
-            colors={["rgba(255, 100, 100, 0.3)", "white"]}
+            colors={
+              theme === "dark"
+                ? ["rgba(0, 0, 0, 0.2)", "rgba(0, 0, 0, 0)"]
+                : ["rgba(255, 100, 100, 0.3)", "rgba(255, 255, 255, 0)"]
+            }
             style={StyleSheet.absoluteFill}
             locations={[0, 1]} // Mờ nhanh hơn
             // Hướng: Từ trên-phải (x: 0.8) chéo xuống
@@ -103,7 +116,7 @@ const AuthLayout = () => {
           // snapPoints={snapPoints}
           enablePanDownToClose
           backgroundComponent={() => (
-            <View className=" absolute top-0 left-0 right-0 bottom-0 bg-white shadow-xl rounded-t-3xl"></View>
+            <View className=" absolute top-0 left-0 right-0 bottom-0 bg-surface shadow-xl rounded-t-3xl"></View>
           )}
           backdropComponent={() => (
             <BlurView
@@ -126,22 +139,29 @@ const AuthLayout = () => {
               resizeMode="contain"
             />
             <Text className="font-bold text-center text-xl text-green-500">
-              Login Successful
+              {isOpen === "signUp"
+                ? "Account Created Successfully"
+                : "Login Successful"}
             </Text>
-            <Text className="text-center">
-              You’re all set to continue where you left off.
+            <Text className="text-center text-text-secondary">
+              {isOpen === "signUp"
+                ? "Welcome! Your account has been created successfully."
+                : "You're all set to continue where you left off."}
             </Text>
             <CustomButton
               title="Go to Homepage"
-              onPress={fetchAuthenticatedUser}
+              onPress={async () => {
+                await queryClient.invalidateQueries();
+                fetchAuthenticatedUser();
+              }}
             />
             <CustomButton
               title="Cancel"
-              style="bg-white border border-primary"
-              textStyle="!text-orange-500"
+              style="bg-surface border border-primary"
+              textStyle="!text-primary"
               onPress={async () => {
                 await logout();
-                setOpen(false);
+                setOpen("");
               }}
             />
           </BottomSheetView>

@@ -95,7 +95,7 @@ const event_form = () => {
       // workspaceId: id
     };
     if (isEditmode) {
-      updateEvent({ id: event_id, payload });
+      updateEvent({ id: event_id, workspaceId: id, payload });
     } else {
       createEvent({ ...payload, workspaceId: id });
     }
@@ -104,8 +104,12 @@ const event_form = () => {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1 }}
+      className="flex-1"
     >
-      <ScrollView contentContainerClassName="flex-1 p-4 gap-4">
+      <ScrollView
+        contentContainerClassName="p-4 gap-4"
+        showsVerticalScrollIndicator={false}
+      >
         <View className="flex-row items-start justify-between">
           <TouchableOpacity
             onPress={() => router.back()}
@@ -114,20 +118,25 @@ const event_form = () => {
             <Ionicons name="arrow-back" size={22} color="white" />
             <Text className="text-white/70">back</Text>
           </TouchableOpacity>
-
-          <Text className="text-3xl font-bold text-white">
-            {isEditmode ? "Edit Event" : "Add New Event"}
-          </Text>
+          <CustomButton
+            isLoading={pendingCreating || pendingUpdating}
+            title={isEditmode ? "Update Edvent" : "Add Event"}
+            onPress={handleSubmit(onSubmit)}
+          />
         </View>
 
-        <View className="bg-white rounded-lg min-h-[300px] p-4">
+        <Text className="text-3xl font-bold text-text">
+          {isEditmode ? "Edit Event" : "Add New Event"}
+        </Text>
+
+        <View className="bg-surface rounded-xl p-4">
           <Controller
             control={control}
             name="name"
             render={({ field }) => (
               <View>
                 <CustomInput
-                  label="name"
+                  label="Title"
                   value={field.value}
                   onChangeText={field.onChange}
                   error={!!errors.name}
@@ -136,18 +145,22 @@ const event_form = () => {
               </View>
             )}
           />
+        </View>
+        <View className="bg-surface rounded-xl p-4">
           <Controller
             control={control}
             name="description"
             render={({ field }) => (
               <CustomInput
-                label="description"
+                label="Description"
                 multiline={true}
                 value={field.value}
                 onChangeText={field.onChange}
               />
             )}
           />
+        </View>
+        <View className="bg-surface rounded-xl p-4">
           <Controller
             control={control}
             name="tags"
@@ -159,6 +172,8 @@ const event_form = () => {
               />
             )}
           />
+        </View>
+        <View className="bg-surface rounded-xl p-4">
           <Controller
             control={control}
             name="color"
@@ -170,6 +185,8 @@ const event_form = () => {
               />
             )}
           />
+        </View>
+        <View className="bg-surface rounded-xl p-4">
           <Controller
             control={control}
             name="start"
@@ -185,7 +202,8 @@ const event_form = () => {
               </View>
             )}
           />
-
+        </View>
+        <View className="bg-surface rounded-xl p-4">
           <Controller
             control={control}
             name="end"
@@ -202,12 +220,6 @@ const event_form = () => {
             )}
           />
         </View>
-
-        <CustomButton
-          isLoading={pendingCreating || pendingUpdating}
-          title={isEditmode ? "Update Edvent" : "Add Event"}
-          onPress={handleSubmit(onSubmit)}
-        />
       </ScrollView>
     </KeyboardAvoidingView>
   );

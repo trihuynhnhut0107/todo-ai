@@ -3,8 +3,10 @@ import React, { useContext, useMemo } from "react";
 import { DateWithEvents } from "@/type";
 
 import { format } from "date-fns";
+import useThemeColor from "@/hooks/useThemeColor";
 
 const AgendaHeaderItem = ({ date }: { date: DateWithEvents }) => {
+  const color = useThemeColor()
   const today = useMemo(() => {
     const now = new Date();
     const target = new Date(date.date);
@@ -21,11 +23,11 @@ const AgendaHeaderItem = ({ date }: { date: DateWithEvents }) => {
         backgroundColor: date.active ? "orange" : "",
       }}
     >
-      <Text>{format(new Date(date.date), "E")}</Text>
+      <Text className="text-text">{format(new Date(date.date), "E")}</Text>
       <Text
         className="rounded-full p-2 "
         style={{
-          color: date.active ? "white" : today ? "orangered" : "black",
+          color: date.active ? "white" : today ? color.primary : color.text,
         }}
       >
         {format(new Date(date.date), "dd")}

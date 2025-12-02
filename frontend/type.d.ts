@@ -1,8 +1,9 @@
 import { DateTimeType, EventItem, PackedEvent } from "@howljs/calendar-kit";
 import { TextInputProps } from "react-native";
-import { Workspace } from "./types/workspace";
+import { Group, GroupMember } from "./types/group";
 import { Event } from "./types/event";
 import { BaseProps } from "@react-native-community/datetimepicker";
+import { User } from "./types/auth";
 
 export interface TabBarIconProps {
   focused: boolean;
@@ -16,7 +17,7 @@ export interface ErrorControl {
 }
 
 export interface MyCustomInput {
-  label: string;
+  label?: string;
 }
 
 interface CustomColorPickerProps extends ErrorControl, MyCustomInput {
@@ -60,7 +61,7 @@ export interface CustomDateTimePickerProps
 export type EventCardProps = Event | PackedEvent;
 
 export interface AgendaHeaderProps {
-  workspace: Workspace | undefined;
+  group: Group | undefined;
   events: Event[] | undefined;
 }
 
@@ -84,4 +85,8 @@ export interface SettingItemProps {
   onPress?: any;
   icon?: string;
   color?: string;
+}
+
+export interface GroupMemberCardProps {
+  member: GroupMember
 }

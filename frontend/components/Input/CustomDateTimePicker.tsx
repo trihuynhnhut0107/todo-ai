@@ -20,8 +20,8 @@ const CustomDateTimePicker = ({
       {label && (
         <Text
           className={cn(
-            "text-base text-start w-full font-quicksand-medium text-gray-500 pl-2",
-            openDate || (openTime && "text-orange-500 font-bold"),
+            "text-base text-start w-full font-quicksand-medium text-text-secondary pl-2",
+            openDate || (openTime && "!text-orange-500 "),
             error && "text-red-500"
           )}
         >
@@ -32,7 +32,7 @@ const CustomDateTimePicker = ({
       <View
         className={cn(
           "rounded-lg w-full text-base border-2 leading-5 flex-row flex-wrap gap-2 justify-between",
-          openDate || openTime ? "border-orange-500" : "border-gray-300",
+          openDate || openTime ? "border-primary" : "border-border",
           error && "border-red-500"
         )}
       >
@@ -40,7 +40,7 @@ const CustomDateTimePicker = ({
           onPress={() => setOpenDate(true)}
           className="rounded-md flex-1 p-3"
         >
-          <Text className="text-black text-center ">
+          <Text className="text-text text-center ">
             {value ? format(dateValue, "dd MMM yyyy") : "No date selected"}
           </Text>
         </TouchableOpacity>
@@ -50,11 +50,11 @@ const CustomDateTimePicker = ({
           onPress={() => setOpenTime(true)}
           className={cn(
             "border-l-2 p-3",
-            openDate || openTime ? "border-orange-500" : "border-gray-300",
+            openDate || openTime ? "border-primary" : "border-border",
             error && "border-red-500"
           )}
         >
-          <Text className="text-black">
+          <Text className="text-text">
             {value ? format(dateValue, "hh:mm a") : "No time selected"}
           </Text>
         </TouchableOpacity>
