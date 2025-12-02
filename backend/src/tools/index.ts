@@ -26,8 +26,17 @@ export {
   getWorkspaceMembersTool,
 } from "./workspace.tools";
 
+export {
+  mapboxTools,
+  geocodePlaceTool,
+  getTravelTimeTool,
+  checkLocationProximityTool,
+  reverseGeocodeTool,
+} from "./mapbox.tools";
+
 // Export all tools combined for easy agent initialization
 import { eventTools } from "./event.tools";
 import { workspaceTools } from "./workspace.tools";
+import { mapboxTools } from "./mapbox.tools";
 
-export const allTools = [...eventTools, ...workspaceTools];
+export const allTools = [...eventTools, ...workspaceTools, ...mapboxTools];

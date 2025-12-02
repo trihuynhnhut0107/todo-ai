@@ -93,7 +93,7 @@ export const createEventTool = tool(
         .optional()
         .describe("Optional event status (PLANNED, IN_PROGRESS, COMPLETED, CANCELLED)"),
       metadata: z
-        .record(z.unknown())
+        .record(z.string(), z.unknown())
         .optional()
         .describe("Optional additional metadata as key-value pairs"),
     }),
@@ -253,7 +253,7 @@ export const updateEventTool = tool(
       color: z.string().optional().describe("Updated color code"),
       isAllDay: z.boolean().optional().describe("Updated all-day flag"),
       recurrenceRule: z.string().optional().describe("Updated recurrence rule"),
-      metadata: z.record(z.unknown()).optional().describe("Updated metadata"),
+      metadata: z.record(z.string(), z.unknown()).optional().describe("Updated metadata"),
     }),
   }
 );

@@ -58,10 +58,13 @@ export async function registerForPushNotificationsAsync(): Promise<
   try {
     const projectId =
       Constants?.expoConfig?.extra?.eas?.projectId ??
-      Constants?.easConfig?.projectId;
+      Constants?.easConfig?.projectId ??
+      process.env.EXPO_PUBLIC_PROJECT_ID;
 
     if (!projectId) {
-      console.error("Project ID not found. Check eas.json configuration.");
+      console.error("Project ID not found. Make sure app.json has eas.projectId configured.");
+      console.log("Constants.expoConfig:", Constants?.expoConfig);
+      console.log("Constants.easConfig:", Constants?.easConfig);
       return undefined;
     }
 
