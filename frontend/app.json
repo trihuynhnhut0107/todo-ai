@@ -11,9 +11,10 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSSpeechRecognitionUsageDescription": "Ứng dụng cần dùng giọng nói để nhận diện.",
-        "NSMicrophoneUsageDescription": "Ứng dụng cần truy cập micro để thu âm."
-      }
+        "NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to use speech recognition.",
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone."
+      },
+      "bundleIdentifier": "com.anonymous.todoai"
     },
     "android": {
       "adaptiveIcon": {
@@ -26,7 +27,8 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.todoai",
       "permissions": [
-        "RECORD_AUDIO"
+        "RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {

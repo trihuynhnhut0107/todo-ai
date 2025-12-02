@@ -490,6 +490,394 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"ApiResponse_any_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MapboxCountry": {
+				"description": "Common ISO 3166-1 alpha-2 country codes",
+				"enum": [
+					"us",
+					"ca",
+					"gb",
+					"fr",
+					"de",
+					"it",
+					"es",
+					"mx",
+					"br",
+					"ar",
+					"cn",
+					"jp",
+					"kr",
+					"in",
+					"au",
+					"nz",
+					"ru",
+					"nl",
+					"be",
+					"ch",
+					"at",
+					"pl",
+					"se",
+					"no",
+					"dk",
+					"fi",
+					"pt",
+					"gr",
+					"tr",
+					"il",
+					"sa",
+					"ae",
+					"sg",
+					"th",
+					"vn",
+					"ph",
+					"id",
+					"my",
+					"za",
+					"eg",
+					"ng",
+					"cl",
+					"co",
+					"pe",
+					"ve"
+				],
+				"type": "string"
+			},
+			"MapboxPlaceType": {
+				"description": "Mapbox place types for filtering geocoding results",
+				"enum": [
+					"country",
+					"region",
+					"postcode",
+					"district",
+					"place",
+					"locality",
+					"neighborhood",
+					"address",
+					"poi",
+					"street"
+				],
+				"type": "string"
+			},
+			"MapboxLanguage": {
+				"description": "Common ISO 639-1 language codes for Mapbox APIs",
+				"enum": [
+					"en",
+					"es",
+					"fr",
+					"de",
+					"it",
+					"pt",
+					"zh",
+					"ja",
+					"ko",
+					"ru",
+					"ar",
+					"vi",
+					"th",
+					"nl",
+					"pl",
+					"tr",
+					"sv",
+					"id",
+					"he",
+					"hi"
+				],
+				"type": "string"
+			},
+			"ForwardGeocodeRequest": {
+				"properties": {
+					"searchText": {
+						"type": "string"
+					},
+					"proximity": {
+						"type": "string"
+					},
+					"country": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/MapboxCountry"
+							},
+							{
+								"type": "string"
+							}
+						]
+					},
+					"types": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/MapboxPlaceType"
+							},
+							{
+								"type": "string"
+							}
+						]
+					},
+					"limit": {
+						"type": "number",
+						"format": "double"
+					},
+					"language": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/MapboxLanguage"
+							},
+							{
+								"type": "string"
+							}
+						]
+					},
+					"autocomplete": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"searchText"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ReverseGeocodeRequest": {
+				"properties": {
+					"longitude": {
+						"type": "number",
+						"format": "double"
+					},
+					"latitude": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"longitude",
+					"latitude"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse__travelTimeMinutes-number-or-null__": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"properties": {
+							"travelTimeMinutes": {
+								"type": "number",
+								"format": "double",
+								"nullable": true
+							}
+						},
+						"required": [
+							"travelTimeMinutes"
+						],
+						"type": "object"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MapboxProfile": {
+				"description": "Mapbox routing profiles for directions and matrix APIs",
+				"enum": [
+					"driving",
+					"walking",
+					"cycling",
+					"driving-traffic"
+				],
+				"type": "string"
+			},
+			"TravelTimeRequest": {
+				"properties": {
+					"origin": {
+						"properties": {
+							"latitude": {
+								"type": "number",
+								"format": "double"
+							},
+							"longitude": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": [
+							"latitude",
+							"longitude"
+						],
+						"type": "object"
+					},
+					"destination": {
+						"properties": {
+							"latitude": {
+								"type": "number",
+								"format": "double"
+							},
+							"longitude": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": [
+							"latitude",
+							"longitude"
+						],
+						"type": "object"
+					},
+					"profile": {
+						"$ref": "#/components/schemas/MapboxProfile"
+					}
+				},
+				"required": [
+					"origin",
+					"destination"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse__distanceKm-number-or-null__": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"properties": {
+							"distanceKm": {
+								"type": "number",
+								"format": "double",
+								"nullable": true
+							}
+						},
+						"required": [
+							"distanceKm"
+						],
+						"type": "object"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MapboxAnnotation": {
+				"description": "Matrix API annotation types",
+				"enum": [
+					"duration",
+					"distance",
+					"duration,distance"
+				],
+				"type": "string"
+			},
+			"MatrixRequest": {
+				"properties": {
+					"coordinates": {
+						"items": {
+							"properties": {
+								"latitude": {
+									"type": "number",
+									"format": "double"
+								},
+								"longitude": {
+									"type": "number",
+									"format": "double"
+								}
+							},
+							"required": [
+								"latitude",
+								"longitude"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"profile": {
+						"$ref": "#/components/schemas/MapboxProfile"
+					},
+					"annotations": {
+						"$ref": "#/components/schemas/MapboxAnnotation"
+					},
+					"sources": {
+						"anyOf": [
+							{
+								"items": {
+									"type": "number",
+									"format": "double"
+								},
+								"type": "array"
+							},
+							{
+								"type": "string",
+								"enum": [
+									"all"
+								]
+							}
+						]
+					},
+					"destinations": {
+						"anyOf": [
+							{
+								"items": {
+									"type": "number",
+									"format": "double"
+								},
+								"type": "array"
+							},
+							{
+								"type": "string",
+								"enum": [
+									"all"
+								]
+							}
+						]
+					}
+				},
+				"required": [
+					"coordinates"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"EventStatus": {
 				"enum": [
 					"scheduled",
@@ -779,7 +1167,7 @@
 				"type": "string"
 			},
 			"MessageResponse": {
-				"description": "Message Response DTO\r\nResponse object containing complete message information from the API",
+				"description": "Message Response DTO\nResponse object containing complete message information from the API",
 				"properties": {
 					"id": {
 						"type": "string",
@@ -853,7 +1241,7 @@
 				"additionalProperties": false
 			},
 			"CreateMessageDto": {
-				"description": "Create Message DTO\r\nData transfer object for creating a new message in a session",
+				"description": "Create Message DTO\nData transfer object for creating a new message in a session",
 				"properties": {
 					"sessionId": {
 						"type": "string",
@@ -886,7 +1274,7 @@
 				"additionalProperties": false
 			},
 			"GenerateResponseResultDto": {
-				"description": "Generate Response Result DTO\r\nResponse containing the generated text",
+				"description": "Generate Response Result DTO\nResponse containing the generated text",
 				"properties": {
 					"response": {
 						"type": "string",
@@ -924,7 +1312,7 @@
 				"additionalProperties": false
 			},
 			"GenerateResponseDto": {
-				"description": "Generate Response DTO\r\nData transfer object for generating a response from a message",
+				"description": "Generate Response DTO\nData transfer object for generating a response from a message",
 				"properties": {
 					"message": {
 						"type": "string",
@@ -938,7 +1326,7 @@
 				"additionalProperties": false
 			},
 			"SessionResponse": {
-				"description": "Session Response DTO\r\nResponse object containing complete session information from the API",
+				"description": "Session Response DTO\nResponse object containing complete session information from the API",
 				"properties": {
 					"id": {
 						"type": "string",
@@ -1001,7 +1389,7 @@
 				"additionalProperties": false
 			},
 			"CreateSessionDto": {
-				"description": "Create Session DTO\r\nData transfer object for creating a new chat session",
+				"description": "Create Session DTO\nData transfer object for creating a new chat session",
 				"properties": {
 					"userId": {
 						"type": "string",
@@ -1095,7 +1483,7 @@
 				"additionalProperties": false
 			},
 			"UpdateMessageDto": {
-				"description": "Update Message DTO\r\nData transfer object for updating an existing message",
+				"description": "Update Message DTO\nData transfer object for updating an existing message",
 				"properties": {
 					"content": {
 						"type": "string",
@@ -2303,6 +2691,394 @@
 					}
 				],
 				"parameters": []
+			}
+		},
+		"/api/mapbox/geocode/forward": {
+			"post": {
+				"operationId": "ForwardGeocode",
+				"responses": {
+					"200": {
+						"description": "Successfully geocoded",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_any_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Forward geocoding - convert place name/address to coordinates",
+				"summary": "Search for a place by name",
+				"tags": [
+					"Mapbox"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "Search parameters",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ForwardGeocodeRequest",
+								"description": "Search parameters"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/mapbox/geocode/reverse": {
+			"post": {
+				"operationId": "ReverseGeocode",
+				"responses": {
+					"200": {
+						"description": "Successfully reverse geocoded",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_any_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Reverse geocoding - convert coordinates to place name/address",
+				"summary": "Get place name from coordinates",
+				"tags": [
+					"Mapbox"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "Coordinates",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ReverseGeocodeRequest",
+								"description": "Coordinates"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/mapbox/travel-time": {
+			"post": {
+				"operationId": "GetTravelTime",
+				"responses": {
+					"200": {
+						"description": "Successfully calculated travel time",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__travelTimeMinutes-number-or-null__"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get travel time between two locations",
+				"summary": "Calculate travel time",
+				"tags": [
+					"Mapbox"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "Origin, destination, and travel profile",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TravelTimeRequest",
+								"description": "Origin, destination, and travel profile"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/mapbox/distance": {
+			"get": {
+				"operationId": "GetDistance",
+				"responses": {
+					"200": {
+						"description": "Successfully calculated distance",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse__distanceKm-number-or-null__"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get distance between two locations",
+				"summary": "Calculate distance",
+				"tags": [
+					"Mapbox"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "originLng",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "originLat",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "destLng",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "destLat",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Travel profile (driving, walking, cycling)",
+						"in": "query",
+						"name": "profile",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/MapboxProfile"
+						}
+					}
+				]
+			}
+		},
+		"/api/mapbox/matrix": {
+			"post": {
+				"operationId": "GetMatrix",
+				"responses": {
+					"200": {
+						"description": "Successfully calculated matrix",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_any_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get travel time/distance matrix between multiple locations",
+				"summary": "Calculate matrix of travel times/distances",
+				"tags": [
+					"Mapbox"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "Coordinates and matrix parameters",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/MatrixRequest",
+								"description": "Coordinates and matrix parameters"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/mapbox/search": {
+			"get": {
+				"operationId": "SearchPlaces",
+				"responses": {
+					"200": {
+						"description": "Successfully searched",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_any_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Search for places with autocomplete",
+				"summary": "Autocomplete search for places",
+				"tags": [
+					"Mapbox"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Search query",
+						"in": "query",
+						"name": "q",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Maximum number of results (1-10)",
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 5,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Proximity bias (longitude,latitude)",
+						"in": "query",
+						"name": "proximity",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
 			}
 		},
 		"/api/events": {

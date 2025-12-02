@@ -8,6 +8,8 @@ import { WorkspaceController } from './../controllers/workspace.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { UserController } from './../controllers/user.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { MapboxController } from './../controllers/mapbox.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { EventController } from './../controllers/event.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { ChatController } from './../controllers/chat.controller';
@@ -218,6 +220,109 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "pushToken": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse_any_": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "message": {"dataType":"string","required":true},
+            "data": {"dataType":"any"},
+            "timestamp": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MapboxCountry": {
+        "dataType": "refEnum",
+        "enums": ["us","ca","gb","fr","de","it","es","mx","br","ar","cn","jp","kr","in","au","nz","ru","nl","be","ch","at","pl","se","no","dk","fi","pt","gr","tr","il","sa","ae","sg","th","vn","ph","id","my","za","eg","ng","cl","co","pe","ve"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MapboxPlaceType": {
+        "dataType": "refEnum",
+        "enums": ["country","region","postcode","district","place","locality","neighborhood","address","poi","street"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MapboxLanguage": {
+        "dataType": "refEnum",
+        "enums": ["en","es","fr","de","it","pt","zh","ja","ko","ru","ar","vi","th","nl","pl","tr","sv","id","he","hi"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ForwardGeocodeRequest": {
+        "dataType": "refObject",
+        "properties": {
+            "searchText": {"dataType":"string","required":true},
+            "proximity": {"dataType":"string"},
+            "country": {"dataType":"union","subSchemas":[{"ref":"MapboxCountry"},{"dataType":"string"}]},
+            "types": {"dataType":"union","subSchemas":[{"ref":"MapboxPlaceType"},{"dataType":"string"}]},
+            "limit": {"dataType":"double"},
+            "language": {"dataType":"union","subSchemas":[{"ref":"MapboxLanguage"},{"dataType":"string"}]},
+            "autocomplete": {"dataType":"boolean"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ReverseGeocodeRequest": {
+        "dataType": "refObject",
+        "properties": {
+            "longitude": {"dataType":"double","required":true},
+            "latitude": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse__travelTimeMinutes-number-or-null__": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "message": {"dataType":"string","required":true},
+            "data": {"dataType":"nestedObjectLiteral","nestedProperties":{"travelTimeMinutes":{"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true}}},
+            "timestamp": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MapboxProfile": {
+        "dataType": "refEnum",
+        "enums": ["driving","walking","cycling","driving-traffic"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TravelTimeRequest": {
+        "dataType": "refObject",
+        "properties": {
+            "origin": {"dataType":"nestedObjectLiteral","nestedProperties":{"latitude":{"dataType":"double","required":true},"longitude":{"dataType":"double","required":true}},"required":true},
+            "destination": {"dataType":"nestedObjectLiteral","nestedProperties":{"latitude":{"dataType":"double","required":true},"longitude":{"dataType":"double","required":true}},"required":true},
+            "profile": {"ref":"MapboxProfile"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse__distanceKm-number-or-null__": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "message": {"dataType":"string","required":true},
+            "data": {"dataType":"nestedObjectLiteral","nestedProperties":{"distanceKm":{"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true}}},
+            "timestamp": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MapboxAnnotation": {
+        "dataType": "refEnum",
+        "enums": ["duration","distance","duration,distance"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "MatrixRequest": {
+        "dataType": "refObject",
+        "properties": {
+            "coordinates": {"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"latitude":{"dataType":"double","required":true},"longitude":{"dataType":"double","required":true}}},"required":true},
+            "profile": {"ref":"MapboxProfile"},
+            "annotations": {"ref":"MapboxAnnotation"},
+            "sources": {"dataType":"union","subSchemas":[{"dataType":"array","array":{"dataType":"double"}},{"dataType":"enum","enums":["all"]}]},
+            "destinations": {"dataType":"union","subSchemas":[{"dataType":"array","array":{"dataType":"double"}},{"dataType":"enum","enums":["all"]}]},
         },
         "additionalProperties": false,
     },
@@ -974,6 +1079,192 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'clearPushToken',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMapboxController_forwardGeocode: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"body","name":"request","required":true,"ref":"ForwardGeocodeRequest"},
+        };
+        app.post('/api/mapbox/geocode/forward',
+            ...(fetchMiddlewares<RequestHandler>(MapboxController)),
+            ...(fetchMiddlewares<RequestHandler>(MapboxController.prototype.forwardGeocode)),
+
+            async function MapboxController_forwardGeocode(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMapboxController_forwardGeocode, request, response });
+
+                const controller = new MapboxController();
+
+              await templateService.apiHandler({
+                methodName: 'forwardGeocode',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMapboxController_reverseGeocode: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"body","name":"request","required":true,"ref":"ReverseGeocodeRequest"},
+        };
+        app.post('/api/mapbox/geocode/reverse',
+            ...(fetchMiddlewares<RequestHandler>(MapboxController)),
+            ...(fetchMiddlewares<RequestHandler>(MapboxController.prototype.reverseGeocode)),
+
+            async function MapboxController_reverseGeocode(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMapboxController_reverseGeocode, request, response });
+
+                const controller = new MapboxController();
+
+              await templateService.apiHandler({
+                methodName: 'reverseGeocode',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMapboxController_getTravelTime: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"body","name":"request","required":true,"ref":"TravelTimeRequest"},
+        };
+        app.post('/api/mapbox/travel-time',
+            ...(fetchMiddlewares<RequestHandler>(MapboxController)),
+            ...(fetchMiddlewares<RequestHandler>(MapboxController.prototype.getTravelTime)),
+
+            async function MapboxController_getTravelTime(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMapboxController_getTravelTime, request, response });
+
+                const controller = new MapboxController();
+
+              await templateService.apiHandler({
+                methodName: 'getTravelTime',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMapboxController_getDistance: Record<string, TsoaRoute.ParameterSchema> = {
+                originLng: {"in":"query","name":"originLng","required":true,"dataType":"double"},
+                originLat: {"in":"query","name":"originLat","required":true,"dataType":"double"},
+                destLng: {"in":"query","name":"destLng","required":true,"dataType":"double"},
+                destLat: {"in":"query","name":"destLat","required":true,"dataType":"double"},
+                profile: {"default":"driving","in":"query","name":"profile","ref":"MapboxProfile"},
+        };
+        app.get('/api/mapbox/distance',
+            ...(fetchMiddlewares<RequestHandler>(MapboxController)),
+            ...(fetchMiddlewares<RequestHandler>(MapboxController.prototype.getDistance)),
+
+            async function MapboxController_getDistance(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMapboxController_getDistance, request, response });
+
+                const controller = new MapboxController();
+
+              await templateService.apiHandler({
+                methodName: 'getDistance',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMapboxController_getMatrix: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"body","name":"request","required":true,"ref":"MatrixRequest"},
+        };
+        app.post('/api/mapbox/matrix',
+            ...(fetchMiddlewares<RequestHandler>(MapboxController)),
+            ...(fetchMiddlewares<RequestHandler>(MapboxController.prototype.getMatrix)),
+
+            async function MapboxController_getMatrix(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMapboxController_getMatrix, request, response });
+
+                const controller = new MapboxController();
+
+              await templateService.apiHandler({
+                methodName: 'getMatrix',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMapboxController_searchPlaces: Record<string, TsoaRoute.ParameterSchema> = {
+                q: {"in":"query","name":"q","required":true,"dataType":"string"},
+                limit: {"default":5,"in":"query","name":"limit","dataType":"double"},
+                proximity: {"in":"query","name":"proximity","dataType":"string"},
+        };
+        app.get('/api/mapbox/search',
+            ...(fetchMiddlewares<RequestHandler>(MapboxController)),
+            ...(fetchMiddlewares<RequestHandler>(MapboxController.prototype.searchPlaces)),
+
+            async function MapboxController_searchPlaces(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMapboxController_searchPlaces, request, response });
+
+                const controller = new MapboxController();
+
+              await templateService.apiHandler({
+                methodName: 'searchPlaces',
                 controller,
                 response,
                 next,
