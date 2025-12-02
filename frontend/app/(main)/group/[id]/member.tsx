@@ -1,14 +1,15 @@
 import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import React from "react";
-import { FlatList, ScrollView } from "react-native-gesture-handler";
+import { FlatList, RefreshControl, ScrollView } from "react-native-gesture-handler";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useGroupMember } from "@/query/group.query";
 import MemberCard from "@/components/UI/Group/MemberCard";
+import Empty from "@/components/UI/Empty";
 
 const member = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: groupMembers, isLoading: pendingGroupMembers } =
+  const { data: groupMembers, isLoading: pendingGroupMembers,refetch } =
     useGroupMember(id);
   return (
     <View className="flex-1 p-4 gap-4 ">
@@ -36,16 +37,14 @@ const member = () => {
         showsVerticalScrollIndicator={false}
         numColumns={2}
         columnWrapperStyle={{ gap: 8 }}
+        refreshControl={
+          <RefreshControl refreshing={pendingGroupMembers} onRefresh={refetch} />
+        }
         ListEmptyComponent={() =>
           pendingGroupMembers ? (
             <ActivityIndicator size="large" color="white" />
           ) : (
-            <View className="items-center justify-center py-12">
-              <Ionicons name="folder-outline" size={48} color={"white"} />
-              <Text className="text-white text-center">
-                No members in this group
-              </Text>
-            </View>
+            <Empty />
           )
         }
       />

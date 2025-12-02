@@ -16,9 +16,10 @@ import { router } from "expo-router";
 import GroupCard from "@/components/UI/Group/GroupCard";
 import Loader from "@/components/UI/Loader";
 import useThemeColor from "@/hooks/useThemeColor";
+import Empty from "@/components/UI/Empty";
 
 const groups = () => {
-  const color = useThemeColor()
+  const color = useThemeColor();
   const [filterText, setFilterText] = useState("");
   const { data: groups, isLoading: refreshing, refetch } = useGroup();
 
@@ -57,16 +58,7 @@ const groups = () => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={refetch} />
         }
-        ListEmptyComponent={() =>
-          refreshing ? (
-            <Loader />
-          ) : (
-            <View className="items-center justify-center py-12">
-              <Ionicons name="folder-outline" size={48} color={color.text} />
-              <Text className="text-text-secondary text-center">No groups found</Text>
-            </View>
-          )
-        }
+        ListEmptyComponent={() => (refreshing ? <Loader /> : <Empty />)}
       />
       <TouchableOpacity
         onPress={() => router.push(`/(main)/group/create/form`)}

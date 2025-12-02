@@ -12,10 +12,18 @@ import { showMessage } from "react-native-flash-message";
 
 export const useEvents = (wp_id: string) =>
   useQuery({
-    placeholderData: [],
+    initialData: [],
     queryKey: ["workspace", wp_id, "events"],
-    queryFn: () => getEvents(wp_id),
+    queryFn: () => getEvents({ wp_id }),
     enabled: !!wp_id,
+  });
+
+export const useUserEvents = (user_id: string) =>
+  useQuery({
+    initialData: [],
+    queryKey: ["user", user_id, "events"],
+    queryFn: () => getEvents({ user_id }),
+    enabled: !!user_id,
   });
 
 export const useEventById = (id: string) =>
