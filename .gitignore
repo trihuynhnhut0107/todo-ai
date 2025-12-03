@@ -1,2 +1,5 @@
 # Serena folder
 .serena/
+
+# app.json - environment specific configuration
+frontend/app.json
