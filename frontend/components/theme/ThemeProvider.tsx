@@ -13,10 +13,6 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     loadTheme();
   }, []);
 
-  // Wait for theme to load
-  if (!isLoaded) {
-    return null;
-  }
   
   // Determine active theme
   const activeTheme = theme === 'system' ? systemTheme : theme;

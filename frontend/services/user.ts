@@ -24,5 +24,5 @@ export const getUsers = async (): Promise<{
 export const getUserById = async (
   id: string
 ): Promise<UserProfile | undefined> => {
-  return await api.get(`/events/${id}`);
+  return await api.get(`/users/${id}`);
 };

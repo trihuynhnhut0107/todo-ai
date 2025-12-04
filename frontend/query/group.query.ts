@@ -13,7 +13,7 @@ import { showMessage } from "react-native-flash-message";
 
 export const useGroup = () =>
   useQuery({
-    initialData: [],
+    placeholderData: [],
     queryKey: ["groups"],
     queryFn: getGroups,
   });
@@ -27,11 +27,12 @@ export const useGroupById = (id: string) =>
 
 export const useGroupMember = (id: string) =>
   useQuery({
-    initialData: [],
+    placeholderData: [],
     queryKey: ["group_members", id],
     queryFn: () => getGroupMember(id),
     enabled: !!id,
   });
+
 
 export const useAddGroupMember = () => {
   const queryClient = useQueryClient();

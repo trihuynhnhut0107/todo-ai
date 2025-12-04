@@ -64,7 +64,7 @@ const Header = () => {
           text: "Logout",
           style: "destructive",
           onPress: () => {
-            queryClient.clear();
+            queryClient.removeQueries()
             logout(); // your logout function here
           },
         },

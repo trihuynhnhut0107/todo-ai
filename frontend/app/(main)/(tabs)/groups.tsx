@@ -21,7 +21,7 @@ import Empty from "@/components/UI/Empty";
 const groups = () => {
   const color = useThemeColor();
   const [filterText, setFilterText] = useState("");
-  const { data: groups, isLoading: refreshing, refetch } = useGroup();
+  const { data: groups, isLoading, isFetching, refetch } = useGroup();
 
   const filtered = useMemo(() => {
     const text = filterText.trim().toLowerCase();
@@ -30,6 +30,17 @@ const groups = () => {
 
     return groups?.filter((w) => w.name?.toLowerCase().includes(text));
   }, [groups, filterText]);
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 p-4">
+        <Text style={{ fontWeight: "bold", color: "white", fontSize: 40 }}>
+          Your Groups
+        </Text>
+        <Loader />
+      </View>
+    );
+  }
 
   return (
     <View className="p-4 flex-1">
@@ -56,9 +67,9 @@ const groups = () => {
         numColumns={2}
         columnWrapperStyle={{ gap: 8 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={refetch} />
+          <RefreshControl refreshing={isFetching} onRefresh={refetch} />
         }
-        ListEmptyComponent={() => (refreshing ? <Loader /> : <Empty />)}
+        ListEmptyComponent={() => <Empty />}
       />
       <TouchableOpacity
         onPress={() => router.push(`/(main)/group/create/form`)}

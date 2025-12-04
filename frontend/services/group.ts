@@ -12,15 +12,11 @@ export const getGroups = async (): Promise<Group[]> => {
   }
 };
 
-export const getGroup = async (
-  id: string
-): Promise<Group | undefined> => {
+export const getGroup = async (id: string): Promise<Group | undefined> => {
   return await api.get(`/workspaces/${id}`);
 };
 
-export const getGroupMember = async (
-  id: string
-): Promise<GroupMember[]> => {
+export const getGroupMember = async (id: string): Promise<GroupMember[]> => {
   return await api.get(`/workspaces/${id}/members`);
 };
 
@@ -42,7 +38,7 @@ export const deleteGroupMember = async ({
 }: {
   id: string;
   payload: {
-    userIds: string[];
+    userId: string;
   };
 }) => {
   return await api.delete(`/workspaces/${id}/members`, { data: payload });
@@ -52,7 +48,7 @@ export const createGroup = async (payload: GroupPayload) => {
   return await api.post(`/workspaces`, payload);
 };
 
-export const updateGroup= async ({
+export const updateGroup = async ({
   id,
   payload,
 }: {
@@ -62,6 +58,7 @@ export const updateGroup= async ({
   return await api.put(`/workspaces/${id}`, payload);
 };
 
-export const deleteGroup= async (id: string): Promise<void> => {
+
+export const deleteGroup = async (id: string): Promise<void> => {
   return await api.delete(`/workspaces/${id}`);
 };

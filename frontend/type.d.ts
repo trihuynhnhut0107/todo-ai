@@ -4,6 +4,7 @@ import { Group, GroupMember } from "./types/group";
 import { Event } from "./types/event";
 import { BaseProps } from "@react-native-community/datetimepicker";
 import { User } from "./types/auth";
+import { UserSelect } from "react-native-gesture-handler/lib/typescript/handlers/gestureHandlerCommon";
 
 export interface TabBarIconProps {
   focused: boolean;
@@ -88,5 +89,9 @@ export interface SettingItemProps {
 }
 
 export interface GroupMemberCardProps {
-  member: GroupMember
+  member: GroupMember;
+  onDelete: () => void;
+}
+export interface UserCardProps {
+  user: User;
 }
