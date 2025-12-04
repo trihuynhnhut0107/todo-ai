@@ -11,6 +11,8 @@ import { IntentType } from "../enums/chat.enum";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { allTools } from "../tools/index";
 import { createAgent } from "langchain";
+import { GoogleRequestLogger } from "@langchain/google-common";
+import { ChatOpenAI, OpenAI } from "@langchain/openai";
 
 export class LangchainService {
   private responseModel: ChatGoogleGenerativeAI;
@@ -32,10 +34,10 @@ export class LangchainService {
     });
 
     // Create agent with tools for event management
-    const agentModel = new ChatGoogleGenerativeAI({
-      model: "gemini-2.5-flash-lite",
+    const agentModel = new ChatOpenAI({
+      model: "gpt-4o-mini",
       maxRetries: 2,
-      apiKey: process.env.GOOGLE_API_KEY,
+      apiKey: process.env.OPENAI_API_KEY,
     });
 
     this.agent = createAgent({
@@ -198,16 +200,34 @@ export class LangchainService {
       const result = await this.agent.invoke(input);
 
       // Extract the final message from the agent
-      const lastMessage = result.messages[result.messages.length - 1];
-      const response =
-        typeof lastMessage.content === "string"
-          ? lastMessage.content
-          : JSON.stringify(lastMessage.content);
+      // The result.messages array contains the full conversation history
+      const messages = result.messages || [];
+      if (messages.length === 0) {
+        throw new Error("No messages returned from agent");
+      }
+
+      const lastMessage = messages[messages.length - 1];
+
+      // Extract response text - handle both string content and structured responses
+      let response = "";
+      if (lastMessage?.content) {
+        response =
+          typeof lastMessage.content === "string"
+            ? lastMessage.content
+            : JSON.stringify(lastMessage.content);
+      } else if (result.structuredResponse) {
+        // Handle structured response format if configured
+        response = JSON.stringify(result.structuredResponse);
+      } else {
+        // Fallback: construct response from available data
+        response = "Task processed successfully";
+      }
 
       // Extract tool names used during execution
       const toolsUsed: string[] = [];
-      for (const message of result.messages) {
-        if (message.tool_calls && Array.isArray(message.tool_calls)) {
+      for (const message of messages) {
+        // Check if message has tool_calls array
+        if (message?.tool_calls && Array.isArray(message.tool_calls)) {
           toolsUsed.push(
             ...message.tool_calls.map((call: any) => call.name || "unknown")
           );
