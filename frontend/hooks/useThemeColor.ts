@@ -4,9 +4,9 @@ import { useThemeStore } from "@/store/theme.store";
 
 const themes = {
   light: {
-    primary: "#f97316",
+    primary: "#3572EF",
     secondary: "#8A2BE2",
-    accent: "#FFA500",
+    accent: "#A7E6FF",
     background: "#FFFFFF",
     surface: "#F9FAFB",
     card: "#FFFFFF",
@@ -18,10 +18,10 @@ const themes = {
     success: "#10B981",
     error: "#EF4444",
     warning: "#F59E0B",
-    theme: "#ec772d",
+    theme: "#3572EF",
   },
   dark: {
-    primary: "#f97316",
+    primary: "#3572EF",
     secondary: "#A78BFA",
     accent: "#FBBF24",
     background: "#262624",

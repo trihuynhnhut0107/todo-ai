@@ -81,18 +81,18 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
             onPress={() => router.push("/(main)/(tabs)/groups")}
             className="justify-center rounded-md p-2 z-10 flex-row items-center gap-2"
           >
-            <Ionicons name="list" size={22} color={color.accent} />
+            <Ionicons name="list" size={22} color={color.primary} />
           </TouchableOpacity>
 
           <View className="flex-row items-center gap-2">
-            <Text className="text-accent">{group?.name}</Text>
+            <Text className="text-primary">{group?.name}</Text>
             <TouchableOpacity
               onPress={() =>
                 router.push(`/(main)/group/${group?.id}/setting`)
               }
               className=" justify-center rounded-md p-2 z-10 flex-row items-center gap-2"
             >
-              <Ionicons name="settings" size={22} color={color.accent} />
+              <Ionicons name="settings" size={22} color={color.primary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -101,7 +101,7 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
             <Text className="font-semibold text-3xl text-text">
               {format(new Date(selected), "MMMM")}
             </Text>
-            <Text className="text-accent font-semibold text-3xl">
+            <Text className="text-primary font-semibold text-3xl">
               {format(new Date(selected), "yyyy")}
             </Text>
           </View>

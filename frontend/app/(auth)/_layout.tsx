@@ -65,35 +65,29 @@ const AuthLayout = () => {
           className="bg-background"
         >
           {/* Lớp 1: Vầng sáng cam-đỏ chính */}
-          <LinearGradient
-            // Bắt đầu bằng màu cam MỜ, mờ dần sang TRONG SUỐT
-            colors={
-              theme === "dark"
-                ? ["rgba(0, 0, 0, 0.3)", "rgba(0, 0, 0, 0.05)"]
-                : ["rgba(255, 120, 70, 0.5)", "rgba(255, 120, 70, 0.1)"]
-            }
-            style={StyleSheet.absoluteFill}
-            // Vị trí: 0% là màu, 60% là trong suốt
-            locations={[0, 0.6]}
-            // Hướng: Từ trên (y: 0) xuống dưới (y: 0.8)
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 0.8 }}
-          />
-
-          {/* Lớp 2: Vầng sáng hồng nhẹ ở trên-phải */}
-          <LinearGradient
-            // Bắt đầu bằng màu hồng MỜ, mờ dần sang TRONG SUỐT
-            colors={
-              theme === "dark"
-                ? ["rgba(0, 0, 0, 0.2)", "rgba(0, 0, 0, 0)"]
-                : ["rgba(255, 100, 100, 0.3)", "rgba(255, 255, 255, 0)"]
-            }
-            style={StyleSheet.absoluteFill}
-            locations={[0, 1]} // Mờ nhanh hơn
-            // Hướng: Từ trên-phải (x: 0.8) chéo xuống
-            start={{ x: 0.8, y: 0 }}
-            end={{ x: 0.5, y: 0.7 }}
-          />
+         <LinearGradient
+                colors={
+                  theme === "dark"
+                    ? ["rgba(5, 12, 156, 0.3)", "rgba(5, 12, 156, 0.05)"] // Navy blue fade
+                    : ["rgba(53, 114, 239, 0.5)", "rgba(58, 190, 249, 0.1)"] // Blue to Sea fade
+                }
+                style={StyleSheet.absoluteFill}
+                locations={[0, 0.6]}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 0.8 }}
+              />
+              {/* Layer 2: Lighter blue glow from top-right */}
+              <LinearGradient
+                colors={
+                  theme === "dark"
+                    ? ["rgba(53, 114, 239, 0.2)", "rgba(0, 0, 0, 0)"] // Medium blue fade
+                    : ["rgba(58, 190, 249, 0.4)", "rgba(167, 230, 255, 0)"] // Sea to Cold fade
+                }
+                style={StyleSheet.absoluteFill}
+                locations={[0, 1]}
+                start={{ x: 0.8, y: 0 }}
+                end={{ x: 0.5, y: 0.7 }}
+              />
           {/* <ImageBackground
             source={images.loginGraphic}
             className="relative w-full rounded-b-lg "

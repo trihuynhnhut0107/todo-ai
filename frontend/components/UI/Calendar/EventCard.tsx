@@ -27,10 +27,13 @@ const EventCard = ({ event }: { event: EventCardProps }) => {
         <View className="flex-col flex-1">
           <View className="flex-col items-start gap-1 overflow-hidden">
             <Text className="text-xl text-text">{event.name}</Text>
-            <Text className="text-text-secondary text-sm">{`${format(
-              new Date(event.displayStart),
-              "HH:mm"
-            )} - ${format(new Date(event.displayEnd), "HH:mm")}`}</Text>
+            <Text className="text-text-secondary text-sm">
+              <Text> {`${format(new Date(event.displayStart), "dd/MM")}`}</Text>
+              <Text className="text-text-tertiary"> {`${format(new Date(event.displayStart), "HH:mm")}`}</Text>
+              <Text>-</Text>
+              <Text> {`${format(new Date(event.displayEnd), "dd/MM")}`}</Text>
+              <Text className="text-text-tertiary"> {`${format(new Date(event.displayEnd), "HH:mm")}`}</Text>
+            </Text>
             <View className="flex-row relative justify-start">
               {event.assignees?.map((m: any, idx: number) => (
                 <Text>{m.name}</Text>

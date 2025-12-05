@@ -8,41 +8,40 @@ body {
 
   /* Đảm bảo background bao phủ toàn bộ màn hình */
   min-height: 100vh;
-
-  
 }
 
-
 :root {
-  --color-primary: #f97316;       /* Tomato Red */
-  --color-secondary: #8A2BE2;     /* Blue Violet */
-  --color-accent: #FFA500;        /* Orange accent */
-  --color-background: #FFFFFF;
-  --color-surface: #F9FAFB;
-  --color-card: #FFFFFF;
+  --color-primary: #3572EF; /* Tomato Red */
+  --color-secondary: #8a2be2; /* Blue Violet */
+  --color-accent: #ffa500; /* Orange accent */
+  --color-background: #ffffff;
+  --color-surface: #f9fafb;
+  --color-card: #ffffff;
   --color-text: #111827;
-  --color-text-secondary: #6B7280;
-  --color-text-tertiary: #9CA3AF;
-  --color-border: #E5E7EB;
-  --color-muted: #F3F4F6;
-  --color-success: #10B981;
-  --color-error: #EF4444;
-  --color-warning: #F59E0B;
+  --color-text-secondary: #6b7280;
+  --color-text-tertiary: #9ca3af;
+  --color-border: #e5e7eb;
+  --color-muted: #f3f4f6;
+  --color-success: #10b981;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+  --color-theme: #ec772d;
 }
 
 .dark {
-  --color-primary: #f97316;       /* Lighter tomato for dark mode */
-  --color-secondary: #A78BFA;     /* Lighter purple for better contrast */
-  --color-accent: #FBBF24;        /* Lighter orange */
-  --color-background: #262624;    /* Very dark blue-black */
-  --color-surface: #2b2b29;       /* Dark slate with slight blue */
-  --color-card: #1E1E2E;          /* Elevated card surface */
-  --color-text: #F8FAFC;          /* Off-white for less eye strain */
-  --color-text-secondary: #CBD5E1; /* Light slate */
-  --color-text-tertiary: #94A3B8;  /* Medium slate */
-  --color-border: #41413e;        /* Subtle border */
-  --color-muted: #16161D;
-  --color-success: #34D399;
-  --color-error: #F87171;
-  --color-warning: #FBBF24;
+  --color-primary: #3572EF; /* Lighter tomato for dark mode */
+  --color-secondary: #a78bfa; /* Lighter purple for better contrast */
+  --color-accent: #fbbf24; /* Lighter orange */
+  --color-background: #262624; /* Very dark blue-black */
+  --color-surface: #2b2b29; /* Dark slate with slight blue */
+  --color-card: #1e1e2e; /* Elevated card surface */
+  --color-text: #f8fafc; /* Off-white for less eye strain */
+  --color-text-secondary: #cbd5e1; /* Light slate */
+  --color-text-tertiary: #94a3b8; /* Medium slate */
+  --color-border: #41413e; /* Subtle border */
+  --color-muted: #16161d;
+  --color-success: #34d399;
+  --color-error: #f87171;
+  --color-warning: #fbbf24;
+  --color-theme: #8b5cf6;
 }
