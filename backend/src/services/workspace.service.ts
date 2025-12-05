@@ -193,6 +193,7 @@ export class WorkspaceService {
     }
 
     const members = workspace.members || [];
+    members.push(workspace.owner);
     return members.map((member) => ({
       id: member.id,
       name: member.name,
