@@ -10,7 +10,7 @@ import {
   useEvents,
   useUpdateEvent,
 } from "@/query/event.query";
-import { useGroupById } from "@/query/group.query";
+import { useGroupById, useGroupMember } from "@/query/group.query";
 import { EventPayload } from "@/types/event";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
@@ -47,7 +47,7 @@ import {
 } from "react-native-gesture-handler";
 
 const workspaceDetail = () => {
-  const color = useThemeColor()
+  const color = useThemeColor();
   const { id } = useLocalSearchParams<{ id: string }>();
   const sheetRef = useRef<BottomSheetModal>(null);
   const calendarRef = useRef<CalendarKitHandle>(null);
@@ -62,6 +62,8 @@ const workspaceDetail = () => {
     isLoading: pendingWorkspace,
     refetch: refetchWorkspace,
   } = useGroupById(id);
+
+  const { data: members, isLoading: pendingMembers } = useGroupMember(id);
 
   const {
     data: events,
@@ -132,6 +134,15 @@ const workspaceDetail = () => {
       });
     });
 
+    const mappedEvents = events?.map((e) => {
+      return {
+        ...e,
+        createdBy:
+          e.createdById === group?.ownerId
+            ? "admin"
+            : members?.find((m) => m.id === e.createdById)?.email ?? "",
+      };
+    });
     // highlight selected date if exists
     if (!eventLog[selected]) {
       eventLog[selected] = {
@@ -142,12 +153,12 @@ const workspaceDetail = () => {
 
     const calendarBody: EventItem[] = [];
 
-    events?.forEach((e) => {
+    mappedEvents?.forEach((e) => {
       calendarBody.push(...spreadEvent(e));
     });
 
     return { eventLog, calendarBody };
-  }, [events, selected]);
+  }, [events, selected, members, group]);
 
   return (
     <SelectedDateContext.Provider
@@ -175,13 +186,13 @@ const workspaceDetail = () => {
               display: !pendingEvents && calendarLoaded ? "none" : "flex",
             }}
           >
-             <Loader />
+            <Loader />
           </View>
           <CalendarContainer
             onLoad={() => setCalendarLoaded(true)}
             theme={{
               colors: {
-                background:color.background,
+                background: color.background,
                 // surface:"white"
                 text: color.text,
                 border: color.border,
@@ -268,9 +279,7 @@ const workspaceDetail = () => {
         </BottomSheetModal>
 
         <TouchableOpacity
-          onPress={() =>
-            router.push(`/(main)/group/${id}/event_form/create`)
-          }
+          onPress={() => router.push(`/(main)/group/${id}/event_form/create`)}
           className="absolute left-5 bottom-5 flex-row items-center p-3 bg-primary rounded-full "
         >
           <Ionicons name="add" size={32} color="white" />

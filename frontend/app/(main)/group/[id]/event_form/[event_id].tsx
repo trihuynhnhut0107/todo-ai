@@ -98,6 +98,7 @@ const event_form = () => {
       updateEvent({ id: event_id, workspaceId: id, payload });
     } else {
       createEvent({ ...payload, workspaceId: id });
+      reset();
     }
   };
   return (
@@ -202,8 +203,6 @@ const event_form = () => {
               </View>
             )}
           />
-        </View>
-        <View className="bg-surface rounded-xl p-4">
           <Controller
             control={control}
             name="end"

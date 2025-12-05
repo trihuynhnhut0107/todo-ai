@@ -1,18 +1,24 @@
 import { View, Text, TouchableOpacity, Alert } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { useDeleteEvent, useEventById } from "@/query/event.query";
 import { format } from "date-fns";
 import { getColorFromString, getReadableTextColor } from "@/lib/utils";
+import useAuthStore from "@/store/auth.store";
+import { useGroupById, useGroupMember } from "@/query/group.query";
 
 const eventDetail = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuthStore();
   const router = useRouter();
   const { mutate: deleteEvent, isSuccess: deleteSuccess } = useDeleteEvent(() =>
     router.back()
   );
-  const { data: event, isLoading: pendingEvent } = useEventById(id);
+  const { data: eventdata, isLoading: pendingEvent } = useEventById(id);
+  const { data: members, isLoading: pendingMembers } = useGroupMember(
+    eventdata?.workspaceId ?? ""
+  );
 
   const handleDelete = () =>
     Alert.alert("Delete event?", "This action cannot be undone.", [
@@ -32,6 +38,16 @@ const eventDetail = () => {
       },
     ]);
 
+  const event = useMemo(() => {
+    const assignees = members?.filter((m) =>
+      eventdata?.assigneeIds.includes(m.id)
+    );
+    return {
+      ...eventdata,
+      assignees,
+    };
+  }, [eventdata, members]);
+
   return (
     <View className="flex-1 p-4 pb-32 gap-4">
       <View className="flex-row items-center justify-between">
@@ -43,24 +59,33 @@ const eventDetail = () => {
           <Text className="text-white/70">Back</Text>
         </TouchableOpacity>
 
-        <View className="flex flex-row items-center gap-2">
-          <TouchableOpacity
-            onPress={() =>
-              router.push(
-                `/(main)/group/${event?.workspaceId}/event_form/${id}`
-              )
-            }
-            className=" bg-white/30 rounded-full p-2 z-10 flex-row items-center gap-2"
-          >
-            <Ionicons name="pencil" size={22} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleDelete}
-            className=" bg-white/30 rounded-full p-2 z-10 flex-row items-center gap-2"
-          >
-            <Ionicons name="trash" size={22} color="white" />
-          </TouchableOpacity>
-        </View>
+        {user?.id === event?.createdById && (
+          <View className="flex flex-row items-center gap-2">
+            <TouchableOpacity
+              onPress={() => router.push(`/(main)/event/${id}/assign`)}
+              className=" bg-white/30 rounded-full p-2 z-10 flex-row items-center gap-2"
+            >
+              <AntDesign name="usergroup-add" size={22} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() =>
+                router.push(
+                  `/(main)/group/${event?.workspaceId}/event_form/${id}`
+                )
+              }
+              className=" bg-white/30 rounded-full p-2 z-10 flex-row items-center gap-2"
+            >
+              <Ionicons name="pencil" size={22} color="white" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleDelete}
+              className=" bg-white/30 rounded-full p-2 z-10 flex-row items-center gap-2"
+            >
+              <Ionicons name="trash" size={22} color="white" />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       <View className="rounded-xl flex-row bg-surface p-4 gap-2">
@@ -94,13 +119,17 @@ const eventDetail = () => {
       </View>
 
       <View className="flex flex-row flex-wrap items-center gap-2 rounded-xl bg-surface p-4">
-        <Text className="text-sm text-text-tertiary opacity-50">Assignees</Text>
+        <View className="w-full">
+          <Text className="text-sm text-text-tertiary opacity-50">
+            Assignees
+          </Text>
+        </View>
         {event?.assignees?.map((a) => (
           <Text
-            className="bg-white/30 rounded-lg p-2 text-white text-sm "
+            className="bg-white/30 rounded-lg px-2 py-1 text-white text-sm "
             key={a.id}
           >
-            {a.name}
+            {a.email}
           </Text>
         ))}
       </View>
@@ -117,9 +146,13 @@ const eventDetail = () => {
             <Text className="text-sm text-text-tertiary">
               {idx === 0 ? "Start" : "End"}
             </Text>
-            <Text className="text-lg text-text">{format(new Date(date), "EEE dd")}</Text>
+            <Text className="text-lg text-text">
+              {format(new Date(date), "EEE dd")}
+            </Text>
 
-            <Text className="text-2xl text-text">{format(new Date(date), "HH:mm")}</Text>
+            <Text className="text-2xl text-text">
+              {format(new Date(date), "HH:mm")}
+            </Text>
           </View>
         ))}
       </View>

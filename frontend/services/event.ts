@@ -64,7 +64,7 @@ export const unassignMember = async ({
 }: {
   id: string;
   payload: {
-    userIds: string[];
+    userId: string;
   };
 }) => {
   return await api.delete(`/events/${id}/assignees`, {
