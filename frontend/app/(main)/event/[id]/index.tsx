@@ -1,24 +1,35 @@
-import { View, Text, TouchableOpacity, Alert } from "react-native";
-import React, { useEffect, useMemo } from "react";
+import { View, Text, TouchableOpacity, Alert, Modal } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
-import { useDeleteEvent, useEventById } from "@/query/event.query";
+import {
+  useDeleteEvent,
+  useEventById,
+  useUpdateEventStatus,
+} from "@/query/event.query";
 import { format } from "date-fns";
 import { getColorFromString, getReadableTextColor } from "@/lib/utils";
 import useAuthStore from "@/store/auth.store";
 import { useGroupById, useGroupMember } from "@/query/group.query";
+import { Button } from "@react-navigation/elements";
+import CustomButton from "@/components/Input/CustomButton";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { EventStatus } from "@/enum/event";
+import { ScrollView } from "react-native-gesture-handler";
 
 const eventDetail = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuthStore();
   const router = useRouter();
-  const { mutate: deleteEvent, isSuccess: deleteSuccess } = useDeleteEvent(() =>
-    router.back()
-  );
+  const { mutate: deleteEvent } = useDeleteEvent(() => router.back());
+  const { mutate: updateStatus, isPending: pendingUpdateStatus } =
+    useUpdateEventStatus();
   const { data: eventdata, isLoading: pendingEvent } = useEventById(id);
   const { data: members, isLoading: pendingMembers } = useGroupMember(
     eventdata?.workspaceId ?? ""
   );
+
+  const [open, setOpen] = useState(false);
 
   const handleDelete = () =>
     Alert.alert("Delete event?", "This action cannot be undone.", [
@@ -49,7 +60,7 @@ const eventDetail = () => {
   }, [eventdata, members]);
 
   return (
-    <View className="flex-1 p-4 pb-32 gap-4">
+    <ScrollView contentContainerClassName="flex-1 p-4 gap-4">
       <View className="flex-row items-center justify-between">
         <TouchableOpacity
           onPress={() => router.back()}
@@ -100,24 +111,29 @@ const eventDetail = () => {
           <Text className="text-sm opacity-50 text-text-secondary">
             {event?.description}
           </Text>
-
-          <View className="flex-row flex-wrap items-center gap-2 overflow-hidden">
-            {event?.tags?.map((t: string, idx: number) => (
-              <Text
-                className="rounded-lg p-1 px-2  text-xs"
-                key={idx}
-                style={{
-                  backgroundColor: getColorFromString(t),
-                  color: getReadableTextColor(getColorFromString(t)),
-                }}
-              >
-                {t}
-              </Text>
-            ))}
-          </View>
+          <Text className="text-xs mt-2 opacity-50 text-text-secondary uppercase">
+            {event?.status}
+          </Text>
         </View>
       </View>
 
+      <View className="flex flex-row flex-wrap items-center gap-2 rounded-xl bg-surface p-4">
+        <View className="w-full">
+          <Text className="text-sm text-text-tertiary opacity-50">Tags</Text>
+        </View>
+        {event?.tags?.map((t: string, idx: number) => (
+          <Text
+            className="rounded-lg p-1 px-2  text-xs"
+            key={idx}
+            style={{
+              backgroundColor: getColorFromString(t),
+              color: getReadableTextColor(getColorFromString(t)),
+            }}
+          >
+            {t}
+          </Text>
+        ))}
+      </View>
       <View className="flex flex-row flex-wrap items-center gap-2 rounded-xl bg-surface p-4">
         <View className="w-full">
           <Text className="text-sm text-text-tertiary opacity-50">
@@ -126,7 +142,7 @@ const eventDetail = () => {
         </View>
         {event?.assignees?.map((a) => (
           <Text
-            className="bg-white/30 rounded-lg px-2 py-1 text-white text-sm "
+            className="bg-text-secondary rounded-lg px-2 py-1 text-background text-sm "
             key={a.id}
           >
             {a.email}
@@ -156,7 +172,58 @@ const eventDetail = () => {
           </View>
         ))}
       </View>
-    </View>
+
+      {event?.location && (
+        <View className="flex flex-row flex-wrap items-center gap-2 rounded-xl bg-surface p-4">
+          <View className="w-full">
+            <Text className="text-sm text-text-tertiary opacity-50">
+              Location
+            </Text>
+          </View>
+
+          <Text className="text-sm text-text-secondary">{event?.location}</Text>
+        </View>
+      )}
+      {(user?.id && event?.assigneeIds?.includes(user.id)) ||
+        (user?.id === event?.createdById && (
+          <>
+            <CustomButton
+              title="Update Status"
+              style="mt-auto"
+              onPress={() => setOpen(true)}
+            />
+            <Modal visible={open} animationType="fade" transparent>
+              {/* backdrop */}
+              <TouchableOpacity
+                className="flex-1 bg-black/40"
+                activeOpacity={1}
+                onPress={() => setOpen(false)}
+              />
+
+              {/* color picker panel */}
+              <View className="absolute left-6 right-6 bottom-6 rounded-2xl p-4 shadow-xl gap-2 bg-surface border-2 border-border">
+                {Object.values(EventStatus)
+                  .filter((status) => status !== event?.status)
+                  .map((status) => (
+                    <CustomButton
+                      key={status}
+                      isLoading={pendingUpdateStatus}
+                      title={status.toUpperCase().replace("_", " ")}
+                      style="px-4 py-3 rounded-xl"
+                      onPress={async () =>
+                        updateStatus({
+                          id,
+                          workspaceId: event.workspaceId ?? "",
+                          payload: { status },
+                        })
+                      }
+                    />
+                  ))}
+              </View>
+            </Modal>
+          </>
+        ))}
+    </ScrollView>
   );
 };
 

@@ -87,7 +87,7 @@ const form = () => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
-      <ScrollView contentContainerClassName="p-4 gap-4 items-start ">
+      <ScrollView contentContainerClassName="p-4 gap-4 pb-32  items-start ">
         <View className="flex-row items-start justify-between w-full">
           <TouchableOpacity
             onPress={() => router.back()}

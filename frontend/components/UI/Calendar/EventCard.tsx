@@ -11,7 +11,7 @@ const EventCard = ({ event }: { event: EventCardProps }) => {
   return (
     <Link href={`/(main)/event/${event.id}`}>
       <View
-        className="flex-row items-start p-3 gap-2 border-2 rounded-lg bg-surface overflow-auto"
+        className="flex-row items-start p-3 gap-2 border-2 rounded-lg bg-surface truncate"
         style={{
           borderColor: event.color,
           width: "100%",
@@ -27,7 +27,7 @@ const EventCard = ({ event }: { event: EventCardProps }) => {
         <View className="flex-col flex-1">
           <View className="flex-col items-start gap-1 overflow-hidden">
             <Text className="text-xl text-text">{event.name}</Text>
-            <Text className="text-xs text-text-tertiary">cre: {event.createdBy}</Text>
+            <Text className="text-xs text-text-tertiary truncate" numberOfLines={1}>cre: {event.createdBy}</Text>
 
             <Text className="text-text-secondary text-sm">
               <Text>{`${format(new Date(event.displayStart), "dd/MM")}`}</Text>

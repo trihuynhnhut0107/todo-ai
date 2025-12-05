@@ -8,10 +8,11 @@ import useAuthStore from "@/store/auth.store";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import FlashMessage from "react-native-flash-message";
-import ThemeProvider from "@/components/theme/ThemeProvider";
+import ThemeProvider from "@/context/ThemeProvider";
 import Loader from "@/components/UI/Loader";
 import { useColorScheme } from "react-native";
 import { useThemeStore } from "@/store/theme.store";
+
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,43 +23,44 @@ export const queryClient = new QueryClient({
   },
 });
 
-function RootLayoutNav() {
-  return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    />
-  );
-}
-
+import cn from "clsx";
+import { View } from "react-native";
 export default function RootLayout() {
   const { isLoading, fetchAuthenticatedUser } = useAuthStore();
-
+  const colorScheme = useColorScheme();
   useEffect(() => {
     fetchAuthenticatedUser();
   }, []);
 
+  useEffect(() => {
+    console.log(colorScheme);
+  }, [colorScheme]);
+
   if (isLoading) {
     return (
-      <ThemeProvider>
-        <SafeAreaView className="flex-1 justify-center items-center bg-background">
-          <Loader />
-        </SafeAreaView>
-      </ThemeProvider>
+      // <ThemeProvider>
+      <SafeAreaView className={colorScheme as string}>
+        <Loader />
+      </SafeAreaView>
+      // </ThemeProvider>
     );
   }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <View className={cn("flex-1",colorScheme as string)}>
           <BottomSheetModalProvider>
-            <RootLayoutNav />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+              }}
+            />
             <FlashMessage position="top" />
           </BottomSheetModalProvider>
-        </GestureHandlerRootView>
-      </ThemeProvider>
+        </View>
+      </GestureHandlerRootView>
+      {/* </ThemeProvider> */}
     </QueryClientProvider>
   );
 }

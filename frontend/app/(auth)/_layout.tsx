@@ -1,7 +1,7 @@
 import CustomButton from "@/components/Input/CustomButton";
 import { images } from "@/lib/image";
 import useAuthStore from "@/store/auth.store";
-import { useThemeStore } from "@/store/theme.store";
+
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useQueryClient } from "@tanstack/react-query";
 import { BlurView } from "expo-blur";
@@ -25,6 +25,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useColorScheme,
   View,
 } from "react-native";
 
@@ -36,7 +37,7 @@ export const modalContext = createContext<{
 }>({ isOpen: "", setOpen: () => {} });
 
 const AuthLayout = () => {
-  const { theme } = useThemeStore();
+  const theme = useColorScheme()
   const sheetRef = useRef<BottomSheetModal>(null);
   const { isAuthenticated, fetchAuthenticatedUser, logout } = useAuthStore();
   const [isOpen, setOpen] = useState("");

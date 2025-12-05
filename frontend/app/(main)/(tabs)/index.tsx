@@ -13,8 +13,7 @@ import useAuthStore from "@/store/auth.store";
 import SearchInput from "@/components/Input/SearchInput";
 import { Link, router } from "expo-router";
 import { format } from "date-fns";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { useThemeStore } from "@/store/theme.store";
+
 import useThemeColor from "@/hooks/useThemeColor";
 import CustomInput from "@/components/Input/CustomInput";
 import CustomButton from "@/components/Input/CustomButton";
@@ -64,7 +63,7 @@ const Header = () => {
           text: "Logout",
           style: "destructive",
           onPress: () => {
-            queryClient.removeQueries()
+            queryClient.removeQueries();
             logout(); // your logout function here
           },
         },
@@ -90,7 +89,6 @@ const Header = () => {
             </View>
           </View>
           <View className="ml-4 flex-row gap-3 items-center bg-white/30 p-1 rounded-lg">
-            <ThemeToggle />
             <Link href={"/(main)/(tabs)/notification"}>
               <View className="w-10 h-10 bg-white/30 rounded-full flex items-center justify-center">
                 <FontAwesome6 name="bell" size={20} color="white" />

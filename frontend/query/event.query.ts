@@ -6,6 +6,7 @@ import {
   getEvents,
   unassignMember,
   updateEvent,
+  updateEventStatus,
 } from "@/services/event";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { showMessage } from "react-native-flash-message";
@@ -62,6 +63,24 @@ export const useUpdateEvent = () => {
       });
       showMessage({
         message: "Event updated!",
+        type: "success",
+      });
+    },
+  });
+};
+
+export const useUpdateEventStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateEventStatus,
+
+    onSuccess: (_, { id, workspaceId }) => {
+      queryClient.invalidateQueries({ queryKey: ["event", id] });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace", workspaceId, "events"],
+      });
+      showMessage({
+        message: "Event status updated!",
         type: "success",
       });
     },

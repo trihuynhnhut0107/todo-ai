@@ -5,6 +5,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  useColorScheme,
 } from "react-native";
 import React from "react";
 import useAuthStore from "@/store/auth.store";
@@ -12,12 +13,11 @@ import { Redirect, Slot, Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 
-import { useThemeStore } from "@/store/theme.store";
 import { useNotificationListeners } from "@/hooks/useNotificationListeners";
 
 const MainLayout = () => {
   const { isAuthenticated } = useAuthStore();
-  const { theme } = useThemeStore();
+  const theme = useColorScheme();
 
   // Set up notification listeners for handling taps
   useNotificationListeners();

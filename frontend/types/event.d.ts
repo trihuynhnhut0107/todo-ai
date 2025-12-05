@@ -1,13 +1,9 @@
 import { DateOrDateTime, DateTimeType, EventItem } from "@howljs/calendar-kit";
 import { User } from "./auth";
+import { EventStatus } from "@/enum/event";
 
 
-export enum EventStatus {
-  SCHEDULED = "scheduled",
-  IN_PROGRESS = "in_progress",
-  COMPLETED = "completed",
-  CANCELLED = "cancelled",
-}
+
 
 export interface Assignee extends User {
 }

@@ -24,6 +24,7 @@ import {
 import { EventPayload } from "@/types/event";
 import CustomColorPicker from "@/components/Input/CustomColorPicker";
 import CustomTagInput from "@/components/Input/CustomTagInput";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export const schema = z
   .object({
@@ -38,6 +39,8 @@ export const schema = z
     end: z.date({
       required_error: "Please choose end time",
     }),
+
+    location: z.string().optional(),
   })
   .refine((data) => data.end > data.start, {
     message: "End time must be after start time",
@@ -80,6 +83,7 @@ const event_form = () => {
         start: new Date(event?.start),
         end: new Date(event?.end),
         color: event?.color,
+        location: event?.location,
       });
   }, [event]);
 
@@ -91,7 +95,7 @@ const event_form = () => {
       start: data.start,
       end: data.end,
       color: data.color,
-
+      location: data.location,
       // workspaceId: id
     };
     if (isEditmode) {
@@ -108,7 +112,7 @@ const event_form = () => {
       className="flex-1"
     >
       <ScrollView
-        contentContainerClassName="p-4 gap-4"
+        contentContainerClassName="p-4 pb-32 gap-4"
         showsVerticalScrollIndicator={false}
       >
         <View className="flex-row items-start justify-between">
@@ -216,6 +220,20 @@ const event_form = () => {
                 />
                 <Text className="text-red-500">{errors.end?.message}</Text>
               </View>
+            )}
+          />
+        </View>
+        <View className="bg-surface rounded-xl p-4">
+          <Controller
+            control={control}
+            name="location"
+            render={({ field }) => (
+              <CustomInput
+                label="Location"
+                multiline={true}
+                value={field.value}
+                onChangeText={field.onChange}
+              />
             )}
           />
         </View>

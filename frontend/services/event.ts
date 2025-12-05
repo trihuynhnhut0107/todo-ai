@@ -1,3 +1,4 @@
+import { EventStatus } from "@/enum/event";
 import api from "@/lib/api";
 import { mockEvents } from "@/lib/mock/event";
 import { Event, EventPayload } from "@/types/event";
@@ -32,6 +33,17 @@ export const updateEvent = async ({
   id: string;
   workspaceId: string;
   payload: EventPayload;
+}): Promise<Event> => {
+  return await api.put(`/events/${id}`, payload);
+};
+export const updateEventStatus = async ({
+  id,
+  workspaceId,
+  payload,
+}: {
+  id: string;
+  workspaceId: string;
+  payload: {status:EventStatus};
 }): Promise<Event> => {
   return await api.put(`/events/${id}`, payload);
 };
