@@ -29,7 +29,7 @@ body {
 }
 
 .dark {
-  --color-primary: #3572EF; /* Lighter tomato for dark mode */
+  --color-primary: #3572EF; /* Primary Blue for dark mode */
   --color-secondary: #a78bfa; /* Lighter purple for better contrast */
   --color-accent: #fbbf24; /* Lighter orange */
   --color-background: #262624; /* Very dark blue-black */
