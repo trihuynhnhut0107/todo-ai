@@ -2,7 +2,7 @@ import useThemeColor from "@/hooks/useThemeColor";
 import { GroupMemberCardProps } from "@/type";
 import { Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import React from "react";
-import { Text, Touchable, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 export default function MemberCard({
   member,
