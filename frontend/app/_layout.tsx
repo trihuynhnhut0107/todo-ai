@@ -11,7 +11,6 @@ import FlashMessage from "react-native-flash-message";
 import Loader from "@/components/UI/Loader";
 import { useColorScheme } from "react-native";
 
-
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -22,17 +21,12 @@ export const queryClient = new QueryClient({
 });
 
 import cn from "clsx";
-import { View } from "react-native";
 export default function RootLayout() {
   const { isLoading, fetchAuthenticatedUser } = useAuthStore();
   const colorScheme = useColorScheme();
   useEffect(() => {
     fetchAuthenticatedUser();
   }, []);
-
-  useEffect(() => {
-    console.log(colorScheme);
-  }, [colorScheme]);
 
   if (isLoading) {
     return (
@@ -46,17 +40,18 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <View className={cn("flex-1",colorScheme as string)}>
-          <BottomSheetModalProvider>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-              }}
-            />
-            <FlashMessage position="top" />
-          </BottomSheetModalProvider>
-        </View>
+      <GestureHandlerRootView
+        style={{ flex: 1 }}
+        className={cn(colorScheme as string)}
+      >
+        <BottomSheetModalProvider>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+            }}
+          />
+          <FlashMessage position="top" />
+        </BottomSheetModalProvider>
       </GestureHandlerRootView>
       {/* </ThemeProvider> */}
     </QueryClientProvider>

@@ -43,7 +43,7 @@ export const updateEventStatus = async ({
 }: {
   id: string;
   workspaceId: string;
-  payload: {status:EventStatus};
+  payload: { status: EventStatus };
 }): Promise<Event> => {
   return await api.put(`/events/${id}`, payload);
 };
@@ -60,9 +60,11 @@ export const deleteEvent = async ({
 
 export const assignMember = async ({
   id,
+  wp_id,
   payload,
 }: {
   id: string;
+   wp_id: string;
   payload: {
     userIds: string[];
   };
@@ -72,9 +74,11 @@ export const assignMember = async ({
 
 export const unassignMember = async ({
   id,
+  wp_id,
   payload,
 }: {
   id: string;
+  wp_id: string;
   payload: {
     userId: string;
   };

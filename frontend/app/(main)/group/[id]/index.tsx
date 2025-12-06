@@ -2,6 +2,7 @@ import AgendaHeader from "@/components/UI/Calendar/AgendaHeader";
 import EventCard from "@/components/UI/Calendar/EventCard";
 import Loader from "@/components/UI/Loader";
 import { SelectedDateContext } from "@/context/selectedDate";
+import { EventStatus } from "@/enum/event";
 import useThemeColor from "@/hooks/useThemeColor";
 import { getDatesBetween, spreadEvent } from "@/lib/utils";
 import {
@@ -11,7 +12,8 @@ import {
   useUpdateEvent,
 } from "@/query/event.query";
 import { useGroupById, useGroupMember } from "@/query/group.query";
-import { EventPayload } from "@/types/event";
+import useAuthStore from "@/store/auth.store";
+import { Event, EventPayload } from "@/types/event";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import {
@@ -48,9 +50,17 @@ import {
 
 const workspaceDetail = () => {
   const color = useThemeColor();
+  const { user } = useAuthStore();
   const { id } = useLocalSearchParams<{ id: string }>();
   const sheetRef = useRef<BottomSheetModal>(null);
   const calendarRef = useRef<CalendarKitHandle>(null);
+  const [filter, setFilter] = useState<{
+    assigned: boolean;
+    status: EventStatus[];
+  }>({
+    assigned: false,
+    status: Object.values(EventStatus).map((s) => s),
+  });
   const [selected, selectDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -106,6 +116,18 @@ const workspaceDetail = () => {
     handleGoToDate(new Date(d).toISOString().split("T")[0]);
   };
 
+  const filteredEvents = useMemo(() => {
+    return events?.filter((e) => {
+      if (user && filter.assigned && !e.assigneeIds?.includes(user?.id)) {
+        return false;
+      }
+      if (!filter.status?.includes(e.status)) {
+        return false;
+      }
+      return true;
+    });
+  }, [filter, events]);
+
   const calendarDates = useMemo(() => {
     const eventLog: Record<
       string,
@@ -117,7 +139,7 @@ const workspaceDetail = () => {
       }
     > = {};
 
-    events?.forEach((event) => {
+    filteredEvents?.forEach((event) => {
       const start = new Date(event.start.toString()).toLocaleDateString();
       const end = new Date(event.end.toString()).toLocaleDateString();
 
@@ -134,13 +156,10 @@ const workspaceDetail = () => {
       });
     });
 
-    const mappedEvents = events?.map((e) => {
+    const mappedEvents = filteredEvents?.map((e) => {
       return {
         ...e,
-        createdBy:
-          e.createdById === group?.ownerId
-            ? "admin"
-            : members?.find((m) => m.id === e.createdById)?.email ?? "",
+        createdBy: members?.find((m) => m.id === e.createdById)?.email ?? "",
       };
     });
     // highlight selected date if exists
@@ -158,11 +177,11 @@ const workspaceDetail = () => {
     });
 
     return { eventLog, calendarBody };
-  }, [events, selected, members, group]);
+  }, [selected, members, group, filteredEvents, user]);
 
   return (
     <SelectedDateContext.Provider
-      value={{ selected, selectDate: handleSelectDate }}
+      value={{ selected, selectDate: handleSelectDate, filter, setFilter }}
     >
       <View className="flex-1 ">
         <View className="overflow-display shadow-sm z-50">
@@ -175,7 +194,7 @@ const workspaceDetail = () => {
               />
             }
           >
-            <AgendaHeader group={group} events={events} />
+            <AgendaHeader group={group} events={filteredEvents} />
           </ScrollView>
         </View>
 

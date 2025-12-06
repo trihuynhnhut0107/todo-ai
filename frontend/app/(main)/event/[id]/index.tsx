@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, Alert, Modal } from "react-native";
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
-import { AntDesign, Ionicons } from "@expo/vector-icons";
+import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
 import {
   useDeleteEvent,
   useEventById,
@@ -16,6 +16,8 @@ import CustomButton from "@/components/Input/CustomButton";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EventStatus } from "@/enum/event";
 import { ScrollView } from "react-native-gesture-handler";
+import StatusChip from "@/components/UI/Calendar/StatusChip";
+import useThemeColor from "@/hooks/useThemeColor";
 
 const eventDetail = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -29,6 +31,7 @@ const eventDetail = () => {
     eventdata?.workspaceId ?? ""
   );
 
+  const color = useThemeColor();
   const [open, setOpen] = useState(false);
 
   const handleDelete = () =>
@@ -55,6 +58,7 @@ const eventDetail = () => {
     );
     return {
       ...eventdata,
+      createdBy: members?.find((m) => m.id === eventdata?.createdById),
       assignees,
     };
   }, [eventdata, members]);
@@ -108,18 +112,22 @@ const eventDetail = () => {
         ></View>
         <View>
           <Text className="text-3xl text-text">{event?.name}</Text>
+          <Text className="text-xs text-text-secondary">
+            {event?.createdBy?.email}
+          </Text>
           <Text className="text-sm opacity-50 text-text-secondary">
             {event?.description}
           </Text>
           <Text className="text-xs mt-2 opacity-50 text-text-secondary uppercase">
-            {event?.status}
+            <StatusChip status={event?.status as EventStatus} />
           </Text>
         </View>
       </View>
 
       <View className="flex flex-row flex-wrap items-center gap-2 rounded-xl bg-surface p-4">
-        <View className="w-full">
-          <Text className="text-sm text-text-tertiary opacity-50">Tags</Text>
+        <View className="w-full opacity-50 flex-row gap-2 items-center">
+          <AntDesign name="tag" size={14} color={color["text-tertiary"]} />
+          <Text className="text-sm text-text-tertiary">Tags</Text>
         </View>
         {event?.tags?.map((t: string, idx: number) => (
           <Text
@@ -135,10 +143,9 @@ const eventDetail = () => {
         ))}
       </View>
       <View className="flex flex-row flex-wrap items-center gap-2 rounded-xl bg-surface p-4">
-        <View className="w-full">
-          <Text className="text-sm text-text-tertiary opacity-50">
-            Assignees
-          </Text>
+        <View className="w-full opacity-50 flex-row gap-2 items-center">
+          <Feather name="users" size={14} color={color["text-tertiary"]} />
+          <Text className="text-sm text-text-tertiary">Assignees</Text>
         </View>
         {event?.assignees?.map((a) => (
           <Text
@@ -157,9 +164,9 @@ const eventDetail = () => {
         ])?.map((date, idx) => (
           <View
             key={idx}
-            className="flex-1 flex-col rounded-xl bg-surface p-4 items-start "
+            className="flex-1 flex-col rounded-xl bg-accent p-4 items-start "
           >
-            <Text className="text-sm text-text-tertiary">
+            <Text className="text-sm text-background">
               {idx === 0 ? "Start" : "End"}
             </Text>
             <Text className="text-lg text-text">
@@ -175,54 +182,52 @@ const eventDetail = () => {
 
       {event?.location && (
         <View className="flex flex-row flex-wrap items-center gap-2 rounded-xl bg-surface p-4">
-          <View className="w-full">
-            <Text className="text-sm text-text-tertiary opacity-50">
-              Location
-            </Text>
+          <View className="w-full opacity-50 flex-row gap-2 items-center">
+            <Feather name="map-pin" size={14} color={color["text-tertiary"]} />
+            <Text className="text-sm text-text-tertiary">Location</Text>
           </View>
 
           <Text className="text-sm text-text-secondary">{event?.location}</Text>
         </View>
       )}
-      {(user?.id && event?.assigneeIds?.includes(user.id)) ||
-        (user?.id === event?.createdById && (
-          <>
-            <CustomButton
-              title="Update Status"
-              style="mt-auto"
-              onPress={() => setOpen(true)}
+      {user?.id && event?.assigneeIds?.includes(user.id) && (
+        <>
+          <CustomButton
+            title="Update Status"
+            style="mt-auto"
+            onPress={() => setOpen(true)}
+          />
+          <Modal visible={open} animationType="fade" transparent>
+            {/* backdrop */}
+            <TouchableOpacity
+              className="flex-1 bg-black/40"
+              activeOpacity={1}
+              onPress={() => setOpen(false)}
             />
-            <Modal visible={open} animationType="fade" transparent>
-              {/* backdrop */}
-              <TouchableOpacity
-                className="flex-1 bg-black/40"
-                activeOpacity={1}
-                onPress={() => setOpen(false)}
-              />
 
-              {/* color picker panel */}
-              <View className="absolute left-6 right-6 bottom-6 rounded-2xl p-4 shadow-xl gap-2 bg-surface border-2 border-border">
-                {Object.values(EventStatus)
-                  .filter((status) => status !== event?.status)
-                  .map((status) => (
-                    <CustomButton
-                      key={status}
-                      isLoading={pendingUpdateStatus}
-                      title={status.toUpperCase().replace("_", " ")}
-                      style="px-4 py-3 rounded-xl"
-                      onPress={async () =>
-                        updateStatus({
-                          id,
-                          workspaceId: event.workspaceId ?? "",
-                          payload: { status },
-                        })
-                      }
-                    />
-                  ))}
-              </View>
-            </Modal>
-          </>
-        ))}
+            {/* color picker panel */}
+            <View className="absolute left-6 right-6 bottom-6 rounded-2xl p-4 shadow-xl gap-2 bg-card border-2 border-border">
+              {Object.values(EventStatus)
+                .filter((status) => status !== event?.status)
+                .map((status) => (
+                  <CustomButton
+                    key={status}
+                    isLoading={pendingUpdateStatus}
+                    title={status.toUpperCase().replace("_", " ")}
+                    style="px-4 py-3 rounded-xl"
+                    onPress={async () =>
+                      updateStatus({
+                        id,
+                        workspaceId: event.workspaceId ?? "",
+                        payload: { status },
+                      })
+                    }
+                  />
+                ))}
+            </View>
+          </Modal>
+        </>
+      )}
     </ScrollView>
   );
 };

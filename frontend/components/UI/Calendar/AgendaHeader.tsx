@@ -1,18 +1,36 @@
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import React, { use, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Modal,
+  Pressable,
+  Switch,
+} from "react-native";
+import React, {
+  use,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import AgendaHeaderItem from "./AgendaHeaderItem";
 import { AgendaHeaderProps, DateWithEvents } from "@/type";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
 import { useSelectedDate } from "@/context/selectedDate";
 import useThemeColor from "@/hooks/useThemeColor";
+import { EventStatus } from "@/enum/event";
+import StatusChip from "./StatusChip";
 
 const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
-  const { selectDate, selected } = useSelectedDate();
+  const { selectDate, selected, filter, setFilter } = useSelectedDate();
   const listRef = useRef<FlatList<DateWithEvents>>(null);
   const [loaded, setLoaded] = useState(false);
-  const color = useThemeColor()
+  const color = useThemeColor();
+  const [open, setOpen] = useState(false);
   // Generate array of all days in the same month as `selected`
 
   const monthDates: DateWithEvents[] = useMemo(() => {
@@ -71,25 +89,48 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
     }
   }, [selected, monthDates]);
 
+  const filterCount = useMemo(() => {
+    let count = 0;
+
+    if (filter?.assigned) count++;
+
+    count += filter?.status?.length;
+
+    return count;
+  }, [filter]);
+
   return (
-    <View className="bg-surface" style={{
-      borderColor: group?.color
-    }}>
+    <View
+      className="bg-surface"
+      style={{
+        borderColor: group?.color,
+      }}
+    >
       <View className="p-2">
         <View className="flex-row items-center justify-between">
-          <TouchableOpacity
-            onPress={() => router.push("/(main)/(tabs)/groups")}
-            className="justify-center rounded-md p-2 z-10 flex-row items-center gap-2"
-          >
-            <Ionicons name="list" size={22} color={color.primary} />
-          </TouchableOpacity>
-
           <View className="flex-row items-center gap-2">
-            <Text className="text-primary">{group?.name}</Text>
             <TouchableOpacity
-              onPress={() =>
-                router.push(`/(main)/group/${group?.id}/setting`)
-              }
+              onPress={() => router.push("/(main)/(tabs)/groups")}
+              className="justify-center rounded-md p-2 z-10 flex-row items-center gap-2"
+            >
+              <Ionicons name="list" size={22} color={color.primary} />
+            </TouchableOpacity>
+            <Text className="text-primary">{group?.name}</Text>
+          </View>
+          <View className="flex-row items-center gap-2">
+            <TouchableOpacity
+              onPress={() => setOpen(true)}
+              className=" justify-center rounded-md p-2 z-10 flex-row items-center gap-2 bg-accent"
+            >
+              {filterCount > 0 && (
+                <Text className="rounded-lg text-text">
+                  {filterCount}
+                </Text>
+              )}
+              <Feather name="filter" size={22} color={color.text} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => router.push(`/(main)/group/${group?.id}/setting`)}
               className=" justify-center rounded-md p-2 z-10 flex-row items-center gap-2"
             >
               <Ionicons name="settings" size={22} color={color.primary} />
@@ -130,6 +171,49 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
       <Text className="text-center text-text-secondary text-sm pb-2">
         {format(new Date(selected), "EEEE, MMMM dd yyyy")}
       </Text>
+
+      <Modal visible={open} animationType="fade" transparent>
+        {/* backdrop */}
+        <TouchableOpacity
+          className="flex-1 bg-black/40"
+          activeOpacity={1}
+          onPress={() => setOpen(false)}
+        />
+
+        {/* color picker panel */}
+        <View className="absolute left-6 right-6 bottom-6 rounded-t-2xl p-4 shadow-xl gap-2 bg-card border-2 border-border">
+          <View className="flex flex-row justify-between items-center">
+            <Text className="text-text-secondary">Assigned</Text>
+
+            <Switch
+              value={filter?.assigned}
+              onValueChange={(value) =>
+                setFilter((prev) => ({ ...prev, assigned: value }))
+              }
+            />
+          </View>
+
+          <Text className="text-text-secondary">Status</Text>
+          <View className="flex-row flex-wrap gap-2 items-center">
+            {Object.values(EventStatus).map((status) => (
+              <TouchableOpacity
+                key={status}
+                onPress={() => {
+                  setFilter((prev) => ({
+                    ...prev,
+                    status: prev.status.includes(status)
+                      ? prev.status.filter((s) => s !== status) // Remove if selected
+                      : [...prev.status, status], // Add if not selected
+                  }));
+                }}
+                className={!filter?.status.includes(status) ? "opacity-50" : ""}
+              >
+                <StatusChip status={status} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

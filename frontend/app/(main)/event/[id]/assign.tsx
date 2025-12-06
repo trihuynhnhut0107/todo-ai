@@ -27,7 +27,7 @@ import { User } from "@/types/auth";
 const assign = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: event, isLoading: pendingEvent } = useEventById(id);
-  const { data: members, isLoading: pendingMembers } = useGroupMember(
+  const { data: members, isFetching: pendingMembers,refetch } = useGroupMember(
     event?.workspaceId ?? ""
   );
   const { mutate: assign, isPending: pendingAssign } = useAssignMember();
@@ -49,6 +49,7 @@ const assign = () => {
     );
   }, [event?.assigneeIds, members, filterText]);
 
+  console.log(members)
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -80,7 +81,7 @@ const assign = () => {
                 <AssigneeCard
                   assignee={item}
                   onDelete={async () =>
-                    unassign({ id, payload: { userId: item.id } })
+                    unassign({ id, wp_id:event?.workspaceId||"", payload: { userId: item.id } })
                   }
                 />
               </View>
@@ -103,7 +104,7 @@ const assign = () => {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() => assign({ id, payload: { userIds: [item.id] } })}
+              onPress={() => assign({ id, wp_id:event?.workspaceId||"", payload: { userIds: [item.id] } })}
               className="flex-1"
             >
               <UserCard user={item as User} />
@@ -116,6 +117,9 @@ const assign = () => {
           numColumns={2}
           columnWrapperStyle={{ gap: 8 }}
           ListEmptyComponent={() => <Empty />}
+          refreshControl={
+            <RefreshControl refreshing={pendingMembers} onRefresh={refetch}/>
+          }
         />
       </View>
     </KeyboardAvoidingView>
