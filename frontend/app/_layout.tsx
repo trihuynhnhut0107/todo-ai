@@ -8,10 +8,8 @@ import useAuthStore from "@/store/auth.store";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import FlashMessage from "react-native-flash-message";
-import ThemeProvider from "@/context/ThemeProvider";
 import Loader from "@/components/UI/Loader";
 import { useColorScheme } from "react-native";
-import { useThemeStore } from "@/store/theme.store";
 
 
 export const queryClient = new QueryClient({
