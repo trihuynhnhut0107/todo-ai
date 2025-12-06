@@ -1,16 +1,58 @@
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import React from "react";
-import { FlatList, RefreshControl, ScrollView } from "react-native-gesture-handler";
+import {
+  FlatList,
+  RefreshControl,
+  ScrollView,
+} from "react-native-gesture-handler";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useGroupMember } from "@/query/group.query";
+import {
+  useGroupById,
+  useGroupMember,
+  useRemoveGroupMember,
+} from "@/query/group.query";
 import MemberCard from "@/components/UI/Group/MemberCard";
 import Empty from "@/components/UI/Empty";
+import { useUserById } from "@/query/user.query";
+import UserCard from "@/components/UI/User/UserCard";
 
 const member = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: groupMembers, isLoading: pendingGroupMembers,refetch } =
-    useGroupMember(id);
+  const {
+    data: groupMembers,
+    isLoading: pendingGroupMembers,
+    refetch,
+  } = useGroupMember(id);
+  const { data: group } = useGroupById(id);
+  const { data: owner } = useUserById(group?.ownerId || "");
+  const { mutate: remove, isPending: pendingDelete } = useRemoveGroupMember();
+
+  const handleDelete = (userId: string) => {
+    Alert.alert(
+      "Delete Member",
+      "Are you sure you want to remove this member? This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            remove({ id, payload: { userId } });
+          },
+        },
+      ]
+    );
+  };
   return (
     <View className="flex-1 p-4 gap-4 ">
       <View className="flex-row items-start justify-between">
@@ -24,21 +66,36 @@ const member = () => {
         <Text className="text-3xl font-bold text-white">Members</Text>
       </View>
 
+      <View>
+        <Text className="text text-text font-bold">Group Admin</Text>
+        {owner && <UserCard user={owner} />}
+      </View>
+
+      <View>
+        <Text className="text text-text font-bold">Group Member</Text>
+      </View>
       <FlatList
         data={groupMembers}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View className="flex-1">
-            <MemberCard member={item} />
+            <MemberCard
+              member={item}
+              onDelete={() => handleDelete(item.id)}
+            />
           </View>
         )}
+        className="flex-1 bg-background rounded-lg"
         ItemSeparatorComponent={() => <View className="h-4"></View>}
-        contentContainerClassName="pb-48 px-1"
+        contentContainerClassName="pb-48 p-2"
         showsVerticalScrollIndicator={false}
         numColumns={2}
         columnWrapperStyle={{ gap: 8 }}
         refreshControl={
-          <RefreshControl refreshing={pendingGroupMembers} onRefresh={refetch} />
+          <RefreshControl
+            refreshing={pendingGroupMembers}
+            onRefresh={refetch}
+          />
         }
         ListEmptyComponent={() =>
           pendingGroupMembers ? (

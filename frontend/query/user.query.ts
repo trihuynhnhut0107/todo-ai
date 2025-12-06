@@ -6,12 +6,12 @@ import { showMessage } from "react-native-flash-message";
 
 export const useUsers = () =>
   useQuery({
-    initialData: { limit: 0, page: 0, total: 0, totalPage: 0, users: [] },
+    placeholderData: { limit: 0, page: 0, total: 0, totalPage: 0, users: [] },
     queryKey: ["users"],
     queryFn: () => getUsers(),
   });
 
-export const useEventById = (id: string) =>
+export const useUserById = (id: string) =>
   useQuery({
     queryKey: ["user", id],
     queryFn: () => getUserById(id),

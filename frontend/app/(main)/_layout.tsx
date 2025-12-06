@@ -1,7 +1,8 @@
 import {
   View,
   Text,
-  StatusBar, StyleSheet, 
+  StatusBar,
+  StyleSheet,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -27,34 +28,28 @@ const MainLayout = () => {
     <SafeAreaView edges={["top"]} className="flex-1 bg-background">
       <StatusBar barStyle="light-content" />
       {/* === PHẦN NỀN "GIẢ LẬP" MỜ NHÒE (MỚI) === */}
-
       {/* Lớp 1: Vầng sáng cam-đỏ chính */}
+      {/* Layer 1: Main blue gradient from top to bottom */}
       <LinearGradient
-        // Bắt đầu bằng màu cam MỜ, mờ dần sang TRONG SUỐT
         colors={
           theme === "dark"
-            ? ["rgba(0, 0, 0, 0.3)", "rgba(0, 0, 0, 0.05)"]
-            : ["rgba(255, 120, 70, 0.5)", "rgba(255, 120, 70, 0.1)"]
+            ? ["rgba(5, 12, 156, 0.3)", "rgba(5, 12, 156, 0.05)"] // Navy blue fade
+            : ["rgba(53, 114, 239, 0.5)", "rgba(58, 190, 249, 0.1)"] // Blue to Sea fade
         }
         style={StyleSheet.absoluteFill}
-        // Vị trí: 0% là màu, 60% là trong suốt
         locations={[0, 0.6]}
-        // Hướng: Từ trên (y: 0) xuống dưới (y: 0.8)
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 0.8 }}
       />
-
-      {/* Lớp 2: Vầng sáng hồng nhẹ ở trên-phải */}
+      {/* Layer 2: Lighter blue glow from top-right */}
       <LinearGradient
-        // Bắt đầu bằng màu hồng MỜ, mờ dần sang TRONG SUỐT
         colors={
           theme === "dark"
-            ? ["rgba(0, 0, 0, 0.2)", "rgba(0, 0, 0, 0)"]
-            : ["rgba(255, 100, 100, 0.3)", "rgba(255, 255, 255, 0)"]
+            ? ["rgba(53, 114, 239, 0.2)", "rgba(0, 0, 0, 0)"] // Medium blue fade
+            : ["rgba(58, 190, 249, 0.4)", "rgba(167, 230, 255, 0)"] // Sea to Cold fade
         }
         style={StyleSheet.absoluteFill}
-        locations={[0, 1]} // Mờ nhanh hơn
-        // Hướng: Từ trên-phải (x: 0.8) chéo xuống
+        locations={[0, 1]}
         start={{ x: 0.8, y: 0 }}
         end={{ x: 0.5, y: 0.7 }}
       />
@@ -74,7 +69,6 @@ const MainLayout = () => {
             animationTypeForReplace: "push",
           }}
         />
-     
 
         <Stack.Screen
           name="(tabs)"

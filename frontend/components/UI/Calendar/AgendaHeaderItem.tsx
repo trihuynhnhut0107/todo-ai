@@ -20,7 +20,7 @@ const AgendaHeaderItem = ({ date }: { date: DateWithEvents }) => {
     <View
       className="items-center gap-2 p-2 rounded-lg min-w-[50px] max-w-[50px]"
       style={{
-        backgroundColor: date.active ? "orange" : "",
+        backgroundColor: date.active ? color.accent : "",
       }}
     >
       <Text className="text-text">{format(new Date(date.date), "E")}</Text>

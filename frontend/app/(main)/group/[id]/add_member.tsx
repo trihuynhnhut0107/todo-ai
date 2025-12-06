@@ -13,26 +13,49 @@ import MemberCard from "@/components/UI/Group/MemberCard";
 import { GroupMember } from "@/types/group";
 import Empty from "@/components/UI/Empty";
 import CustomButton from "@/components/Input/CustomButton";
-import { useAddGroupMember } from "@/query/group.query";
+import { useAddGroupMember, useGroupMember } from "@/query/group.query";
+import useAuthStore from "@/store/auth.store";
+import UserCard from "@/components/UI/User/UserCard";
+import { User } from "@/types/auth";
 
 const add_member = () => {
+  const { user } = useAuthStore();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: users, isLoading: pendingUsers, refetch } = useUsers();
+  const { data: members, isLoading: pendingMembers } = useGroupMember(id);
   const { mutate: addMember, isPending: pendingAdding } = useAddGroupMember();
   const [filterText, setFilterText] = useState("");
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const memberIds = useMemo(() => {
+    return new Set(members?.map((m) => m.id) || []);
+  }, [members]);
 
   const filteredUsers = useMemo(() => {
-    console.log(users);
-    if (!users) return [];
-    return users.users?.filter(
-      (user) =>
-        !selectedIds.includes(user.id) &&
-        (user.name.toLowerCase().includes(filterText.toLowerCase()) ||
-          user.email.toLowerCase().includes(filterText.toLowerCase()))
-    );
-  }, [users, filterText, selectedIds]);
+    if (!users?.users) return [];
+
+    const searchTerm = filterText.toLowerCase().trim();
+
+    return users.users.filter((u) => {
+      // Exclude current user
+      if (u.id === user?.id) return false;
+
+      // Exclude existing members (fixed logic - was !== should be ===)
+      if (memberIds.has(u.id)) return false;
+
+      // Exclude already selected users
+      if (selectedIds.includes(u.id)) return false;
+
+      // Include if no search term
+      if (!searchTerm) return true;
+
+      // Search in name or email
+      return (
+        u.name.toLowerCase().includes(searchTerm) ||
+        u.email.toLowerCase().includes(searchTerm)
+      );
+    });
+  }, [users, filterText, selectedIds, memberIds, user?.id]);
 
   const selectedUsers = useMemo(() => {
     return users?.users?.filter((u) => selectedIds.includes(u.id)) ?? [];
@@ -87,7 +110,7 @@ const add_member = () => {
             onPress={() => setSelectedIds((prev) => [...prev, item.id])}
             className="flex-1"
           >
-            <MemberCard member={item as GroupMember} />
+            <UserCard user={item as User} />
           </TouchableOpacity>
         )}
         ItemSeparatorComponent={() => <View className="h-4"></View>}
