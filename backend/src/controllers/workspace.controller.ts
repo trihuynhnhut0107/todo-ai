@@ -397,6 +397,7 @@ export class WorkspaceController extends Controller {
   @Get("{workspaceId}/members")
   @SuccessResponse("200", "Members retrieved successfully")
   @Response<ErrorResponse>("401", "Unauthorized")
+  @Response<ErrorResponse>("403", "Access denied")
   @Response<ErrorResponse>("404", "Workspace not found")
   @Response<ErrorResponse>("500", "Internal Server Error")
   public async getWorkspaceMembers(
@@ -413,9 +414,19 @@ export class WorkspaceController extends Controller {
         throw new Error("Unauthorized");
       }
 
-      const members = await this.workspaceService.getWorkspaceMembers(
+      // Check if user has access to this workspace
+      const workspace = await this.workspaceService.getWorkspaceById(
         workspaceId,
         userId
+      );
+
+      if (!workspace) {
+        this.setStatus(403);
+        throw new Error("Access denied");
+      }
+
+      const members = await this.workspaceService.getWorkspaceMembers(
+        workspaceId
       );
 
       return {
@@ -427,9 +438,12 @@ export class WorkspaceController extends Controller {
     } catch (error) {
       if (error instanceof Error && error.message === "Unauthorized") {
         this.setStatus(401);
+      } else if (error instanceof Error && error.message === "Access denied") {
+        this.setStatus(403);
       } else if (
         error instanceof Error &&
-        error.message === "Workspace not found or access denied"
+        (error.message === "Workspace not found or access denied" ||
+          error.message === "Workspace not found")
       ) {
         this.setStatus(404);
       } else {

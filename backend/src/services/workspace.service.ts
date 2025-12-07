@@ -175,21 +175,17 @@ export class WorkspaceService {
    * Get workspace members
    */
   async getWorkspaceMembers(
-    workspaceId: string,
-    userId: string
+    workspaceId: string
   ): Promise<{ id: string; name: string; email: string; role: string }[]> {
     const workspace = await this.workspaceRepository
       .createQueryBuilder("workspace")
       .leftJoinAndSelect("workspace.members", "member")
       .leftJoinAndSelect("workspace.owner", "owner")
       .where("workspace.id = :workspaceId", { workspaceId })
-      .andWhere("(workspace.ownerId = :userId OR member.id = :userId)", {
-        userId,
-      })
       .getOne();
 
     if (!workspace) {
-      throw new Error("Workspace not found or access denied");
+      throw new Error("Workspace not found");
     }
 
     const members = workspace.members || [];
