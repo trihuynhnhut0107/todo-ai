@@ -7,7 +7,11 @@ import CustomButton from "@/components/Input/CustomButton";
 import SettingTable from "@/components/UI/Setting/SettingTable";
 import { SettingItemProps } from "@/type";
 import { showMessage } from "react-native-flash-message";
-import { useDeleteGroup, useGroupById } from "@/query/group.query";
+import {
+  useDeleteGroup,
+  useGroupById,
+  useLeaveGroup,
+} from "@/query/group.query";
 import useAuthStore from "@/store/auth.store";
 
 const Setting = () => {
@@ -15,6 +19,9 @@ const Setting = () => {
   const { user } = useAuthStore();
   const { data: group } = useGroupById(id);
   const { mutate: deleteGroup, isPending: pendingDelete } = useDeleteGroup(() =>
+    router.replace("/(main)/(tabs)/groups")
+  );
+  const { mutate: leaveGroup, isPending: pendingLeave } = useLeaveGroup(() =>
     router.replace("/(main)/(tabs)/groups")
   );
 
@@ -61,12 +68,27 @@ const Setting = () => {
       title: "Leave workspace",
       color: "red",
       icon: "log-out-outline",
+      onPress: () => {
+        Alert.alert("Leave group?", "This action cannot be undone.", [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Leave",
+            style: "destructive",
+            onPress: () => {
+              leaveGroup(id);
+            },
+          },
+        ]);
+      },
     },
   ];
 
   const settings = useMemo(() => {
     if (group?.ownerId === user?.id) {
-      return baseSettings;
+      return baseSettings.slice(0,-1);
     }
 
     // If user is NOT the owner, show only view/add members and leave option

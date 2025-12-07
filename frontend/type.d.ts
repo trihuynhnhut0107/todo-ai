@@ -90,6 +90,7 @@ export interface SettingItemProps {
 
 export interface GroupMemberCardProps {
   member: GroupMember;
+  enableDelete?:boolean;
   onDelete: () => void;
 }
 export interface UserCardProps {

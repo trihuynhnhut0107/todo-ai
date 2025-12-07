@@ -1,7 +1,7 @@
 import AgendaHeader from "@/components/UI/Calendar/AgendaHeader";
 import EventCard from "@/components/UI/Calendar/EventCard";
 import Loader from "@/components/UI/Loader";
-import { SelectedDateContext } from "@/context/selectedDate";
+import { FilterProps, SelectedDateContext } from "@/context/selectedDate";
 import { EventStatus } from "@/enum/event";
 import useThemeColor from "@/hooks/useThemeColor";
 import { getDatesBetween, spreadEvent } from "@/lib/utils";
@@ -54,12 +54,13 @@ const workspaceDetail = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const sheetRef = useRef<BottomSheetModal>(null);
   const calendarRef = useRef<CalendarKitHandle>(null);
-  const [filter, setFilter] = useState<{
-    assigned: boolean;
-    status: EventStatus[];
-  }>({
+  const [filter, setFilter] = useState<FilterProps>({
     assigned: false,
     status: Object.values(EventStatus).map((s) => s),
+    period: {
+      from: undefined,
+      to: undefined,
+    },
   });
   const [selected, selectDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -117,11 +118,29 @@ const workspaceDetail = () => {
   };
 
   const filteredEvents = useMemo(() => {
+    if (!events) return [];
     return events?.filter((e) => {
-      if (user && filter.assigned && !e.assigneeIds?.includes(user?.id)) {
-        return false;
+      // 1. Date FROM
+      if (filter.period.from) {
+        const fromDate = new Date(filter.period.from).getTime();
+        const eventDate = new Date(e.start).getTime();
+        if (eventDate < fromDate) return false;
       }
-      if (!filter.status?.includes(e.status)) {
+
+      // 2. Date TO
+      if (filter.period.to) {
+        const toDate = new Date(filter.period.to).getTime();
+        const eventDate = new Date(e.end).getTime();
+        if (eventDate > toDate) return false;
+      }
+
+      // 3. Assigned to me
+      if (user && filter.assigned) {
+        if (!e.assigneeIds?.includes(user.id)) return false;
+      }
+
+      // 4. Status
+      if (filter.status?.length && !filter.status.includes(e.status)) {
         return false;
       }
       return true;

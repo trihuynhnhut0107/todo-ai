@@ -123,7 +123,7 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
           <View className="flex-row items-center gap-2">
             <TouchableOpacity
               onPress={() => setOpen(true)}
-              className=" justify-center rounded-md p-2 z-10 flex-row items-center gap-2 bg-accent"
+              className=" justify-center rounded-full p-1 px-4 z-10 flex-row items-center gap-2 bg-accent"
             >
               {filterCount > 0 && (
                 <Text className="rounded-lg text-text">{filterCount}</Text>
@@ -217,7 +217,24 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
             ))}
           </View>
 
-          <Text className="text-text-secondary">Period</Text>
+          <View className="flex flex-row justify-between items-center">
+            <Text className="text-text-secondary">Period</Text>
+
+            <TouchableOpacity
+              onPress={() =>
+                setFilter((prev) => ({
+                  ...prev,
+                  period: {
+                    from: undefined,
+                    to: undefined,
+                  },
+                }))
+              }
+              className="bg-accent p-1 px-2 rounded-lg"
+            >
+              <Text className="text-text">Clear</Text>
+            </TouchableOpacity>
+          </View>
 
           <View className="flex-row flex-wrap gap-2 items-center">
             <CustomDateTimePicker

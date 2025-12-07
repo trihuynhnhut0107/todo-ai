@@ -4,7 +4,7 @@
     "slug": "todo-ai",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/Logo.png",
     "scheme": "todo-ai",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

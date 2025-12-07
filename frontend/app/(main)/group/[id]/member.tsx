@@ -5,7 +5,7 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   FlatList,
   RefreshControl,
@@ -26,7 +26,7 @@ import UserCard from "@/components/UI/User/UserCard";
 const member = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const {
-    data: groupMembers,
+    data: members,
     isLoading: pendingGroupMembers,
     refetch,
   } = useGroupMember(id);
@@ -53,6 +53,10 @@ const member = () => {
       ]
     );
   };
+
+  const groupMembers = useMemo(() => {
+    return members?.filter((m) => m.id !== group?.ownerId);
+  }, [members, group]);
   return (
     <View className="flex-1 p-4 gap-4 ">
       <View className="flex-row items-start justify-between">
@@ -66,8 +70,8 @@ const member = () => {
         <Text className="text-3xl font-bold text-white">Members</Text>
       </View>
 
-      <View>
-        <Text className="text text-text font-bold">Group Admin</Text>
+      <View className="bg-primary gap-2 p-2 rounded-lg">
+        <Text className="text text-accent font-bold">Group Admin</Text>
         {owner && <UserCard user={owner} />}
       </View>
 
@@ -79,10 +83,7 @@ const member = () => {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View className="flex-1">
-            <MemberCard
-              member={item}
-              onDelete={() => handleDelete(item.id)}
-            />
+            <MemberCard member={item} onDelete={() => handleDelete(item.id)} />
           </View>
         )}
         className="flex-1 bg-background rounded-lg"

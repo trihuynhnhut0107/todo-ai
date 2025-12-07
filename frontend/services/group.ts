@@ -58,7 +58,10 @@ export const updateGroup = async ({
   return await api.put(`/workspaces/${id}`, payload);
 };
 
-
 export const deleteGroup = async (id: string): Promise<void> => {
   return await api.delete(`/workspaces/${id}`);
+};
+
+export const leaveGroup = async (id: string): Promise<void> => {
+  return await api.post(`/workspaces/${id}/leave`);
 };

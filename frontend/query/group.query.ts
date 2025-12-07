@@ -6,6 +6,7 @@ import {
   getGroup,
   getGroupMember,
   getGroups,
+  leaveGroup,
   updateGroup,
 } from "@/services/group";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -32,7 +33,6 @@ export const useGroupMember = (id: string) =>
     queryFn: () => getGroupMember(id),
     enabled: !!id,
   });
-
 
 export const useAddGroupMember = () => {
   const queryClient = useQueryClient();
@@ -113,11 +113,32 @@ export const useDeleteGroup = (callback?: any) => {
       queryClient.removeQueries({
         queryKey: ["groups"],
       });
-      queryClient.invalidateQueries({
+      queryClient.removeQueries({
         queryKey: ["group", id],
       });
       showMessage({
         message: "group deleted!",
+        type: "success",
+      });
+      callback?.();
+    },
+  });
+};
+
+export const useLeaveGroup = (callback?: any) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: leaveGroup,
+
+    onSuccess: (_, id) => {
+      queryClient.removeQueries({
+        queryKey: ["groups"],
+      });
+      queryClient.removeQueries({
+        queryKey: ["group", id],
+      });
+      showMessage({
+        message: "group left!",
         type: "success",
       });
       callback?.();
