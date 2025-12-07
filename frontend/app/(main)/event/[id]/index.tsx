@@ -190,7 +190,7 @@ const eventDetail = () => {
           <Text className="text-sm text-text-secondary">{event?.location}</Text>
         </View>
       )}
-      {user?.id && event?.assigneeIds?.includes(user.id) && (
+      {user?.id === event?.createdById && (
         <>
           <CustomButton
             title="Update Status"

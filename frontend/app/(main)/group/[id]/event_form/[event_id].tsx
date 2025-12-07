@@ -191,12 +191,12 @@ const event_form = () => {
             )}
           />
         </View>
-        <View className="bg-surface rounded-xl p-4">
+        <View className=" flex-row gap-2">
           <Controller
             control={control}
             name="start"
             render={({ field }) => (
-              <View>
+              <View className="flex-1 bg-surface rounded-xl p-4">
                 <CustomDateTimePicker
                   label="start at"
                   value={field.value}
@@ -211,7 +211,7 @@ const event_form = () => {
             control={control}
             name="end"
             render={({ field }) => (
-              <View>
+              <View className="flex-1 bg-surface rounded-xl p-4">
                 <CustomDateTimePicker
                   label="end at"
                   value={field.value}

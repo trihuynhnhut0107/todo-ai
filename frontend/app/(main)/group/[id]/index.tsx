@@ -126,7 +126,7 @@ const workspaceDetail = () => {
       }
       return true;
     });
-  }, [filter, events]);
+  }, [filter, events, user]);
 
   const calendarDates = useMemo(() => {
     const eventLog: Record<
@@ -177,11 +177,17 @@ const workspaceDetail = () => {
     });
 
     return { eventLog, calendarBody };
-  }, [selected, members, group, filteredEvents, user]);
+  }, [selected, members, group, filteredEvents]);
 
   return (
     <SelectedDateContext.Provider
-      value={{ selected, selectDate: handleSelectDate, filter, setFilter }}
+      value={{
+        selected,
+        selectDate: handleSelectDate,
+        filter,
+        setFilter,
+        matched: filteredEvents?.length ?? 0,
+      }}
     >
       <View className="flex-1 ">
         <View className="overflow-display shadow-sm z-50">

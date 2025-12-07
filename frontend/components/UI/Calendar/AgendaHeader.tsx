@@ -24,9 +24,12 @@ import { useSelectedDate } from "@/context/selectedDate";
 import useThemeColor from "@/hooks/useThemeColor";
 import { EventStatus } from "@/enum/event";
 import StatusChip from "./StatusChip";
+import DateTimePicker from "react-native-modal-datetime-picker";
+import CustomDateTimePicker from "@/components/Input/CustomDateTimePicker";
 
 const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
-  const { selectDate, selected, filter, setFilter } = useSelectedDate();
+  const { selectDate, selected, filter, setFilter, matched } =
+    useSelectedDate();
   const listRef = useRef<FlatList<DateWithEvents>>(null);
   const [loaded, setLoaded] = useState(false);
   const color = useThemeColor();
@@ -106,7 +109,7 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
         borderColor: group?.color,
       }}
     >
-      <View className="p-2">
+      <View className="px-2 pt-2">
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center gap-2">
             <TouchableOpacity
@@ -123,9 +126,7 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
               className=" justify-center rounded-md p-2 z-10 flex-row items-center gap-2 bg-accent"
             >
               {filterCount > 0 && (
-                <Text className="rounded-lg text-text">
-                  {filterCount}
-                </Text>
+                <Text className="rounded-lg text-text">{filterCount}</Text>
               )}
               <Feather name="filter" size={22} color={color.text} />
             </TouchableOpacity>
@@ -181,7 +182,10 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
         />
 
         {/* color picker panel */}
-        <View className="absolute left-6 right-6 bottom-6 rounded-t-2xl p-4 shadow-xl gap-2 bg-card border-2 border-border">
+        <View className="absolute left-6 right-6 bottom-6 rounded-2xl p-4 shadow-xl gap-2 bg-card border-2 border-border">
+          <Text className="text-text font-bold text-2xl">
+            Events: {matched}
+          </Text>
           <View className="flex flex-row justify-between items-center">
             <Text className="text-text-secondary">Assigned</Text>
 
@@ -211,6 +215,37 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
                 <StatusChip status={status} />
               </TouchableOpacity>
             ))}
+          </View>
+
+          <Text className="text-text-secondary">Period</Text>
+
+          <View className="flex-row flex-wrap gap-2 items-center">
+            <CustomDateTimePicker
+              label="from"
+              value={filter?.period?.from as Date}
+              onChange={(value) => {
+                setFilter((prev) => ({
+                  ...prev,
+                  period: {
+                    ...prev.period,
+                    from: value,
+                  },
+                }));
+              }}
+            />
+            <CustomDateTimePicker
+              label="to"
+              value={filter?.period?.to as Date}
+              onChange={(value) => {
+                setFilter((prev) => ({
+                  ...prev,
+                  period: {
+                    ...prev.period,
+                    to: value,
+                  },
+                }));
+              }}
+            />
           </View>
         </View>
       </Modal>

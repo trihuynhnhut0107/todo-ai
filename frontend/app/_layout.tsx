@@ -9,7 +9,7 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import FlashMessage from "react-native-flash-message";
 import Loader from "@/components/UI/Loader";
-import { useColorScheme } from "react-native";
+import { useColorScheme, View } from "react-native";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,21 +39,20 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <GestureHandlerRootView
-        style={{ flex: 1 }}
-        className={cn(colorScheme as string)}
-      >
-        <BottomSheetModalProvider>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-            }}
-          />
-          <FlashMessage position="top" />
-        </BottomSheetModalProvider>
-      </GestureHandlerRootView>
-      {/* </ThemeProvider> */}
-    </QueryClientProvider>
+    <View className={`${colorScheme === "dark" ? "dark" : ""} flex-1`}>
+      <QueryClientProvider client={queryClient}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <BottomSheetModalProvider>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+              }}
+            />
+            <FlashMessage position="top" />
+          </BottomSheetModalProvider>
+        </GestureHandlerRootView>
+        {/* </ThemeProvider> */}
+      </QueryClientProvider>
+    </View>
   );
 }

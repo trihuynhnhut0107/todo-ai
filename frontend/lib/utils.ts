@@ -1,3 +1,5 @@
+import { EventStatus } from "@/enum/event";
+
 export function getColorFromString(str: string): string {
   let hash = 0;
 
@@ -83,3 +85,33 @@ export function getReadableTextColor(bgHex: string): string {
   // threshold around mid brightness
   return luminance > 186 ? "#000000" : "#FFFFFF";
 }
+
+export const getStatusStyles = (status:EventStatus) => {
+  switch (status) {
+    case EventStatus.SCHEDULED:
+      return "bg-blue-300 border border-blue-300";
+    case EventStatus.IN_PROGRESS:
+      return "bg-green-300 border border-green-300";
+    case EventStatus.COMPLETED:
+      return "bg-gray-300 border border-gray-300";
+    case EventStatus.CANCELLED:
+      return "bg-red-300 border border-red-300";
+    default:
+      return "bg-gray-300 border border-gray-300";
+  }
+};
+
+export const getStatusTextStyles = (status:EventStatus) => {
+  switch (status) {
+    case EventStatus.SCHEDULED:
+      return "text-blue-700";
+    case EventStatus.IN_PROGRESS:
+      return "text-green-700";
+    case EventStatus.COMPLETED:
+      return "text-gray-700";
+    case EventStatus.CANCELLED:
+      return "text-red-700";
+    default:
+      return "text-gray-700";
+  }
+};
