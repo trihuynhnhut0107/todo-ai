@@ -172,24 +172,49 @@ export class WorkspaceService {
   }
 
   /**
+   * Leave workspace
+   */
+  async leaveWorkspace(workspaceId: string, userId: string): Promise<void> {
+    const workspace = await this.workspaceRepository.findOne({
+      where: { id: workspaceId },
+      relations: ["members"],
+    });
+
+    if (!workspace) {
+      throw new Error("Workspace not found");
+    }
+
+    // Owner cannot leave their own workspace
+    if (workspace.ownerId === userId) {
+      throw new Error("Workspace owner cannot leave the workspace");
+    }
+
+    // Check if user is a member
+    const isMember = workspace.members?.some((m) => m.id === userId);
+    if (!isMember) {
+      throw new Error("You are not a member of this workspace");
+    }
+
+    // Remove user from members
+    workspace.members = workspace.members?.filter((m) => m.id !== userId) || [];
+    await this.workspaceRepository.save(workspace);
+  }
+
+  /**
    * Get workspace members
    */
   async getWorkspaceMembers(
-    workspaceId: string,
-    userId: string
+    workspaceId: string
   ): Promise<{ id: string; name: string; email: string; role: string }[]> {
     const workspace = await this.workspaceRepository
       .createQueryBuilder("workspace")
       .leftJoinAndSelect("workspace.members", "member")
       .leftJoinAndSelect("workspace.owner", "owner")
       .where("workspace.id = :workspaceId", { workspaceId })
-      .andWhere("(workspace.ownerId = :userId OR member.id = :userId)", {
-        userId,
-      })
       .getOne();
 
     if (!workspace) {
-      throw new Error("Workspace not found or access denied");
+      throw new Error("Workspace not found");
     }
 
     const members = workspace.members || [];
