@@ -389,6 +389,59 @@ export class WorkspaceController extends Controller {
   }
 
   /**
+   * Leave workspace
+   * @summary Leave a workspace
+   * @param workspaceId Workspace ID
+   * @returns Success message
+   */
+  @Post("{workspaceId}/leave")
+  @SuccessResponse("200", "Successfully left workspace")
+  @Response<ErrorResponse>("400", "Cannot leave workspace")
+  @Response<ErrorResponse>("401", "Unauthorized")
+  @Response<ErrorResponse>("404", "Workspace not found")
+  @Response<ErrorResponse>("500", "Internal Server Error")
+  public async leaveWorkspace(
+    @Path() workspaceId: string,
+    @Request() request: Express.Request
+  ): Promise<ApiResponse<void>> {
+    try {
+      const userId = request.user?.userId;
+
+      if (!userId) {
+        this.setStatus(401);
+        throw new Error("Unauthorized");
+      }
+
+      await this.workspaceService.leaveWorkspace(workspaceId, userId);
+
+      return {
+        success: true,
+        message: "Successfully left workspace",
+        data: undefined,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message === "Unauthorized") {
+        this.setStatus(401);
+      } else if (
+        error instanceof Error &&
+        (error.message === "Workspace owner cannot leave the workspace" ||
+          error.message === "You are not a member of this workspace")
+      ) {
+        this.setStatus(400);
+      } else if (
+        error instanceof Error &&
+        error.message === "Workspace not found"
+      ) {
+        this.setStatus(404);
+      } else {
+        this.setStatus(500);
+      }
+      throw error;
+    }
+  }
+
+  /**
    * Get workspace members
    * @summary Get workspace members
    * @param workspaceId Workspace ID

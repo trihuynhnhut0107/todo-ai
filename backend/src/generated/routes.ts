@@ -900,6 +900,38 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsWorkspaceController_leaveWorkspace: Record<string, TsoaRoute.ParameterSchema> = {
+                workspaceId: {"in":"path","name":"workspaceId","required":true,"dataType":"string"},
+                request: {"in":"request","name":"request","required":true,"dataType":"object"},
+        };
+        app.post('/api/workspaces/:workspaceId/leave',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(WorkspaceController)),
+            ...(fetchMiddlewares<RequestHandler>(WorkspaceController.prototype.leaveWorkspace)),
+
+            async function WorkspaceController_leaveWorkspace(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsWorkspaceController_leaveWorkspace, request, response });
+
+                const controller = new WorkspaceController();
+
+              await templateService.apiHandler({
+                methodName: 'leaveWorkspace',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsWorkspaceController_getWorkspaceMembers: Record<string, TsoaRoute.ParameterSchema> = {
                 workspaceId: {"in":"path","name":"workspaceId","required":true,"dataType":"string"},
                 request: {"in":"request","name":"request","required":true,"dataType":"object"},
