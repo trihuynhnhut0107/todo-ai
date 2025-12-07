@@ -1,9 +1,6 @@
-import { signIn } from "@/services/auth";
-import useAuthStore from "@/store/auth.store";
-
 import { Link } from "expo-router";
-import React, { useContext, useState } from "react";
-import { Alert, Text, View } from "react-native";
+import { useContext } from "react";
+import { Text, View } from "react-native";
 import { modalContext } from "./_layout";
 import CustomInput from "@/components/Input/CustomInput";
 import CustomButton from "@/components/Input/CustomButton";
@@ -24,7 +21,6 @@ const SignIn = () => {
   const {
     control,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
@@ -79,7 +75,7 @@ const SignIn = () => {
       />
 
       <Text className="base-regular text-center text-text-tertiary">
-        Don't have an account?{" "}
+        {"Don't have an account?"}
         <Link
           href={"/sign-up"}
           className="base-bold text-primary text-orange-500"

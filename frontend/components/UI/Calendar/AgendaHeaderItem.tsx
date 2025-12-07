@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity } from "react-native";
-import React, { useContext, useMemo } from "react";
+import { View, Text} from "react-native";
+import { useMemo } from "react";
 import { DateWithEvents } from "@/type";
 
 import { format } from "date-fns";

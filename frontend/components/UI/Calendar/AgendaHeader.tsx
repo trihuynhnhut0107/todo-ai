@@ -4,17 +4,9 @@ import {
   FlatList,
   TouchableOpacity,
   Modal,
-  Pressable,
   Switch,
 } from "react-native";
-import React, {
-  use,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AgendaHeaderItem from "./AgendaHeaderItem";
 import { AgendaHeaderProps, DateWithEvents } from "@/type";
 import { router } from "expo-router";
@@ -24,7 +16,6 @@ import { useSelectedDate } from "@/context/selectedDate";
 import useThemeColor from "@/hooks/useThemeColor";
 import { EventStatus } from "@/enum/event";
 import StatusChip from "./StatusChip";
-import DateTimePicker from "react-native-modal-datetime-picker";
 import CustomDateTimePicker from "@/components/Input/CustomDateTimePicker";
 
 const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
@@ -90,7 +81,7 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
         loaded ? 0 : 1000
       );
     }
-  }, [selected, monthDates]);
+  }, [selected, monthDates,loaded]);
 
   const filterCount = useMemo(() => {
     let count = 0;

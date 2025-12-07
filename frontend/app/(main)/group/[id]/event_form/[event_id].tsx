@@ -14,7 +14,7 @@ import CustomInput from "@/components/Input/CustomInput";
 import CustomDateTimePicker from "@/components/Input/CustomDateTimePicker";
 import { useForm, Controller } from "react-hook-form";
 
-import { string, z } from "zod";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useCreateEvent,
@@ -24,7 +24,6 @@ import {
 import { EventPayload } from "@/types/event";
 import CustomColorPicker from "@/components/Input/CustomColorPicker";
 import CustomTagInput from "@/components/Input/CustomTagInput";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export const schema = z
   .object({
@@ -47,7 +46,7 @@ export const schema = z
     path: ["end"], // error will show under the end field
   });
 
-const event_form = () => {
+const Event_form = () => {
   const { id, event_id } = useLocalSearchParams<{
     id: string;
     event_id: string;
@@ -70,7 +69,7 @@ const event_form = () => {
     },
   });
 
-  const { data: event, isLoading: pendingEvent } = useEventById(event_id);
+  const { data: event } = useEventById(event_id);
   const { mutate: createEvent, isPending: pendingCreating } = useCreateEvent();
   const { mutate: updateEvent, isPending: pendingUpdating } = useUpdateEvent();
 
@@ -85,7 +84,7 @@ const event_form = () => {
         color: event?.color,
         location: event?.location,
       });
-  }, [event]);
+  }, [event,reset]);
 
   const onSubmit = (data: any) => {
     const payload: EventPayload = {
@@ -242,4 +241,4 @@ const event_form = () => {
   );
 };
 
-export default event_form;
+export default Event_form;

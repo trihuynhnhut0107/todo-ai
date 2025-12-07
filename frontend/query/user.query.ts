@@ -1,4 +1,3 @@
-import { getUser } from "@/services/auth";
 import { getUserById, getUsers, updateProfile } from "@/services/user";
 import useAuthStore from "@/store/auth.store";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

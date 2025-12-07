@@ -1,10 +1,10 @@
-import { DateTimeType, EventItem, PackedEvent } from "@howljs/calendar-kit";
+import { DateTimeType, PackedEvent } from "@howljs/calendar-kit";
 import { TextInputProps } from "react-native";
 import { Group, GroupMember } from "./types/group";
 import { Event, Assignee } from "./types/event";
 import { BaseProps } from "@react-native-community/datetimepicker";
 import { User } from "./types/auth";
-import { UserSelect } from "react-native-gesture-handler/lib/typescript/handlers/gestureHandlerCommon";
+
 
 export interface TabBarIconProps {
   focused: boolean;

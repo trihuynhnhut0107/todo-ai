@@ -1,16 +1,13 @@
 import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
-import React, { use, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   FlatList,
   RefreshControl,
-  ScrollView,
 } from "react-native-gesture-handler";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useUsers } from "@/query/user.query";
 import SearchInput from "@/components/Input/SearchInput";
-import MemberCard from "@/components/UI/Group/MemberCard";
-import { GroupMember } from "@/types/group";
 import Empty from "@/components/UI/Empty";
 import CustomButton from "@/components/Input/CustomButton";
 import { useAddGroupMember, useGroupMember } from "@/query/group.query";
@@ -18,11 +15,11 @@ import useAuthStore from "@/store/auth.store";
 import UserCard from "@/components/UI/User/UserCard";
 import { User } from "@/types/auth";
 
-const add_member = () => {
+const Add_member = () => {
   const { user } = useAuthStore();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: users, isLoading: pendingUsers, refetch } = useUsers();
-  const { data: members, isLoading: pendingMembers } = useGroupMember(id);
+  const { data: members } = useGroupMember(id);
   const { mutate: addMember, isPending: pendingAdding } = useAddGroupMember();
   const [filterText, setFilterText] = useState("");
 
@@ -140,4 +137,4 @@ const add_member = () => {
   );
 };
 
-export default add_member;
+export default Add_member;

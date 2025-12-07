@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, Alert, Modal } from "react-native";
-import React, { useEffect, useMemo, useState } from "react";
-import { Link, useLocalSearchParams, useRouter } from "expo-router";
+import { useMemo, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
 import {
   useDeleteEvent,
@@ -10,24 +10,22 @@ import {
 import { format } from "date-fns";
 import { getColorFromString, getReadableTextColor } from "@/lib/utils";
 import useAuthStore from "@/store/auth.store";
-import { useGroupById, useGroupMember } from "@/query/group.query";
-import { Button } from "@react-navigation/elements";
+import { useGroupMember } from "@/query/group.query";
 import CustomButton from "@/components/Input/CustomButton";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { EventStatus } from "@/enum/event";
 import { ScrollView } from "react-native-gesture-handler";
 import StatusChip from "@/components/UI/Calendar/StatusChip";
 import useThemeColor from "@/hooks/useThemeColor";
 
-const eventDetail = () => {
+const EventDetail = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuthStore();
   const router = useRouter();
   const { mutate: deleteEvent } = useDeleteEvent(() => router.back());
   const { mutate: updateStatus, isPending: pendingUpdateStatus } =
     useUpdateEventStatus();
-  const { data: eventdata, isLoading: pendingEvent } = useEventById(id);
-  const { data: members, isLoading: pendingMembers } = useGroupMember(
+  const { data: eventdata } = useEventById(id);
+  const { data: members } = useGroupMember(
     eventdata?.workspaceId ?? ""
   );
 
@@ -232,4 +230,4 @@ const eventDetail = () => {
   );
 };
 
-export default eventDetail;
+export default EventDetail;

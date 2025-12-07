@@ -3,23 +3,20 @@ import {
   Text,
   RefreshControl,
   TouchableOpacity,
-  ActivityIndicator,
 } from "react-native";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import CustomInput from "@/components/Input/CustomInput";
+import { useMemo, useState } from "react";
+
 import SearchInput from "@/components/Input/SearchInput";
 import { Ionicons } from "@expo/vector-icons";
-import { FlatList, TextInput } from "react-native-gesture-handler";
+import { FlatList } from "react-native-gesture-handler";
 
 import { useGroup } from "@/query/group.query";
 import { router } from "expo-router";
 import GroupCard from "@/components/UI/Group/GroupCard";
 import Loader from "@/components/UI/Loader";
-import useThemeColor from "@/hooks/useThemeColor";
 import Empty from "@/components/UI/Empty";
 
-const groups = () => {
-  const color = useThemeColor();
+const Groups = () => {
   const [filterText, setFilterText] = useState("");
   const { data: groups, isLoading, isFetching, refetch } = useGroup();
 
@@ -81,4 +78,4 @@ const groups = () => {
   );
 };
 
-export default groups;
+export default Groups;

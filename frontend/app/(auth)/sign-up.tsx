@@ -1,8 +1,6 @@
-import { signIn, signUp } from "@/services/auth";
-import useAuthStore from "@/store/auth.store";
 import { Link } from "expo-router";
-import React, { useContext, useState } from "react";
-import { Alert, Text, View } from "react-native";
+import { useContext } from "react";
+import { Text, View } from "react-native";
 import { modalContext } from "./_layout";
 import CustomButton from "@/components/Input/CustomButton";
 import CustomInput from "@/components/Input/CustomInput";
@@ -27,7 +25,6 @@ const SignUp = () => {
   const {
     control,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),

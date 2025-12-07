@@ -1,8 +1,8 @@
 import useThemeColor from "@/hooks/useThemeColor";
 import { Ionicons } from "@expo/vector-icons";
 import cn from "clsx";
-import React, { use, useState } from "react";
-import { Text, TextInput, TextInputProps, View } from "react-native";
+import { useState } from "react";
+import { TextInput, TextInputProps, View } from "react-native";
 
 const SearchInput = (props: TextInputProps) => {
   const [isFocused, setIsFocused] = useState(false);

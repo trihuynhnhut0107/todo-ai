@@ -18,7 +18,6 @@ import React, {
 import {
   Dimensions,
   Image,
-  ImageBackground,
   Keyboard,
   KeyboardAvoidingView,
   Platform,

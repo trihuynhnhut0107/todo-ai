@@ -1,5 +1,4 @@
-import { View, Text, useColorScheme } from "react-native";
-import React from "react";
+import { useColorScheme } from "react-native";
 
 const themes = {
   light: {

@@ -1,8 +1,7 @@
 import { EventStatus } from "@/enum/event";
 import api from "@/lib/api";
-import { mockEvents } from "@/lib/mock/event";
 import { Event, EventPayload } from "@/types/event";
-import { DateOrDateTime, DateTimeType } from "@howljs/calendar-kit";
+
 
 export const getEvents = async ({
   wp_id,

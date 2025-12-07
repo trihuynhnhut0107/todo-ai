@@ -5,50 +5,26 @@ import { FilterProps, SelectedDateContext } from "@/context/selectedDate";
 import { EventStatus } from "@/enum/event";
 import useThemeColor from "@/hooks/useThemeColor";
 import { getDatesBetween, spreadEvent } from "@/lib/utils";
-import {
-  useCreateEvent,
-  useDeleteEvent,
-  useEvents,
-  useUpdateEvent,
-} from "@/query/event.query";
+import { useEvents } from "@/query/event.query";
 import { useGroupById, useGroupMember } from "@/query/group.query";
 import useAuthStore from "@/store/auth.store";
-import { Event, EventPayload } from "@/types/event";
+
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import {
   CalendarBody,
   CalendarContainer,
-  CalendarHeader,
   CalendarKitHandle,
-  dateTimeToISOString,
   EventItem,
-  HeaderItemProps,
-  OnCreateEventResponse,
-  OnEventResponse,
-  PackedEvent,
 } from "@howljs/calendar-kit";
 import { BlurView } from "expo-blur";
-import { Link, router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Dimensions,
-  Image,
-  Keyboard,
-  Pressable,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { Calendar, CalendarList } from "react-native-calendars";
-import {
-  FlatList,
-  RefreshControl,
-  ScrollView,
-} from "react-native-gesture-handler";
+import { Dimensions, Keyboard, TouchableOpacity, View } from "react-native";
+import { CalendarList } from "react-native-calendars";
+import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 
-const workspaceDetail = () => {
+const GroupDetail = () => {
   const color = useThemeColor();
   const { user } = useAuthStore();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -74,7 +50,7 @@ const workspaceDetail = () => {
     refetch: refetchWorkspace,
   } = useGroupById(id);
 
-  const { data: members, isLoading: pendingMembers } = useGroupMember(id);
+  const { data: members } = useGroupMember(id);
 
   const {
     data: events,
@@ -152,9 +128,9 @@ const workspaceDetail = () => {
       string,
       {
         selected?: boolean;
-        dots: Array<{
+        dots: {
           color: string;
-        }>;
+        }[];
       }
     > = {};
 
@@ -196,7 +172,7 @@ const workspaceDetail = () => {
     });
 
     return { eventLog, calendarBody };
-  }, [selected, members, group, filteredEvents]);
+  }, [selected, members, filteredEvents]);
 
   return (
     <SelectedDateContext.Provider
@@ -340,4 +316,4 @@ const workspaceDetail = () => {
   );
 };
 
-export default workspaceDetail;
+export default GroupDetail;

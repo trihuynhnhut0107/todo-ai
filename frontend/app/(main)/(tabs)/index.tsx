@@ -1,6 +1,6 @@
 import { AntDesign, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { registerForPushNotificationsAsync } from "../../../services/notification";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Modal,
@@ -18,8 +18,8 @@ import useThemeColor from "@/hooks/useThemeColor";
 import CustomInput from "@/components/Input/CustomInput";
 import CustomButton from "@/components/Input/CustomButton";
 import { useUpdateProfile } from "@/query/user.query";
-import z from "zod";
-import { Controller, Form, useForm } from "react-hook-form";
+import {z} from "zod";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -47,7 +47,7 @@ const Header = () => {
     if (user) {
       reset({ name: user.name });
     }
-  }, [user]);
+  }, [user,reset]);
   const color = useThemeColor();
 
   const confirmLogout = () => {

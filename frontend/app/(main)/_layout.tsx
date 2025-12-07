@@ -1,15 +1,6 @@
-import {
-  View,
-  Text,
-  StatusBar,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  useColorScheme,
-} from "react-native";
-import React from "react";
+import { StatusBar, StyleSheet, useColorScheme } from "react-native";
 import useAuthStore from "@/store/auth.store";
-import { Redirect, Slot, Stack } from "expo-router";
+import { Redirect, Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 

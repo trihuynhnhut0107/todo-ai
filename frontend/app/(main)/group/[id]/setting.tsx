@@ -1,12 +1,9 @@
 import { View, Text, TouchableOpacity, Alert } from "react-native";
-import React, { useMemo } from "react";
-import { Link, router, useLocalSearchParams } from "expo-router";
+import { useMemo } from "react";
+import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { ScrollView } from "react-native-gesture-handler";
-import CustomButton from "@/components/Input/CustomButton";
 import SettingTable from "@/components/UI/Setting/SettingTable";
 import { SettingItemProps } from "@/type";
-import { showMessage } from "react-native-flash-message";
 import {
   useDeleteGroup,
   useGroupById,
@@ -18,10 +15,10 @@ const Setting = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuthStore();
   const { data: group } = useGroupById(id);
-  const { mutate: deleteGroup, isPending: pendingDelete } = useDeleteGroup(() =>
+  const { mutate: deleteGroup } = useDeleteGroup(() =>
     router.replace("/(main)/(tabs)/groups")
   );
-  const { mutate: leaveGroup, isPending: pendingLeave } = useLeaveGroup(() =>
+  const { mutate: leaveGroup } = useLeaveGroup(() =>
     router.replace("/(main)/(tabs)/groups")
   );
 
@@ -96,7 +93,7 @@ const Setting = () => {
       baseSettings[1], // View members
       baseSettings[4], // Leave workspace
     ];
-  }, [group?.ownerId, user?.id, id]);
+  }, [group?.ownerId, user?.id,baseSettings]);
   return (
     <View className="flex-1 p-4 gap-4">
       <View className="flex-row items-start justify-between">

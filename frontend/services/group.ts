@@ -2,7 +2,6 @@ import api from "@/lib/api";
 import { mockWorkspaces } from "@/lib/mock/workspace";
 import { Group, GroupMember, GroupPayload } from "@/types/group";
 
-import { DateTimeType } from "@howljs/calendar-kit";
 
 export const getGroups = async (): Promise<Group[]> => {
   try {

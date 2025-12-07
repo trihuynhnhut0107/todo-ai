@@ -1,8 +1,5 @@
-import { View, Text, Image, Pressable } from "react-native";
-import React from "react";
+import { View, Text} from "react-native";
 import { Link } from "expo-router";
-import { images } from "@/lib/image";
-import { Ionicons } from "@expo/vector-icons";
 import { EventCardProps } from "@/type";
 import { format } from "date-fns";
 import {
@@ -55,7 +52,7 @@ const EventCard = ({ event }: { event: EventCardProps }) => {
             </Text>
             <View className="flex-row relative justify-start">
               {event.assignees?.map((m: any, idx: number) => (
-                <Text>{m.name}</Text>
+                <Text key={idx}>{m.name}</Text>
               ))}
             </View>
           </View>

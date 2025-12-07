@@ -9,7 +9,6 @@ import React, { useMemo } from "react";
 import {
   FlatList,
   RefreshControl,
-  ScrollView,
 } from "react-native-gesture-handler";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,9 +21,11 @@ import MemberCard from "@/components/UI/Group/MemberCard";
 import Empty from "@/components/UI/Empty";
 import { useUserById } from "@/query/user.query";
 import UserCard from "@/components/UI/User/UserCard";
+import useAuthStore from "@/store/auth.store";
 
-const member = () => {
+const Member = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuthStore();
   const {
     data: members,
     isLoading: pendingGroupMembers,
@@ -32,7 +33,7 @@ const member = () => {
   } = useGroupMember(id);
   const { data: group } = useGroupById(id);
   const { data: owner } = useUserById(group?.ownerId || "");
-  const { mutate: remove, isPending: pendingDelete } = useRemoveGroupMember();
+  const { mutate: remove } = useRemoveGroupMember();
 
   const handleDelete = (userId: string) => {
     Alert.alert(
@@ -83,7 +84,11 @@ const member = () => {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View className="flex-1">
-            <MemberCard member={item} onDelete={() => handleDelete(item.id)} />
+            <MemberCard
+              member={item}
+              enableDelete={user?.id === group?.ownerId}
+              onDelete={() => handleDelete(item.id)}
+            />
           </View>
         )}
         className="flex-1 bg-background rounded-lg"
@@ -110,4 +115,4 @@ const member = () => {
   );
 };
 
-export default member;
+export default Member;

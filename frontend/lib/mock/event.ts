@@ -1,5 +1,6 @@
 import { Assignee, Event } from "@/types/event";
 import { getColorFromString } from "../utils";
+import { EventStatus } from "@/enum/event";
 
 // Utility: Add hours to a date and return ISO string
 const addHours = (date: Date, hours: number) =>
@@ -33,7 +34,6 @@ const locationPool = [
   "City Clinic",
   "Online (Zoom)",
 ];
-const colorPool = ["#EF4444", "#10B981", "#3B82F6", "#F59E0B", "#8B5CF6"];
 const eventNames = [
   "Weekly Sync",
   "Doctor Appointment",
@@ -103,7 +103,7 @@ export const createMockEvents = (count = randomInt(10, 15)): Event[] => {
       description: randomFrom(descriptionPool),
       start,
       end,
-      status: "confirmed",
+      status: EventStatus.IN_PROGRESS,
       location: randomFrom(locationPool),
       color: getColorFromString(name),
       isAllDay: Math.random() < 0.2,
@@ -117,7 +117,7 @@ export const createMockEvents = (count = randomInt(10, 15)): Event[] => {
       createdById: randomFrom(assigneePool).id,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
-      assignees,
+      assigneeIds:[],
     });
   }
 

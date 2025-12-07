@@ -19,14 +19,12 @@ export const queryClient = new QueryClient({
     },
   },
 });
-
-import cn from "clsx";
 export default function RootLayout() {
   const { isLoading, fetchAuthenticatedUser } = useAuthStore();
   const colorScheme = useColorScheme();
   useEffect(() => {
     fetchAuthenticatedUser();
-  }, []);
+  }, [fetchAuthenticatedUser]);
 
   if (isLoading) {
     return (

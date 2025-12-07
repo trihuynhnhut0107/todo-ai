@@ -3,13 +3,12 @@ import {
   Text,
   Platform,
   KeyboardAvoidingView,
-  ScrollView,
   TouchableOpacity,
 } from "react-native";
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import CustomButton from "@/components/Input/CustomButton";
+
 import {
   useAssignMember,
   useEventById,
@@ -19,19 +18,21 @@ import { useGroupMember } from "@/query/group.query";
 import { FlatList, RefreshControl } from "react-native-gesture-handler";
 import AssigneeCard from "@/components/UI/Group/AssigneeCard";
 import Empty from "@/components/UI/Empty";
-import { SearchBar } from "react-native-screens";
+
 import SearchInput from "@/components/Input/SearchInput";
 import UserCard from "@/components/UI/User/UserCard";
 import { User } from "@/types/auth";
 
-const assign = () => {
+const Assign = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: event, isLoading: pendingEvent } = useEventById(id);
-  const { data: members, isFetching: pendingMembers,refetch } = useGroupMember(
-    event?.workspaceId ?? ""
-  );
-  const { mutate: assign, isPending: pendingAssign } = useAssignMember();
-  const { mutate: unassign, isPending: pendingUnAssign } = useUnassignMember();
+  const { data: event} = useEventById(id);
+  const {
+    data: members,
+    isFetching: pendingMembers,
+    refetch,
+  } = useGroupMember(event?.workspaceId ?? "");
+  const { mutate: assign} = useAssignMember();
+  const { mutate: unassign} = useUnassignMember();
   const [filterText, setFilterText] = useState("");
 
   const assignees = useMemo(() => {
@@ -49,7 +50,7 @@ const assign = () => {
     );
   }, [event?.assigneeIds, members, filterText]);
 
-  console.log(members)
+  console.log(members);
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -81,7 +82,11 @@ const assign = () => {
                 <AssigneeCard
                   assignee={item}
                   onDelete={async () =>
-                    unassign({ id, wp_id:event?.workspaceId||"", payload: { userId: item.id } })
+                    unassign({
+                      id,
+                      wp_id: event?.workspaceId || "",
+                      payload: { userId: item.id },
+                    })
                   }
                 />
               </View>
@@ -104,7 +109,13 @@ const assign = () => {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() => assign({ id, wp_id:event?.workspaceId||"", payload: { userIds: [item.id] } })}
+              onPress={() =>
+                assign({
+                  id,
+                  wp_id: event?.workspaceId || "",
+                  payload: { userIds: [item.id] },
+                })
+              }
               className="flex-1"
             >
               <UserCard user={item as User} />
@@ -118,7 +129,7 @@ const assign = () => {
           columnWrapperStyle={{ gap: 8 }}
           ListEmptyComponent={() => <Empty />}
           refreshControl={
-            <RefreshControl refreshing={pendingMembers} onRefresh={refetch}/>
+            <RefreshControl refreshing={pendingMembers} onRefresh={refetch} />
           }
         />
       </View>
@@ -126,4 +137,4 @@ const assign = () => {
   );
 };
 
-export default assign;
+export default Assign;

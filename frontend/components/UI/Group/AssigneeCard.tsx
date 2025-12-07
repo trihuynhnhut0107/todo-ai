@@ -1,8 +1,7 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import React from "react";
 import { AssigneeCardProps } from "@/type";
 import useThemeColor from "@/hooks/useThemeColor";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons} from "@expo/vector-icons";
 
 const AssigneeCard = ({ assignee, onDelete }: AssigneeCardProps) => {
   const color = useThemeColor();

@@ -1,20 +1,10 @@
 // import { images } from "@/constants";
 import useThemeColor from "@/hooks/useThemeColor";
-import useAuthStore from "@/store/auth.store";
 import { TabBarIconProps } from "@/type";
 import { Ionicons } from "@expo/vector-icons";
-import cn from "clsx";
-import { BlurView } from "expo-blur";
-import { Link, Redirect, Tabs } from "expo-router";
-import { navigate } from "expo-router/build/global-state/routing";
-import React from "react";
+import { Link, Tabs } from "expo-router";
+
 import {
-  Button,
-  Image,
-  Pressable,
-  Text,
-  Touchable,
-  TouchableOpacity,
   View,
 } from "react-native";
 
