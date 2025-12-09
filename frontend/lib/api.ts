@@ -11,7 +11,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 20000,
 });
 
 async function refreshAccessToken() {
@@ -60,7 +60,7 @@ api.interceptors.response.use(
       message: error.response?.data?.message || error.message, // ✅ Access the API's error message
       type: "danger",
     });
-    return Promise.reject(error.response?.data?.message || error.message,);
+    return Promise.reject(error.response?.data?.message || error.message);
     // return Promise.reject(error);
   }
 );
