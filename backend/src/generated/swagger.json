@@ -925,6 +925,12 @@
 					"location": {
 						"type": "string"
 					},
+					"lat": {
+						"type": "string"
+					},
+					"lng": {
+						"type": "string"
+					},
 					"recurrenceRule": {
 						"type": "string"
 					},
@@ -1015,6 +1021,28 @@
 					"location": {
 						"type": "string"
 					},
+					"lat": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "number",
+								"format": "double"
+							}
+						]
+					},
+					"lng": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "number",
+								"format": "double"
+							}
+						]
+					},
 					"recurrenceRule": {
 						"type": "string"
 					},
@@ -1098,6 +1126,28 @@
 					},
 					"location": {
 						"type": "string"
+					},
+					"lat": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "number",
+								"format": "double"
+							}
+						]
+					},
+					"lng": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "number",
+								"format": "double"
+							}
+						]
 					},
 					"recurrenceRule": {
 						"type": "string"

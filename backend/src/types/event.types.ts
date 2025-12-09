@@ -26,6 +26,8 @@ export interface Event {
   // Optional fields
   description?: string;
   location?: string;
+  lat?: string;
+  lng?: string;
   recurrenceRule?: string;
   tags?: string[];
   metadata?: Record<string, unknown>;
