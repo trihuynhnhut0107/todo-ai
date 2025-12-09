@@ -1,23 +1,21 @@
 import BubbleMessage from "@/components/UI/Chat/BubbleMessage";
 import TypingBubble from "@/components/UI/Chat/TypingBubble";
 import {
-  getAIMessage,
-  getAIMessage2,
-  getCachedSession,
-  getOrCreateSession
+  createSession,
+  getAIMessage2
 } from "@/services/chat";
 import useAuthStore from "@/store/auth.store";
 import { useMessageStore } from "@/store/message.store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Keyboard,
   KeyboardAvoidingView,
-  Platform, // Thêm StatusBar
-  ScrollView, // Thêm SafeAreaView
+  Platform, 
+  ScrollView, 
   StatusBar,
   StyleSheet,
   Text,
@@ -30,12 +28,13 @@ import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,
 } from "expo-speech-recognition";
-import { set } from "date-fns";
 
 const ChatScreen = () => {
   const inputRef = React.useRef<TextInput>(null);
+  const flatListRef = useRef<FlatList>(null);
   const [isResponding, setIsResponding] = useState(false);
   const [message, setMessage] = useState("");
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const user = useAuthStore((state) => state.user);
 
@@ -55,37 +54,36 @@ const ChatScreen = () => {
   }, []);
 
   useEffect(() => {
-    let mounted = true;
     async function initSession() {
       if (!user?.id) return;
       console.log("Initializing chat session for user:", user.id);
-      const cached = getCachedSession();
-      if (cached && cached.userId === user.id) {
-        console.log("Using cached chat session:", cached);
-        return;
-      }
       try {
-        const session = await getOrCreateSession(user.id);
+        const session = await createSession(user.id);
+        setSessionId(session?.id || null);
         console.log("Created chat session:", session);
       } catch (err) {
         console.warn("Failed to create chat session:", err);
       }
     }
     initSession();
-    return () => {
-      mounted = false;
-    };
   }, [user?.id]);
 
+  const scrollToBottom = () => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToEnd({ animated: true });
+    }
+  };
+
   const handleSendMessage = () => {
-    if (message.trim() === "") return;
+    if (message.trim() === "" || isResponding) return;
     setIsResponding(true);
     addMessage(message.trim(), user?.id || null);
+    setTimeout(() => scrollToBottom(), 100);
     getAIMessage2({
-      sessionId: getCachedSession()?.id || "",
+      sessionId: sessionId || "",
       senderId: user?.id || "",
       content: message.trim(),
-      senderType: "user"
+      senderType: "user",
     }).then((response) => {
       console.log("AI response:", response);
       addMessage(response.content, null);
@@ -94,10 +92,16 @@ const ChatScreen = () => {
     setMessage("");
   };
 
-  useSpeechRecognitionEvent("start", () => {setRecognizing(true);setTranscript("");});
-  useSpeechRecognitionEvent("end", () => {setRecognizing(false);setMessage(transcript);});
+  useSpeechRecognitionEvent("start", () => {
+    setRecognizing(true);
+    setTranscript("");
+  });
+  useSpeechRecognitionEvent("end", () => {
+    setRecognizing(false);
+    setMessage(transcript);
+  });
   useSpeechRecognitionEvent("result", (event) => {
-  setTranscript(event.results[0]?.transcript ?? "");
+    setTranscript(event.results[0]?.transcript ?? "");
   });
   useSpeechRecognitionEvent("error", (event) => {
     console.log("Speech error:", event.error, event.message);
@@ -113,9 +117,9 @@ const ChatScreen = () => {
 
     // Start speech recognition
     ExpoSpeechRecognitionModule.start({
-      lang: "vi-VN", 
-      interimResults: true, 
-      continuous: false,  
+      lang: "vi-VN",
+      interimResults: true,
+      continuous: false,
     });
   };
 
@@ -236,16 +240,23 @@ const ChatScreen = () => {
 
           {messages.length > 0 && (
             <FlatList
+              ref={flatListRef}
               data={messages}
               renderItem={({ item }) => (
                 <BubbleMessage author={item.author} message={item.text} />
               )}
               keyExtractor={(_, index) => index.toString()}
-              className="flex-1 mt-24" // SỬA LỖI 3: Thêm flex-1 để lấp đầy không gian
+              className="flex-1 mt-24"
               showsVerticalScrollIndicator={false}
               extraData={isResponding}
               ListFooterComponent={() =>
                 isResponding ? <TypingBubble /> : null
+              }
+              onContentSizeChange={() =>
+                flatListRef.current?.scrollToEnd({ animated: true })
+              }
+              onLayout={() =>
+                flatListRef.current?.scrollToEnd({ animated: true })
               }
             />
           )}
@@ -264,13 +275,28 @@ const ChatScreen = () => {
                 value={message}
                 onChangeText={setMessage}
                 returnKeyType="send"
+                onSubmitEditing={handleSendMessage}
               />
               <TouchableOpacity
                 className="bg-red-500 rounded-full w-10 h-10 items-center justify-center"
                 onPress={() => handleSendMessage()}
               >
                 {message.trim() === "" ? (
-                  recognizing ? <Ionicons name="mic-off" size={20} color="white" onPress={handleStop} /> : <Ionicons name="mic" size={20} color="white" onPress={handleStart} />
+                  recognizing ? (
+                    <Ionicons
+                      name="mic-off"
+                      size={20}
+                      color="white"
+                      onPress={handleStop}
+                    />
+                  ) : (
+                    <Ionicons
+                      name="mic"
+                      size={20}
+                      color="white"
+                      onPress={handleStart}
+                    />
+                  )
                 ) : (
                   <Ionicons name="send" size={20} color="white" />
                 )}
