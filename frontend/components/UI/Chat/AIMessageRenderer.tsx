@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
-import Markdown from 'react-native-markdown-display'; 
+import { StyleSheet } from 'react-native';
+import Markdown from 'react-native-markdown-display';
 
 
 interface AIMessageRendererProps {
@@ -16,7 +16,7 @@ const AIMessageRenderer: React.FC<AIMessageRendererProps> = ({ content }) => {
       }
       return content;
     } catch (error) {
-      return content;
+      return error instanceof Error ? error.message : String(error);
     }
   }, [content]);
 

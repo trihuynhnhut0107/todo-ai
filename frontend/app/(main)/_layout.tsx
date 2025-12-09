@@ -1,19 +1,14 @@
-import {
-  View,
-  Text,
-  StatusBar,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-import React from "react";
 import useAuthStore from "@/store/auth.store";
-import { Redirect, Slot, Stack } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import { Redirect, Stack } from "expo-router";
+import {
+  StatusBar,
+  StyleSheet
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useThemeStore } from "@/store/theme.store";
 import { useNotificationListeners } from "@/hooks/useNotificationListeners";
+import { useThemeStore } from "@/store/theme.store";
 
 const MainLayout = () => {
   const { isAuthenticated } = useAuthStore();
