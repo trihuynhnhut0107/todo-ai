@@ -18,7 +18,7 @@ import Empty from "@/components/UI/Empty";
 
 const Groups = () => {
   const [filterText, setFilterText] = useState("");
-  const { data: groups, isLoading, isFetching, refetch } = useGroup();
+  const { data: groups, isFetching, refetch } = useGroup();
 
   const filtered = useMemo(() => {
     const text = filterText.trim().toLowerCase();
@@ -28,16 +28,6 @@ const Groups = () => {
     return groups?.filter((w) => w.name?.toLowerCase().includes(text));
   }, [groups, filterText]);
 
-  if (isLoading) {
-    return (
-      <View className="flex-1 p-4">
-        <Text style={{ fontWeight: "bold", color: "white", fontSize: 40 }}>
-          Your Groups
-        </Text>
-        <Loader />
-      </View>
-    );
-  }
 
   return (
     <View className="p-4 flex-1">

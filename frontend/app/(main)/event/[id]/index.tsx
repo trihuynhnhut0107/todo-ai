@@ -26,9 +26,7 @@ const EventDetail = () => {
   const { mutate: updateStatus, isPending: pendingUpdateStatus } =
     useUpdateEventStatus();
   const { data: eventdata } = useEventById(id);
-  const { data: members } = useGroupMember(
-    eventdata?.workspaceId ?? ""
-  );
+  const { data: members } = useGroupMember(eventdata?.workspaceId ?? "");
 
   const color = useThemeColor();
   const [open, setOpen] = useState(false);
@@ -63,7 +61,7 @@ const EventDetail = () => {
   }, [eventdata, members]);
 
   return (
-    <ScrollView contentContainerClassName="flex-1 p-4 gap-4">
+    <ScrollView className="flex-1" contentContainerClassName="p-4 gap-4">
       <View className="flex-row items-center justify-between">
         <TouchableOpacity
           onPress={() => router.back()}
@@ -178,16 +176,24 @@ const EventDetail = () => {
           </View>
         ))}
       </View>
-      {/* <Map/> */}
 
       {event?.location && (
-        <View className="flex flex-row flex-wrap items-center gap-2 rounded-xl bg-surface p-4">
-          <View className="w-full opacity-50 flex-row gap-2 items-center">
-            <Feather name="map-pin" size={14} color={color["text-tertiary"]} />
-            <Text className="text-sm text-text-tertiary">Location</Text>
-          </View>
+        <View className="rounded-xl flex-1 bg-surface ">
+          <Map address={event.location} />
+          <View className="flex flex-row flex-wrap items-center gap-2  p-4">
+            <View className="w-full opacity-50 flex-row gap-2 items-center">
+              <Feather
+                name="map-pin"
+                size={14}
+                color={color["text-tertiary"]}
+              />
+              <Text className="text-sm text-text-tertiary">Location</Text>
+            </View>
 
-          <Text className="text-sm text-text-secondary">{event?.location}</Text>
+            <Text className="text-sm text-text-secondary">
+              {event?.location}
+            </Text>
+          </View>
         </View>
       )}
       {user?.id === event?.createdById && (
