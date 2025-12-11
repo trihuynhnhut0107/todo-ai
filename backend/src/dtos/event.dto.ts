@@ -13,6 +13,8 @@ export type CreateEventDTO = Pick<
       Event,
       | "description"
       | "location"
+      | "lat"
+      | "lng"
       | "recurrenceRule"
       | "tags"
       | "metadata"
@@ -53,6 +55,8 @@ export interface CreateEventDto {
   workspaceId: string;
   description?: string;
   location?: string;
+  lat?: string | number;
+  lng?: string | number;
   recurrenceRule?: string;
   tags?: string[];
   metadata?: Record<string, unknown>;
@@ -71,6 +75,8 @@ export interface UpdateEventDto {
   end?: Date;
   description?: string;
   location?: string;
+  lat?: string | number;
+  lng?: string | number;
   recurrenceRule?: string;
   tags?: string[];
   metadata?: Record<string, unknown>;
@@ -95,6 +101,8 @@ export interface EventResponse {
   isAllDay: boolean;
   description?: string;
   location?: string;
+  lat?: string;
+  lng?: string;
   recurrenceRule?: string;
   tags?: string[];
   metadata?: Record<string, unknown>;

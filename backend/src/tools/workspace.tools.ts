@@ -297,8 +297,7 @@ export const getWorkspaceMembersTool = tool(
   async (input) => {
     try {
       const result = await workspaceService.getWorkspaceMembers(
-        input.workspaceId,
-        input.userId
+        input.workspaceId
       );
       return JSON.stringify({
         success: true,

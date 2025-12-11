@@ -47,6 +47,14 @@ export class Event {
   @Column({ type: "text", nullable: true })
   location?: string;
 
+  // Latitude
+  @Column({ type: "text", nullable: true })
+  lat?: string;
+
+  // Longitude
+  @Column({ type: "text", nullable: true })
+  lng?: string;
+
   // For UI: color coding events
   @Column({ default: "#3B82F6" }) // Default blue
   color!: string;

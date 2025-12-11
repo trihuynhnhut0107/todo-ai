@@ -77,7 +77,11 @@ export class EventController extends Controller {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      if (error instanceof Error && error.message === "Unauthorized") {
+      // Handle API errors with statusCode property (BadRequestError, ValidationError, etc.)
+      if (error instanceof Object && 'statusCode' in error) {
+        const apiError = error as { statusCode: number };
+        this.setStatus(apiError.statusCode);
+      } else if (error instanceof Error && error.message === "Unauthorized") {
         this.setStatus(401);
       } else if (
         error instanceof Error &&
@@ -241,7 +245,11 @@ export class EventController extends Controller {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      if (error instanceof Error && error.message === "Unauthorized") {
+      // Handle API errors with statusCode property (BadRequestError, ValidationError, etc.)
+      if (error instanceof Object && 'statusCode' in error) {
+        const apiError = error as { statusCode: number };
+        this.setStatus(apiError.statusCode);
+      } else if (error instanceof Error && error.message === "Unauthorized") {
         this.setStatus(401);
       } else if (
         error instanceof Error &&

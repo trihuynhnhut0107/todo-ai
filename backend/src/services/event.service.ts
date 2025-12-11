@@ -13,6 +13,11 @@ import {
   scheduleEventNotification,
   cancelEventNotification,
 } from "./notification-queue.service";
+import {
+  validateAndNormalizeLocation,
+  validateTravelLogistics,
+} from "../utils/location-validation";
+import { BadRequestError } from "../utils/errors";
 
 export class EventService {
   private eventRepository = AppDataSource.getRepository(Event);
@@ -27,7 +32,7 @@ export class EventService {
     createDto: CreateEventDto
   ): Promise<EventResponse> {
     // Verify workspace exists and user has access
-    const workspace = await this.verifyWorkspaceAccess(
+    await this.verifyWorkspaceAccess(
       createDto.workspaceId,
       userId
     );
@@ -37,7 +42,7 @@ export class EventService {
     const end = new Date(createDto.end);
 
     if (end <= start) {
-      throw new Error("End time must be after start time");
+      throw new BadRequestError("End time must be after start time");
     }
 
     // Get assignees if provided
@@ -48,7 +53,60 @@ export class EventService {
       });
 
       if (assignees.length !== createDto.assigneeIds.length) {
-        throw new Error("One or more assignees not found");
+        throw new BadRequestError("One or more assignees not found");
+      }
+    }
+
+    // Validate and normalize location if provided
+    let eventLocation: string | undefined = createDto.location;
+    let eventLat: string | undefined = undefined;
+    let eventLng: string | undefined = undefined;
+
+    // Check if trying to provide only one coordinate (invalid)
+    if (
+      (createDto.lat !== undefined && createDto.lng === undefined) ||
+      (createDto.lng !== undefined && createDto.lat === undefined)
+    ) {
+      throw new BadRequestError(
+        "Both latitude and longitude must be provided together. Provide neither, or both."
+      );
+    }
+
+    if (createDto.location || (createDto.lat && createDto.lng)) {
+      const validatedLocation = await validateAndNormalizeLocation({
+        location: createDto.location,
+        lat: createDto.lat,
+        lng: createDto.lng,
+      });
+
+      eventLocation = validatedLocation.location;
+      eventLat = validatedLocation.lat;
+      eventLng = validatedLocation.lng;
+
+      // Validate travel logistics: find the most recent event that ends BEFORE this event starts
+      const previousEvent = await this.eventRepository
+        .createQueryBuilder("event")
+        .where("event.createdById = :userId", { userId })
+        .andWhere("event.lat IS NOT NULL")
+        .andWhere("event.lng IS NOT NULL")
+        .andWhere("event.end <= :eventStart", { eventStart: start })
+        .orderBy("event.end", "DESC")
+        .limit(1)
+        .getOne();
+
+      if (previousEvent) {
+        const travelValidation = await validateTravelLogistics(
+          start,
+          validatedLocation,
+          previousEvent
+        );
+
+        if (!travelValidation.isValid) {
+          throw new BadRequestError(
+            travelValidation.message ||
+              "Travel logistics validation failed between events"
+          );
+        }
       }
     }
 
@@ -60,7 +118,9 @@ export class EventService {
       workspaceId: createDto.workspaceId,
       createdById: userId,
       assignees,
-      location: createDto.location,
+      location: eventLocation,
+      lat: eventLat,
+      lng: eventLng,
       color: createDto.color || "#3B82F6",
       isAllDay: createDto.isAllDay || false,
       recurrenceRule: createDto.recurrenceRule,
@@ -170,7 +230,7 @@ export class EventService {
     });
 
     if (!event) {
-      throw new Error("Event not found");
+      throw new BadRequestError("Event not found");
     }
 
     // Check if user is owner of workspace or creator of event
@@ -178,7 +238,7 @@ export class EventService {
       event.workspace.ownerId === userId || event.createdById === userId;
 
     if (!hasAccess) {
-      throw new Error("Access denied");
+      throw new BadRequestError("Access denied");
     }
 
     // Validate dates if provided
@@ -187,11 +247,75 @@ export class EventService {
       const end = updateDto.end ? new Date(updateDto.end) : event.end;
 
       if (end <= start) {
-        throw new Error("End time must be after start time");
+        throw new BadRequestError("End time must be after start time");
       }
 
       event.start = start;
       event.end = end;
+    }
+
+    // Update location with validation if provided
+    if (
+      updateDto.location !== undefined ||
+      updateDto.lat !== undefined ||
+      updateDto.lng !== undefined
+    ) {
+      // Check if trying to update only one coordinate (invalid)
+      if (
+        (updateDto.lat !== undefined && updateDto.lng === undefined) ||
+        (updateDto.lng !== undefined && updateDto.lat === undefined)
+      ) {
+        throw new BadRequestError(
+          "Both latitude and longitude must be provided together. Provide neither, or both."
+        );
+      }
+
+      // If location or coordinates are being updated with valid data
+      if (updateDto.location || (updateDto.lat !== undefined && updateDto.lng !== undefined)) {
+        const validatedLocation = await validateAndNormalizeLocation({
+          location: updateDto.location,
+          lat: updateDto.lat,
+          lng: updateDto.lng,
+        });
+
+        event.location = validatedLocation.location;
+        event.lat = validatedLocation.lat;
+        event.lng = validatedLocation.lng;
+
+        // Validate travel logistics: find the most recent event that ends BEFORE this event starts
+        const previousEvent = await this.eventRepository
+          .createQueryBuilder("event")
+          .where("event.createdById = :userId", { userId })
+          .andWhere("event.id != :currentEventId", { currentEventId: eventId })
+          .andWhere("event.lat IS NOT NULL")
+          .andWhere("event.lng IS NOT NULL")
+          .andWhere("event.end <= :eventStart", { eventStart: event.start })
+          .orderBy("event.end", "DESC")
+          .limit(1)
+          .getOne();
+
+        if (previousEvent) {
+          const travelValidation = await validateTravelLogistics(
+            event.start,
+            validatedLocation,
+            previousEvent
+          );
+
+          if (!travelValidation.isValid) {
+            throw new BadRequestError(
+              travelValidation.message ||
+                "Travel logistics validation failed between events"
+            );
+          }
+        }
+      } else {
+        // Clearing location (if explicitly set to undefined/null)
+        if (updateDto.location === null || updateDto.location === undefined) {
+          event.location = undefined;
+          event.lat = undefined;
+          event.lng = undefined;
+        }
+      }
     }
 
     // Update other fields
@@ -199,7 +323,6 @@ export class EventService {
     if (updateDto.description !== undefined)
       event.description = updateDto.description;
     if (updateDto.status !== undefined) event.status = updateDto.status as any;
-    if (updateDto.location !== undefined) event.location = updateDto.location;
     if (updateDto.color !== undefined) event.color = updateDto.color;
     if (updateDto.isAllDay !== undefined) event.isAllDay = updateDto.isAllDay;
     if (updateDto.recurrenceRule !== undefined)
@@ -359,6 +482,8 @@ export class EventService {
       end: event.end,
       status: event.status,
       location: event.location,
+      lat: event.lat,
+      lng: event.lng,
       color: event.color,
       isAllDay: event.isAllDay,
       recurrenceRule: event.recurrenceRule,
