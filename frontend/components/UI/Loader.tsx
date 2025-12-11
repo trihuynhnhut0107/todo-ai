@@ -1,5 +1,4 @@
-import { View, Text, ActivityIndicator } from "react-native";
-import React from "react";
+import { ActivityIndicator } from "react-native";
 
 const Loader = () => {
   return <ActivityIndicator size="large" className="text-primary" />;

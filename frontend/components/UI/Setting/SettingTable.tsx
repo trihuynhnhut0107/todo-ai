@@ -1,5 +1,4 @@
-import { View, Text } from "react-native";
-import React from "react";
+import { View } from "react-native";
 import { SettingTableProps } from "@/type";
 import SettingItem from "./SettingItem";
 import { FlatList } from "react-native-gesture-handler";

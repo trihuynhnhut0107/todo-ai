@@ -1,3 +1,5 @@
+import { EventStatus } from "@/enum/event";
+
 export function getColorFromString(str: string): string {
   let hash = 0;
 
@@ -83,3 +85,47 @@ export function getReadableTextColor(bgHex: string): string {
   // threshold around mid brightness
   return luminance > 186 ? "#000000" : "#FFFFFF";
 }
+
+export const getStatusStyles = (status:EventStatus) => {
+  switch (status) {
+    case EventStatus.SCHEDULED:
+      return "bg-gray-500 border border-gray-500";
+    case EventStatus.IN_PROGRESS:
+      return "bg-blue-500 border border-blue-500";
+    case EventStatus.COMPLETED:
+      return "bg-green-500 border border-green-500";
+    case EventStatus.CANCELLED:
+      return "bg-red-500 border border-red-500";
+    default:
+      return "bg-gray-500 border border-gray-500";
+  }
+};
+
+export const getStatusTextStyles = (status:EventStatus) => {
+  switch (status) {
+    case EventStatus.SCHEDULED:
+      return "text-blue-300";
+    case EventStatus.IN_PROGRESS:
+      return "text-blue-300";
+    case EventStatus.COMPLETED:
+      return "text-green-300";
+    case EventStatus.CANCELLED:
+      return "text-red-300";
+    default:
+      return "text-gray-300";
+  }
+};
+
+export const getGreeting = () => {
+  const hour = new Date().getHours();
+  
+  if (hour >= 5 && hour < 12) {
+    return "Good morning";
+  } else if (hour >= 12 && hour < 17) {
+    return "Good afternoon";
+  } else if (hour >= 17 && hour < 21) {
+    return "Good evening";
+  } else {
+    return "Good night";
+  }
+};

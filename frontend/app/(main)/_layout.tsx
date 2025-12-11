@@ -3,16 +3,17 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Redirect, Stack } from "expo-router";
 import {
   StatusBar,
-  StyleSheet
+  StyleSheet,
+  useColorScheme
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useNotificationListeners } from "@/hooks/useNotificationListeners";
-import { useThemeStore } from "@/store/theme.store";
+
 
 const MainLayout = () => {
   const { isAuthenticated } = useAuthStore();
-  const { theme } = useThemeStore();
+  const theme = useColorScheme();
 
   // Set up notification listeners for handling taps
   useNotificationListeners();
@@ -20,7 +21,7 @@ const MainLayout = () => {
   if (!isAuthenticated) return <Redirect href="/sign-in" />;
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-background">
+    <SafeAreaView  className="flex-1 bg-background">
       <StatusBar barStyle="light-content" />
       {/* === PHẦN NỀN "GIẢ LẬP" MỜ NHÒE (MỚI) === */}
       {/* Lớp 1: Vầng sáng cam-đỏ chính */}

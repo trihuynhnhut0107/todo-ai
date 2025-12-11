@@ -1,20 +1,24 @@
 import { View, Text, TouchableOpacity, Alert } from "react-native";
-import React, { useMemo } from "react";
-import { Link, router, useLocalSearchParams } from "expo-router";
+import { useMemo } from "react";
+import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { ScrollView } from "react-native-gesture-handler";
-import CustomButton from "@/components/Input/CustomButton";
 import SettingTable from "@/components/UI/Setting/SettingTable";
 import { SettingItemProps } from "@/type";
-import { showMessage } from "react-native-flash-message";
-import { useDeleteGroup, useGroupById } from "@/query/group.query";
+import {
+  useDeleteGroup,
+  useGroupById,
+  useLeaveGroup,
+} from "@/query/group.query";
 import useAuthStore from "@/store/auth.store";
 
 const Setting = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuthStore();
   const { data: group } = useGroupById(id);
-  const { mutate: deleteGroup, isPending: pendingDelete } = useDeleteGroup(() =>
+  const { mutate: deleteGroup } = useDeleteGroup(() =>
+    router.replace("/(main)/(tabs)/groups")
+  );
+  const { mutate: leaveGroup } = useLeaveGroup(() =>
     router.replace("/(main)/(tabs)/groups")
   );
 
@@ -61,12 +65,27 @@ const Setting = () => {
       title: "Leave workspace",
       color: "red",
       icon: "log-out-outline",
+      onPress: () => {
+        Alert.alert("Leave group?", "This action cannot be undone.", [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Leave",
+            style: "destructive",
+            onPress: () => {
+              leaveGroup(id);
+            },
+          },
+        ]);
+      },
     },
   ];
 
   const settings = useMemo(() => {
     if (group?.ownerId === user?.id) {
-      return baseSettings;
+      return baseSettings.slice(0,-1);
     }
 
     // If user is NOT the owner, show only view/add members and leave option
@@ -74,7 +93,7 @@ const Setting = () => {
       baseSettings[1], // View members
       baseSettings[4], // Leave workspace
     ];
-  }, [group?.ownerId, user?.id, id]);
+  }, [group?.ownerId, user?.id,baseSettings]);
   return (
     <View className="flex-1 p-4 gap-4">
       <View className="flex-row items-start justify-between">

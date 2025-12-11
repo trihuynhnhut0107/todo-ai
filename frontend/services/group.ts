@@ -2,7 +2,6 @@ import api from "@/lib/api";
 import { mockWorkspaces } from "@/lib/mock/workspace";
 import { Group, GroupMember, GroupPayload } from "@/types/group";
 
-import { DateTimeType } from "@howljs/calendar-kit";
 
 export const getGroups = async (): Promise<Group[]> => {
   try {
@@ -58,7 +57,10 @@ export const updateGroup = async ({
   return await api.put(`/workspaces/${id}`, payload);
 };
 
-
 export const deleteGroup = async (id: string): Promise<void> => {
   return await api.delete(`/workspaces/${id}`);
+};
+
+export const leaveGroup = async (id: string): Promise<void> => {
+  return await api.post(`/workspaces/${id}/leave`);
 };

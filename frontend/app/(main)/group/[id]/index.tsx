@@ -1,56 +1,43 @@
 import AgendaHeader from "@/components/UI/Calendar/AgendaHeader";
 import EventCard from "@/components/UI/Calendar/EventCard";
 import Loader from "@/components/UI/Loader";
-import { SelectedDateContext } from "@/context/selectedDate";
+import { FilterProps, SelectedDateContext } from "@/context/selectedDate";
+import { EventStatus } from "@/enum/event";
 import useThemeColor from "@/hooks/useThemeColor";
 import { getDatesBetween, spreadEvent } from "@/lib/utils";
-import {
-  useCreateEvent,
-  useDeleteEvent,
-  useEvents,
-  useUpdateEvent,
-} from "@/query/event.query";
-import { useGroupById } from "@/query/group.query";
-import { EventPayload } from "@/types/event";
+import { useEvents } from "@/query/event.query";
+import { useGroupById, useGroupMember } from "@/query/group.query";
+import useAuthStore from "@/store/auth.store";
+
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import {
   CalendarBody,
   CalendarContainer,
-  CalendarHeader,
   CalendarKitHandle,
-  dateTimeToISOString,
   EventItem,
-  HeaderItemProps,
-  OnCreateEventResponse,
-  OnEventResponse,
-  PackedEvent,
 } from "@howljs/calendar-kit";
 import { BlurView } from "expo-blur";
-import { Link, router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Dimensions,
-  Image,
-  Keyboard,
-  Pressable,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { Calendar, CalendarList } from "react-native-calendars";
-import {
-  FlatList,
-  RefreshControl,
-  ScrollView,
-} from "react-native-gesture-handler";
+import { Dimensions, Keyboard, TouchableOpacity, View } from "react-native";
+import { CalendarList } from "react-native-calendars";
+import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 
-const workspaceDetail = () => {
-  const color = useThemeColor()
+const GroupDetail = () => {
+  const color = useThemeColor();
+  const { user } = useAuthStore();
   const { id } = useLocalSearchParams<{ id: string }>();
   const sheetRef = useRef<BottomSheetModal>(null);
   const calendarRef = useRef<CalendarKitHandle>(null);
+  const [filter, setFilter] = useState<FilterProps>({
+    assigned: false,
+    status: Object.values(EventStatus).map((s) => s),
+    period: {
+      from: undefined,
+      to: undefined,
+    },
+  });
   const [selected, selectDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -62,6 +49,8 @@ const workspaceDetail = () => {
     isLoading: pendingWorkspace,
     refetch: refetchWorkspace,
   } = useGroupById(id);
+
+  const { data: members } = useGroupMember(id);
 
   const {
     data: events,
@@ -104,18 +93,48 @@ const workspaceDetail = () => {
     handleGoToDate(new Date(d).toISOString().split("T")[0]);
   };
 
+  const filteredEvents = useMemo(() => {
+    if (!events) return [];
+    return events?.filter((e) => {
+      // 1. Date FROM
+      if (filter.period.from) {
+        const fromDate = new Date(filter.period.from).getTime();
+        const eventDate = new Date(e.start).getTime();
+        if (eventDate < fromDate) return false;
+      }
+
+      // 2. Date TO
+      if (filter.period.to) {
+        const toDate = new Date(filter.period.to).getTime();
+        const eventDate = new Date(e.end).getTime();
+        if (eventDate > toDate) return false;
+      }
+
+      // 3. Assigned to me
+      if (user && filter.assigned) {
+        if (!e.assigneeIds?.includes(user.id)) return false;
+      }
+
+      // 4. Status
+      if (filter.status?.length && !filter.status.includes(e.status)) {
+        return false;
+      }
+      return true;
+    });
+  }, [filter, events, user]);
+
   const calendarDates = useMemo(() => {
     const eventLog: Record<
       string,
       {
         selected?: boolean;
-        dots: Array<{
+        dots: {
           color: string;
-        }>;
+        }[];
       }
     > = {};
 
-    events?.forEach((event) => {
+    filteredEvents?.forEach((event) => {
       const start = new Date(event.start.toString()).toLocaleDateString();
       const end = new Date(event.end.toString()).toLocaleDateString();
 
@@ -132,6 +151,12 @@ const workspaceDetail = () => {
       });
     });
 
+    const mappedEvents = filteredEvents?.map((e) => {
+      return {
+        ...e,
+        createdBy: members?.find((m) => m.id === e.createdById)?.email ?? "",
+      };
+    });
     // highlight selected date if exists
     if (!eventLog[selected]) {
       eventLog[selected] = {
@@ -142,16 +167,22 @@ const workspaceDetail = () => {
 
     const calendarBody: EventItem[] = [];
 
-    events?.forEach((e) => {
+    mappedEvents?.forEach((e) => {
       calendarBody.push(...spreadEvent(e));
     });
 
     return { eventLog, calendarBody };
-  }, [events, selected]);
+  }, [selected, members, filteredEvents]);
 
   return (
     <SelectedDateContext.Provider
-      value={{ selected, selectDate: handleSelectDate }}
+      value={{
+        selected,
+        selectDate: handleSelectDate,
+        filter,
+        setFilter,
+        matched: filteredEvents?.length ?? 0,
+      }}
     >
       <View className="flex-1 ">
         <View className="overflow-display shadow-sm z-50">
@@ -164,7 +195,7 @@ const workspaceDetail = () => {
               />
             }
           >
-            <AgendaHeader group={group} events={events} />
+            <AgendaHeader group={group} events={filteredEvents} />
           </ScrollView>
         </View>
 
@@ -175,13 +206,13 @@ const workspaceDetail = () => {
               display: !pendingEvents && calendarLoaded ? "none" : "flex",
             }}
           >
-             <Loader />
+            <Loader />
           </View>
           <CalendarContainer
             onLoad={() => setCalendarLoaded(true)}
             theme={{
               colors: {
-                background:color.background,
+                background: color.background,
                 // surface:"white"
                 text: color.text,
                 border: color.border,
@@ -268,9 +299,7 @@ const workspaceDetail = () => {
         </BottomSheetModal>
 
         <TouchableOpacity
-          onPress={() =>
-            router.push(`/(main)/group/${id}/event_form/create`)
-          }
+          onPress={() => router.push(`/(main)/group/${id}/event_form/create`)}
           className="absolute left-5 bottom-5 flex-row items-center p-3 bg-primary rounded-full "
         >
           <Ionicons name="add" size={32} color="white" />
@@ -287,4 +316,4 @@ const workspaceDetail = () => {
   );
 };
 
-export default workspaceDetail;
+export default GroupDetail;

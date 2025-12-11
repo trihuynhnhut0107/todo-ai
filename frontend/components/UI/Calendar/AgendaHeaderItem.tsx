@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity } from "react-native";
-import React, { useContext, useMemo } from "react";
+import { View, Text} from "react-native";
+import { useMemo } from "react";
 import { DateWithEvents } from "@/type";
 
 import { format } from "date-fns";
@@ -18,7 +18,7 @@ const AgendaHeaderItem = ({ date }: { date: DateWithEvents }) => {
   }, [date]);
   return (
     <View
-      className="items-center gap-2 p-2 rounded-lg min-w-[50px] max-w-[50px]"
+      className="items-center p-2 rounded-lg min-w-[50px] max-w-[50px]"
       style={{
         backgroundColor: date.active ? color.accent : "",
       }}

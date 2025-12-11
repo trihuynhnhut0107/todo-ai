@@ -18,6 +18,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useColorScheme,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -25,7 +26,7 @@ import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,
 } from "expo-speech-recognition";
-import { useThemeStore } from "@/store/theme.store";
+
 
 const ChatScreen = () => {
   const inputRef = React.useRef<TextInput>(null);
@@ -42,7 +43,7 @@ const ChatScreen = () => {
   const [recognizing, setRecognizing] = useState(false);
   const [transcript, setTranscript] = useState("");
 
-  const { theme } = useThemeStore();
+  const theme = useColorScheme();
   const { query } = useLocalSearchParams<{ query?: string }>();
 
   useEffect(() => {

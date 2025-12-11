@@ -8,8 +8,8 @@ import useAuthStore from "@/store/auth.store";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import FlashMessage from "react-native-flash-message";
-import ThemeProvider from "@/components/theme/ThemeProvider";
 import Loader from "@/components/UI/Loader";
+import { useColorScheme, View } from "react-native";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,44 +19,38 @@ export const queryClient = new QueryClient({
     },
   },
 });
-
-function RootLayoutNav() {
-  return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    />
-  );
-}
-
 export default function RootLayout() {
   const { isLoading, fetchAuthenticatedUser } = useAuthStore();
-  
+  const colorScheme = useColorScheme();
   useEffect(() => {
     fetchAuthenticatedUser();
-  }, []);
+  }, [fetchAuthenticatedUser]);
 
   if (isLoading) {
     return (
-      <ThemeProvider>
-        <SafeAreaView className="flex-1 justify-center items-center bg-background">
-          <Loader />
-        </SafeAreaView>
-      </ThemeProvider>
+      // <ThemeProvider>
+      <SafeAreaView className={colorScheme as string}>
+        <Loader />
+      </SafeAreaView>
+      // </ThemeProvider>
     );
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
+    <View className={`${colorScheme === "dark" ? "dark" : ""} flex-1`}>
+      <QueryClientProvider client={queryClient}>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <BottomSheetModalProvider>
-            <RootLayoutNav />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+              }}
+            />
             <FlashMessage position="top" />
           </BottomSheetModalProvider>
         </GestureHandlerRootView>
-      </ThemeProvider>
-    </QueryClientProvider>
+        {/* </ThemeProvider> */}
+      </QueryClientProvider>
+    </View>
   );
 }

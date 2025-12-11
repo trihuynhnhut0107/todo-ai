@@ -1,11 +1,9 @@
-import React, { use, useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
-  FlatList,
   Modal,
-  StyleSheet,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import cn from "clsx";

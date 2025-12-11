@@ -1,10 +1,10 @@
-import { DateTimeType, EventItem, PackedEvent } from "@howljs/calendar-kit";
+import { DateTimeType, PackedEvent } from "@howljs/calendar-kit";
 import { TextInputProps } from "react-native";
 import { Group, GroupMember } from "./types/group";
-import { Event } from "./types/event";
+import { Event, Assignee } from "./types/event";
 import { BaseProps } from "@react-native-community/datetimepicker";
 import { User } from "./types/auth";
-import { UserSelect } from "react-native-gesture-handler/lib/typescript/handlers/gestureHandlerCommon";
+
 
 export interface TabBarIconProps {
   focused: boolean;
@@ -90,8 +90,14 @@ export interface SettingItemProps {
 
 export interface GroupMemberCardProps {
   member: GroupMember;
+  enableDelete?:boolean;
   onDelete: () => void;
 }
 export interface UserCardProps {
   user: User;
+}
+
+export interface AssigneeCardProps {
+    assignee: Assignee;
+    onDelete: () => void
 }

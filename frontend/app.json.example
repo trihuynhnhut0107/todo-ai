@@ -4,7 +4,7 @@
     "slug": "todo-ai",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/Logo.png",
     "scheme": "todo-ai",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -23,6 +23,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
+      "googleServicesFile": "./android/app/google-services.json",
+      "useNextNotificationsApi": true,
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.todoai",
@@ -67,6 +69,12 @@
         {
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone.",
           "speechRecognitionPermission": "Allow $(PRODUCT_NAME) to use speech recognition."
+        }
+      ],
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsDownloadToken": "EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN"
         }
       ]
     ],

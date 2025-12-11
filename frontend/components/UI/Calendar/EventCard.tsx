@@ -1,17 +1,20 @@
-import { View, Text, Image, Pressable } from "react-native";
-import React from "react";
+import { View, Text} from "react-native";
 import { Link } from "expo-router";
-import { images } from "@/lib/image";
-import { Ionicons } from "@expo/vector-icons";
 import { EventCardProps } from "@/type";
 import { format } from "date-fns";
-import { getColorFromString, getReadableTextColor } from "@/lib/utils";
-
+import {
+  getColorFromString,
+  getReadableTextColor,
+  getStatusStyles,
+} from "@/lib/utils";
+import cn from "clsx";
 const EventCard = ({ event }: { event: EventCardProps }) => {
   return (
     <Link href={`/(main)/event/${event.id}`}>
       <View
-        className="flex-row items-start p-3 gap-2 border-2 rounded-lg bg-surface "
+        className={cn(
+          "flex-row items-start p-3 gap-2 border-2 rounded-lg bg-surface truncate"
+        )}
         style={{
           borderColor: event.color,
           width: "100%",
@@ -19,24 +22,37 @@ const EventCard = ({ event }: { event: EventCardProps }) => {
         }}
       >
         <View
-          className="w-2 rounded-full h-full"
-          style={{
-            backgroundColor: event.color,
-          }}
+          className={cn(
+            "w-2 rounded-full h-full",
+            getStatusStyles(event.status)
+          )}
         ></View>
         <View className="flex-col flex-1">
           <View className="flex-col items-start gap-1 overflow-hidden">
             <Text className="text-xl text-text">{event.name}</Text>
+            <Text
+              className="text-xs text-text-tertiary truncate"
+              numberOfLines={1}
+            >
+              cre: {event.createdBy}
+            </Text>
+
             <Text className="text-text-secondary text-sm">
-              <Text> {`${format(new Date(event.displayStart), "dd/MM")}`}</Text>
-              <Text className="text-text-tertiary"> {`${format(new Date(event.displayStart), "HH:mm")}`}</Text>
-              <Text>-</Text>
-              <Text> {`${format(new Date(event.displayEnd), "dd/MM")}`}</Text>
-              <Text className="text-text-tertiary"> {`${format(new Date(event.displayEnd), "HH:mm")}`}</Text>
+              <Text>{`${format(new Date(event.displayStart), "dd/MM")}`}</Text>
+              <Text className="text-text-tertiary">
+                {" "}
+                {`${format(new Date(event.displayStart), "HH:mm")}`}
+              </Text>
+              <Text> - </Text>
+              <Text>{`${format(new Date(event.displayEnd), "dd/MM")}`}</Text>
+              <Text className="text-text-tertiary">
+                {" "}
+                {`${format(new Date(event.displayEnd), "HH:mm")}`}
+              </Text>
             </Text>
             <View className="flex-row relative justify-start">
               {event.assignees?.map((m: any, idx: number) => (
-                <Text>{m.name}</Text>
+                <Text key={idx}>{m.name}</Text>
               ))}
             </View>
           </View>

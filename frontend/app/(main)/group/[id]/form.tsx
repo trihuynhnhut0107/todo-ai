@@ -5,7 +5,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -34,13 +34,13 @@ export const schema = z.object({
   order: z.number().optional(),
 });
 
-const form = () => {
+const Group_form = () => {
   const { id } = useLocalSearchParams<{
     id: string;
   }>();
   const isEditmode = id && id !== "create";
 
-  const { data: group, isPending: pendingoWorkspace } = useGroupById(id);
+  const { data: group} = useGroupById(id);
   const { mutate: createGroup, isPending: pendingCreating } = useCreateGroup();
   const { mutate: updateGroup, isPending: pendingUpdating } = useUpdateGroup();
   const {
@@ -79,7 +79,7 @@ const form = () => {
         color: group.color,
       });
     }
-  }, [group]);
+  }, [group,reset]);
 
   return (
     <KeyboardAvoidingView
@@ -87,7 +87,7 @@ const form = () => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
-      <ScrollView contentContainerClassName="p-4 gap-4 items-start ">
+      <ScrollView contentContainerClassName="p-4 gap-4 pb-32  items-start ">
         <View className="flex-row items-start justify-between w-full">
           <TouchableOpacity
             onPress={() => router.back()}
@@ -174,4 +174,4 @@ const form = () => {
   );
 };
 
-export default form;
+export default Group_form;

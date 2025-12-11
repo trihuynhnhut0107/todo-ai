@@ -5,11 +5,10 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   FlatList,
   RefreshControl,
-  ScrollView,
 } from "react-native-gesture-handler";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,17 +21,19 @@ import MemberCard from "@/components/UI/Group/MemberCard";
 import Empty from "@/components/UI/Empty";
 import { useUserById } from "@/query/user.query";
 import UserCard from "@/components/UI/User/UserCard";
+import useAuthStore from "@/store/auth.store";
 
-const member = () => {
+const Member = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuthStore();
   const {
-    data: groupMembers,
+    data: members,
     isLoading: pendingGroupMembers,
     refetch,
   } = useGroupMember(id);
   const { data: group } = useGroupById(id);
   const { data: owner } = useUserById(group?.ownerId || "");
-  const { mutate: remove, isPending: pendingDelete } = useRemoveGroupMember();
+  const { mutate: remove } = useRemoveGroupMember();
 
   const handleDelete = (userId: string) => {
     Alert.alert(
@@ -53,6 +54,10 @@ const member = () => {
       ]
     );
   };
+
+  const groupMembers = useMemo(() => {
+    return members?.filter((m) => m.id !== group?.ownerId);
+  }, [members, group]);
   return (
     <View className="flex-1 p-4 gap-4 ">
       <View className="flex-row items-start justify-between">
@@ -66,8 +71,8 @@ const member = () => {
         <Text className="text-3xl font-bold text-white">Members</Text>
       </View>
 
-      <View>
-        <Text className="text text-text font-bold">Group Admin</Text>
+      <View className="bg-primary gap-2 p-2 rounded-lg">
+        <Text className="text text-accent font-bold">Group Admin</Text>
         {owner && <UserCard user={owner} />}
       </View>
 
@@ -81,6 +86,7 @@ const member = () => {
           <View className="flex-1">
             <MemberCard
               member={item}
+              enableDelete={user?.id === group?.ownerId}
               onDelete={() => handleDelete(item.id)}
             />
           </View>
@@ -109,4 +115,4 @@ const member = () => {
   );
 };
 
-export default member;
+export default Member;

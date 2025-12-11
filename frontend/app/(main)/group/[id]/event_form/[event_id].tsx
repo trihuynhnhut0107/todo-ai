@@ -14,7 +14,7 @@ import CustomInput from "@/components/Input/CustomInput";
 import CustomDateTimePicker from "@/components/Input/CustomDateTimePicker";
 import { useForm, Controller } from "react-hook-form";
 
-import { string, z } from "zod";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useCreateEvent,
@@ -24,6 +24,7 @@ import {
 import { EventPayload } from "@/types/event";
 import CustomColorPicker from "@/components/Input/CustomColorPicker";
 import CustomTagInput from "@/components/Input/CustomTagInput";
+import CustomMapInput from "@/components/Input/CustomMapInput";
 
 export const schema = z
   .object({
@@ -38,13 +39,15 @@ export const schema = z
     end: z.date({
       required_error: "Please choose end time",
     }),
+    coordinates: z.array(z.number()).optional(),
+    location: z.string().optional(),
   })
   .refine((data) => data.end > data.start, {
     message: "End time must be after start time",
     path: ["end"], // error will show under the end field
   });
 
-const event_form = () => {
+const Event_form = () => {
   const { id, event_id } = useLocalSearchParams<{
     id: string;
     event_id: string;
@@ -67,7 +70,7 @@ const event_form = () => {
     },
   });
 
-  const { data: event, isLoading: pendingEvent } = useEventById(event_id);
+  const { data: event } = useEventById(event_id);
   const { mutate: createEvent, isPending: pendingCreating } = useCreateEvent();
   const { mutate: updateEvent, isPending: pendingUpdating } = useUpdateEvent();
 
@@ -80,8 +83,10 @@ const event_form = () => {
         start: new Date(event?.start),
         end: new Date(event?.end),
         color: event?.color,
+        location: event?.location,
+        coordinates: event?.coordinates
       });
-  }, [event]);
+  }, [event, reset]);
 
   const onSubmit = (data: any) => {
     const payload: EventPayload = {
@@ -91,13 +96,14 @@ const event_form = () => {
       start: data.start,
       end: data.end,
       color: data.color,
-
+      location: data.location,
       // workspaceId: id
     };
     if (isEditmode) {
       updateEvent({ id: event_id, workspaceId: id, payload });
     } else {
       createEvent({ ...payload, workspaceId: id });
+      reset();
     }
   };
   return (
@@ -107,7 +113,7 @@ const event_form = () => {
       className="flex-1"
     >
       <ScrollView
-        contentContainerClassName="p-4 gap-4"
+        contentContainerClassName="p-4 pb-32 gap-4"
         showsVerticalScrollIndicator={false}
       >
         <View className="flex-row items-start justify-between">
@@ -186,12 +192,12 @@ const event_form = () => {
             )}
           />
         </View>
-        <View className="bg-surface rounded-xl p-4">
+        <View className=" flex-row gap-2">
           <Controller
             control={control}
             name="start"
             render={({ field }) => (
-              <View>
+              <View className="flex-1 bg-surface rounded-xl p-4">
                 <CustomDateTimePicker
                   label="start at"
                   value={field.value}
@@ -202,13 +208,11 @@ const event_form = () => {
               </View>
             )}
           />
-        </View>
-        <View className="bg-surface rounded-xl p-4">
           <Controller
             control={control}
             name="end"
             render={({ field }) => (
-              <View>
+              <View className="flex-1 bg-surface rounded-xl p-4">
                 <CustomDateTimePicker
                   label="end at"
                   value={field.value}
@@ -220,9 +224,31 @@ const event_form = () => {
             )}
           />
         </View>
+        <View className="bg-surface rounded-lg overflow-hidden">
+          <Controller
+            control={control}
+            name="location"
+            render={({ field }) => (
+              <CustomInput
+                multiline={true}
+                value={field.value}
+                placeholder="Enter address, location..."
+                onChangeText={field.onChange}
+              />
+            )}
+          />
+          <Text className="text-center text-text-tertiary p-1 text-sm">Or pin a location on the map</Text>
+          <Controller
+            control={control}
+            name="coordinates"
+            render={({ field }) => (
+              <CustomMapInput coord={field.value} onChange={field.onChange} />
+            )}
+          />
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
 
-export default event_form;
+export default Event_form;

@@ -1,7 +1,7 @@
+import { EventStatus } from "@/enum/event";
 import api from "@/lib/api";
-import { mockEvents } from "@/lib/mock/event";
 import { Event, EventPayload } from "@/types/event";
-import { DateOrDateTime, DateTimeType } from "@howljs/calendar-kit";
+
 
 export const getEvents = async ({
   wp_id,
@@ -35,6 +35,17 @@ export const updateEvent = async ({
 }): Promise<Event> => {
   return await api.put(`/events/${id}`, payload);
 };
+export const updateEventStatus = async ({
+  id,
+  workspaceId,
+  payload,
+}: {
+  id: string;
+  workspaceId: string;
+  payload: { status: EventStatus };
+}): Promise<Event> => {
+  return await api.put(`/events/${id}`, payload);
+};
 
 export const deleteEvent = async ({
   id,
@@ -48,9 +59,11 @@ export const deleteEvent = async ({
 
 export const assignMember = async ({
   id,
+  wp_id,
   payload,
 }: {
   id: string;
+   wp_id: string;
   payload: {
     userIds: string[];
   };
@@ -60,11 +73,13 @@ export const assignMember = async ({
 
 export const unassignMember = async ({
   id,
+  wp_id,
   payload,
 }: {
   id: string;
+  wp_id: string;
   payload: {
-    userIds: string[];
+    userId: string;
   };
 }) => {
   return await api.delete(`/events/${id}/assignees`, {

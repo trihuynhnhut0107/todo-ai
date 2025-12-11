@@ -1,9 +1,11 @@
 import { DateOrDateTime, DateTimeType, EventItem } from "@howljs/calendar-kit";
+import { User } from "./auth";
+import { EventStatus } from "@/enum/event";
 
-export interface Assignee {
-  email: string;
-  name: string;
-  id: string;
+
+
+
+export interface Assignee extends User {
 }
 
 export interface EventPayload {
@@ -11,7 +13,7 @@ export interface EventPayload {
   description?: string;
   start: string;
   end: string;
-  status?: string;
+  status?: EventStatus;
   location?: string;
   color?: string;
   isAllDay?: boolean;
@@ -29,7 +31,7 @@ export interface Event extends EventItem {
   description: string;
   start: string | DateTimeType | any;
   end: string | DateTimeType | any;
-  status: string;
+  status: EventStatus;
   location: string;
   color: string;
   isAllDay: boolean;
@@ -38,7 +40,9 @@ export interface Event extends EventItem {
   metadata: Record<string, string>;
   workspaceId: string;
   createdById: string;
+  createdBy?: string;
   createdAt: Date | string;
   updatedAt: Date | string;
-  assignees: Assignee[];
+  assigneeIds: string[];
+  assignees?: Assignee[];
 }

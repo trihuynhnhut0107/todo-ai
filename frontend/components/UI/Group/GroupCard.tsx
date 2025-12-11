@@ -1,5 +1,5 @@
-import { View, Text, Pressable } from "react-native";
-import React, { useMemo } from "react";
+import { View, Text } from "react-native";
+import { useMemo } from "react";
 
 import { Link } from "expo-router";
 import { Group } from "@/types/group";

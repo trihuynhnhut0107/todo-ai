@@ -1,8 +1,8 @@
 import useThemeColor from "@/hooks/useThemeColor";
 import { Ionicons } from "@expo/vector-icons";
 import cn from "clsx";
-import React, { use, useState } from "react";
-import { Text, TextInput, TextInputProps, View } from "react-native";
+import { useState } from "react";
+import { TextInput, TextInputProps, View } from "react-native";
 
 const SearchInput = (props: TextInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -10,7 +10,7 @@ const SearchInput = (props: TextInputProps) => {
   return (
     <View
       className={cn(
-        "bg-surface flex-row justify-between items-center p-4 rounded-full shadow-sm",props.className,
+        "bg-surface flex-row justify-between items-center p-2 px-4 rounded-full",props.className,
         isFocused ? "border-primary" : ""
       )}
     >
