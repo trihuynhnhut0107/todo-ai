@@ -35,7 +35,7 @@ export class LangchainService {
 
     // Create agent with tools for event management
     const agentModel = new ChatOpenAI({
-      model: "gpt-4o-mini",
+      model: "gpt-3.5-turbo",
       maxRetries: 2,
       apiKey: process.env.OPENAI_API_KEY,
     });

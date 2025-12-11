@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
-import Markdown from 'react-native-markdown-display'; 
+import { StyleSheet } from 'react-native';
+import Markdown from 'react-native-markdown-display';
 
 
 interface AIMessageRendererProps {
@@ -16,7 +16,7 @@ const AIMessageRenderer: React.FC<AIMessageRendererProps> = ({ content }) => {
       }
       return content;
     } catch (error) {
-      return content;
+      return error instanceof Error ? error.message : String(error);
     }
   }, [content]);
 
@@ -63,7 +63,18 @@ const markdownStyles = StyleSheet.create({
     fontSize: 20,
     lineHeight: 20,
   },
+  ordered_list_icon: {
+    marginLeft: 10,
+    marginRight: 10,
+    fontSize: 16, 
+    fontWeight: 'bold',
+    lineHeight: 20, 
+    color: '#333',
+  },
   list_item_content: {
+    flex: 1,
+  },
+  ordered_list_content: {
     flex: 1,
   },
   hr: {

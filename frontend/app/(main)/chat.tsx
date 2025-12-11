@@ -1,41 +1,39 @@
 import BubbleMessage from "@/components/UI/Chat/BubbleMessage";
 import TypingBubble from "@/components/UI/Chat/TypingBubble";
-import {
-  getAIMessage,
-  getAIMessage2,
-  getCachedSession,
-  getOrCreateSession
-} from "@/services/chat";
+import { createSession, getAIMessage2 } from "@/services/chat";
 import useAuthStore from "@/store/auth.store";
 import { useMessageStore } from "@/store/message.store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { Link, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Keyboard,
   KeyboardAvoidingView,
-  Platform, // Thêm StatusBar
-  ScrollView, // Thêm SafeAreaView
+  Platform,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  useColorScheme,
   View,
 } from "react-native";
-
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,
 } from "expo-speech-recognition";
-import { set } from "date-fns";
+
 
 const ChatScreen = () => {
   const inputRef = React.useRef<TextInput>(null);
+  const flatListRef = useRef<FlatList>(null);
   const [isResponding, setIsResponding] = useState(false);
   const [message, setMessage] = useState("");
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const user = useAuthStore((state) => state.user);
 
@@ -44,6 +42,9 @@ const ChatScreen = () => {
 
   const [recognizing, setRecognizing] = useState(false);
   const [transcript, setTranscript] = useState("");
+
+  const theme = useColorScheme();
+  const { query } = useLocalSearchParams<{ query?: string }>();
 
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", () => {});
@@ -55,37 +56,37 @@ const ChatScreen = () => {
   }, []);
 
   useEffect(() => {
-    let mounted = true;
     async function initSession() {
       if (!user?.id) return;
       console.log("Initializing chat session for user:", user.id);
-      const cached = getCachedSession();
-      if (cached && cached.userId === user.id) {
-        console.log("Using cached chat session:", cached);
-        return;
-      }
       try {
-        const session = await getOrCreateSession(user.id);
+        const session = await createSession(user.id);
+        setSessionId(session?.id || null);
         console.log("Created chat session:", session);
       } catch (err) {
         console.warn("Failed to create chat session:", err);
       }
     }
     initSession();
-    return () => {
-      mounted = false;
-    };
   }, [user?.id]);
 
-  const handleSendMessage = () => {
-    if (message.trim() === "") return;
+  const scrollToBottom = () => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToEnd({ animated: true });
+    }
+  };
+
+  const handleSendMessage = (messageText?: string) => {
+    const textToSend = messageText ?? message;
+    if (textToSend.trim() === "" || isResponding) return;
     setIsResponding(true);
-    addMessage(message.trim(), user?.id || null);
+    addMessage(textToSend.trim(), user?.id || null);
+    setTimeout(() => scrollToBottom(), 100);
     getAIMessage2({
-      sessionId: getCachedSession()?.id || "",
+      sessionId: sessionId || "",
       senderId: user?.id || "",
-      content: message.trim(),
-      senderType: "user"
+      content: textToSend.trim(),
+      senderType: "user",
     }).then((response) => {
       console.log("AI response:", response);
       addMessage(response.content, null);
@@ -94,10 +95,16 @@ const ChatScreen = () => {
     setMessage("");
   };
 
-  useSpeechRecognitionEvent("start", () => {setRecognizing(true);setTranscript("");});
-  useSpeechRecognitionEvent("end", () => {setRecognizing(false);setMessage(transcript);});
+  useSpeechRecognitionEvent("start", () => {
+    setRecognizing(true);
+    setTranscript("");
+  });
+  useSpeechRecognitionEvent("end", () => {
+    setRecognizing(false);
+    setMessage(transcript);
+  });
   useSpeechRecognitionEvent("result", (event) => {
-  setTranscript(event.results[0]?.transcript ?? "");
+    setTranscript(event.results[0]?.transcript ?? "");
   });
   useSpeechRecognitionEvent("error", (event) => {
     console.log("Speech error:", event.error, event.message);
@@ -113,9 +120,9 @@ const ChatScreen = () => {
 
     // Start speech recognition
     ExpoSpeechRecognitionModule.start({
-      lang: "vi-VN", 
-      interimResults: true, 
-      continuous: false,  
+      lang: "vi-VN",
+      interimResults: true,
+      continuous: false,
     });
   };
 
@@ -124,21 +131,34 @@ const ChatScreen = () => {
     ExpoSpeechRecognitionModule.stop();
   };
 
+  useEffect(() => {
+    if (query && sessionId) {
+      handleSendMessage(query);
+    }
+  }, [query, sessionId]);
+
   return (
-    <View className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} className="flex-1 bg-background">
       <StatusBar barStyle="light-content" />
       <LinearGradient
-        pointerEvents="none"
-        colors={["rgba(255, 120, 70, 0.5)", "rgba(255, 120, 70, 0.1)"]}
-        style={StyleSheet.absoluteFillObject}
+        colors={
+          theme === "dark"
+            ? ["rgba(5, 12, 156, 0.3)", "rgba(5, 12, 156, 0.05)"] // Navy blue fade
+            : ["rgba(53, 114, 239, 0.5)", "rgba(58, 190, 249, 0.1)"] // Blue to Sea fade
+        }
+        style={StyleSheet.absoluteFill}
         locations={[0, 0.6]}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 0.8 }}
       />
+      {/* Layer 2: Lighter blue glow from top-right */}
       <LinearGradient
-        pointerEvents="none"
-        colors={["rgba(255, 100, 100, 0.3)", "transparent"]}
-        style={StyleSheet.absoluteFillObject}
+        colors={
+          theme === "dark"
+            ? ["rgba(53, 114, 239, 0.2)", "rgba(0, 0, 0, 0)"] // Medium blue fade
+            : ["rgba(58, 190, 249, 0.4)", "rgba(167, 230, 255, 0)"] // Sea to Cold fade
+        }
+        style={StyleSheet.absoluteFill}
         locations={[0, 1]}
         start={{ x: 0.8, y: 0 }}
         end={{ x: 0.5, y: 0.7 }}
@@ -152,12 +172,10 @@ const ChatScreen = () => {
         {/* View này chứa toàn bộ nội dung (header, list, input) */}
         <View className="flex-1 p-5">
           {/* Nền Gradient (vẫn dùng absolute) */}
-
-          {/* Nút Close (vẫn dùng absolute, điều chỉnh top) */}
           <Link
             href={"/"}
             push
-            className="absolute bg-black/20 left-6 rounded-full p-2 z-10 top-10"
+            className="absolute bg-black/20 left-6 rounded-full p-2 z-10 "
           >
             <Ionicons name="close" size={22} color="white" />
           </Link>
@@ -236,16 +254,23 @@ const ChatScreen = () => {
 
           {messages.length > 0 && (
             <FlatList
+              ref={flatListRef}
               data={messages}
               renderItem={({ item }) => (
                 <BubbleMessage author={item.author} message={item.text} />
               )}
               keyExtractor={(_, index) => index.toString()}
-              className="flex-1 mt-24" // SỬA LỖI 3: Thêm flex-1 để lấp đầy không gian
+              className="flex-1 mt-12"
               showsVerticalScrollIndicator={false}
               extraData={isResponding}
               ListFooterComponent={() =>
                 isResponding ? <TypingBubble /> : null
+              }
+              onContentSizeChange={() =>
+                flatListRef.current?.scrollToEnd({ animated: true })
+              }
+              onLayout={() =>
+                flatListRef.current?.scrollToEnd({ animated: true })
               }
             />
           )}
@@ -264,13 +289,30 @@ const ChatScreen = () => {
                 value={message}
                 onChangeText={setMessage}
                 returnKeyType="send"
+                onSubmitEditing={() => handleSendMessage()}
               />
               <TouchableOpacity
-                className="bg-red-500 rounded-full w-10 h-10 items-center justify-center"
+                className={`${
+                  theme === "dark" ? "bg-purple-500" : "bg-blue-500"
+                } rounded-full w-10 h-10 items-center justify-center`}
                 onPress={() => handleSendMessage()}
               >
                 {message.trim() === "" ? (
-                  recognizing ? <Ionicons name="mic-off" size={20} color="white" onPress={handleStop} /> : <Ionicons name="mic" size={20} color="white" onPress={handleStart} />
+                  recognizing ? (
+                    <Ionicons
+                      name="mic-off"
+                      size={20}
+                      color="white"
+                      onPress={handleStop}
+                    />
+                  ) : (
+                    <Ionicons
+                      name="mic"
+                      size={20}
+                      color="white"
+                      onPress={handleStart}
+                    />
+                  )
                 ) : (
                   <Ionicons name="send" size={20} color="white" />
                 )}
@@ -279,7 +321,7 @@ const ChatScreen = () => {
           </View>
         </View>
       </KeyboardAvoidingView>
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -1,10 +1,15 @@
-import { StatusBar, StyleSheet, useColorScheme } from "react-native";
 import useAuthStore from "@/store/auth.store";
-import { Redirect, Stack } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import { Redirect, Stack } from "expo-router";
+import {
+  StatusBar,
+  StyleSheet,
+  useColorScheme
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useNotificationListeners } from "@/hooks/useNotificationListeners";
+
 
 const MainLayout = () => {
   const { isAuthenticated } = useAuthStore();

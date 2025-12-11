@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, useColorScheme } from "react-native";
 import AIMessageRenderer from "./AIMessageRenderer";
 
 type BubbleProps = {
@@ -8,12 +8,13 @@ type BubbleProps = {
 };
 
 const BubbleMessage: React.FC<BubbleProps> = ({ author, message }) => {
+  const  theme  = useColorScheme();
   return (
     <View
       className={`max-w-[70%] mb-3 p-3 rounded-lg ${
         author !== null
-          ? "bg-red-500 self-end rounded-br-none"
-          : "bg-gray-200 self-start rounded-bl-none"
+          ? `${theme === "dark" ? "bg-purple-500" : "bg-blue-500"} self-end rounded-br-none` 
+          : `bg-gray-100 self-start rounded-bl-none`
       }`}
     >
       {author !== null ? (
