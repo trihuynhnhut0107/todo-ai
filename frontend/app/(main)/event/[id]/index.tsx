@@ -16,6 +16,7 @@ import { EventStatus } from "@/enum/event";
 import { ScrollView } from "react-native-gesture-handler";
 import StatusChip from "@/components/UI/Calendar/StatusChip";
 import useThemeColor from "@/hooks/useThemeColor";
+import Map from "@/components/UI/Map";
 
 const EventDetail = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -177,6 +178,7 @@ const EventDetail = () => {
           </View>
         ))}
       </View>
+      <Map/>
 
       {event?.location && (
         <View className="flex flex-row flex-wrap items-center gap-2 rounded-xl bg-surface p-4">
