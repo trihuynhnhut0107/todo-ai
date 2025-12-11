@@ -232,10 +232,12 @@ const Event_form = () => {
               <CustomInput
                 multiline={true}
                 value={field.value}
+                placeholder="Enter address, location..."
                 onChangeText={field.onChange}
               />
             )}
           />
+          <Text className="text-center text-text-tertiary p-1 text-sm">Or pin a location on the map</Text>
           <Controller
             control={control}
             name="coordinates"

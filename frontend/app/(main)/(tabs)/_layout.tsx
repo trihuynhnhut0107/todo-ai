@@ -23,9 +23,7 @@ const TabBarIcon = ({
         <Ionicons name={icon} size={28} color={color.primary} />
       )}
 
-      {/* <Text className={cn("text-xs", focused ? "text-orange-400" : "")}>
-      {title}
-    </Text> */}
+     
     </View>
   );
 };
@@ -42,6 +40,7 @@ const TabLayout = () => {
           backgroundColor: "transparent",
         },
         tabBarStyle: {
+          height:50,
           backgroundColor: color.surface,
           borderTopWidth: 0,
           //   borderRadius: 20,

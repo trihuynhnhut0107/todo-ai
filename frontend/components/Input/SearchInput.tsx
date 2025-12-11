@@ -10,7 +10,7 @@ const SearchInput = (props: TextInputProps) => {
   return (
     <View
       className={cn(
-        "bg-surface flex-row justify-between items-center p-4 rounded-full",props.className,
+        "bg-surface flex-row justify-between items-center p-2 px-4 rounded-full",props.className,
         isFocused ? "border-primary" : ""
       )}
     >
