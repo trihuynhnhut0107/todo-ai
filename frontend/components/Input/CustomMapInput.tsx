@@ -6,12 +6,12 @@ const MAPBOX_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN!;
 
 Mapbox.setAccessToken(MAPBOX_TOKEN);
 
-export interface MapInputProps {
-  coord: number[];
+export interface CustomMapInputProps {
+  coord: number[] | undefined;
   onChange: (coord: number[]) => void;
 }
 
-const MapInput = ({ coord, onChange }: MapInputProps) => {
+const CustomMapInput = ({ coord, onChange }: CustomMapInputProps) => {
   const [markerCoord, setMarkerCoord] = useState(coord);
   const handleMapPress = (feature: any) => {
     const { geometry } = feature;
@@ -30,13 +30,15 @@ const MapInput = ({ coord, onChange }: MapInputProps) => {
       >
         <Mapbox.Camera
           zoomLevel={12}
-          centerCoordinate={coord}
+          centerCoordinate={[106.6297, 10.8231]}
           animationDuration={1000}
         />
 
-        <Mapbox.PointAnnotation id="location-marker" coordinate={markerCoord}>
-          <View style={styles.marker} />
-        </Mapbox.PointAnnotation>
+        {markerCoord && (
+          <Mapbox.PointAnnotation id="location-marker" coordinate={markerCoord}>
+            <View style={styles.marker} />
+          </Mapbox.PointAnnotation>
+        )}
       </Mapbox.MapView>
     </View>
   );
@@ -64,4 +66,4 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 });
-export default MapInput;
+export default CustomMapInput;

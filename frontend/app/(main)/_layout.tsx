@@ -21,7 +21,7 @@ const MainLayout = () => {
   if (!isAuthenticated) return <Redirect href="/sign-in" />;
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-background">
+    <SafeAreaView  className="flex-1 bg-background">
       <StatusBar barStyle="light-content" />
       {/* === PHẦN NỀN "GIẢ LẬP" MỜ NHÒE (MỚI) === */}
       {/* Lớp 1: Vầng sáng cam-đỏ chính */}

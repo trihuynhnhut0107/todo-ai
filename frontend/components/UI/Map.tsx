@@ -13,29 +13,24 @@ export interface MapProps {
 }
 
 export default function Map({ address, coordinate }: MapProps) {
-  const { mutate: getCoordFromAddress } = useCoordFromAddress();
+  const { data: apiCoordinates } = useCoordFromAddress(address || "");
   const [coord, setCoord] = useState([106.6297, 10.8231]);
 
   useEffect(() => {
     if (coordinate && coordinate.length === 2) {
       // If coordinate is provided directly, use it
       setCoord(coordinate as [number, number]);
-    } else if (address) {
+    } else if (
+      apiCoordinates?.features &&
+      apiCoordinates?.features.length > 0
+    ) {
       // If address is provided, geocode it
-      getCoordFromAddress(address, {
-        onSuccess: (data) => {
-          if (data.features && data.features.length > 0) {
-            const firstResult = data.features[0];
-            const { longitude, latitude } = firstResult.properties.coordinates;
-            setCoord([longitude, latitude]);
-          }
-        },
-        onError: (error) => {
-          console.error("Failed to geocode address:", error);
-        },
-      });
+
+      const firstResult = apiCoordinates.features[0];
+      const { longitude, latitude } = firstResult.properties.coordinates;
+      setCoord([longitude, latitude]);
     }
-  }, [address, coordinate]);
+  }, [coordinate, apiCoordinates]);
   return (
     <View style={styles.container}>
       <Mapbox.MapView

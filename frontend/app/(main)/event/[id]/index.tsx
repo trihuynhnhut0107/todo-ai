@@ -178,7 +178,7 @@ const EventDetail = () => {
       </View>
 
       {event?.location && (
-        <View className="rounded-xl flex-1 bg-surface ">
+        <View className="rounded-xl flex-1 bg-surface overflow-hidden">
           <Map address={event.location} />
           <View className="flex flex-row flex-wrap items-center gap-2  p-4">
             <View className="w-full opacity-50 flex-row gap-2 items-center">

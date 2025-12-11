@@ -24,6 +24,7 @@ import {
 import { EventPayload } from "@/types/event";
 import CustomColorPicker from "@/components/Input/CustomColorPicker";
 import CustomTagInput from "@/components/Input/CustomTagInput";
+import CustomMapInput from "@/components/Input/CustomMapInput";
 
 export const schema = z
   .object({
@@ -38,7 +39,7 @@ export const schema = z
     end: z.date({
       required_error: "Please choose end time",
     }),
-
+    coordinates: z.array(z.number()).optional(),
     location: z.string().optional(),
   })
   .refine((data) => data.end > data.start, {
@@ -83,8 +84,9 @@ const Event_form = () => {
         end: new Date(event?.end),
         color: event?.color,
         location: event?.location,
+        coordinates: event?.coordinates
       });
-  }, [event,reset]);
+  }, [event, reset]);
 
   const onSubmit = (data: any) => {
     const payload: EventPayload = {
@@ -222,17 +224,23 @@ const Event_form = () => {
             )}
           />
         </View>
-        <View className="bg-surface rounded-xl p-4">
+        <View className="bg-surface rounded-lg overflow-hidden">
           <Controller
             control={control}
             name="location"
             render={({ field }) => (
               <CustomInput
-                label="Location"
                 multiline={true}
                 value={field.value}
                 onChangeText={field.onChange}
               />
+            )}
+          />
+          <Controller
+            control={control}
+            name="coordinates"
+            render={({ field }) => (
+              <CustomMapInput coord={field.value} onChange={field.onChange} />
             )}
           />
         </View>

@@ -23,7 +23,7 @@ const CustomDateTimePicker = ({
       {/* Button: pick date */}
       <View
         className={cn(
-          "rounded-xl w-full text-base border-2 leading-5 flex-col justify-between items-start  p-2 gap-1",
+          "rounded-xl w-full h-fit text-base border-2 leading-5 flex-col justify-between items-start  p-2 gap-1",
           openDate || openTime ? "border-primary" : "border-border",
           error && "border-red-500"
         )}
