@@ -1,6 +1,6 @@
 import { AntDesign, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { registerForPushNotificationsAsync } from "../../../services/notification";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Modal,
@@ -18,10 +18,16 @@ import useThemeColor from "@/hooks/useThemeColor";
 import CustomInput from "@/components/Input/CustomInput";
 import CustomButton from "@/components/Input/CustomButton";
 import { useUpdateProfile } from "@/query/user.query";
-import {z} from "zod";
+import { z } from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+import { getGreeting } from "@/lib/utils";
+import { FlatList, RefreshControl } from "react-native-gesture-handler";
+import { useUpdateEventStatus, useUserEvents } from "@/query/event.query";
+import EventReminderCard from "@/components/UI/Event/EventReminderCard";
+import EventToDoItem from "@/components/UI/Event/EventToDoItem";
+import { EventStatus } from "@/enum/event";
 
 const profileScheme = z.object({
   name: z.string().min(1, "Please enter your name"),
@@ -47,7 +53,7 @@ const Header = () => {
     if (user) {
       reset({ name: user.name });
     }
-  }, [user,reset]);
+  }, [user, reset]);
   const color = useThemeColor();
 
   const confirmLogout = () => {
@@ -104,6 +110,9 @@ const Header = () => {
           </View>
         </View>
 
+        <Text className="text-4xl font-bold text-white">
+          {getGreeting()}, {user?.name}
+        </Text>
         <View className="bg-surface p-2 rounded-full flex-col gap-2">
           <View className="flex-row items-center gap-2">
             <Ionicons
@@ -161,9 +170,6 @@ const Header = () => {
             </View>
           </Modal>
         </View>
-        <Text className="text-5xl font-bold text-white">
-          Good afternoon, {user?.name}
-        </Text>
       </View>
     </View>
   );
@@ -181,6 +187,14 @@ const SearchBar = () => (
 );
 
 export default function Index() {
+  const { user } = useAuthStore();
+  const {
+    data: events,
+    refetch,
+    isLoading: pendingEvents,
+  } = useUserEvents(user?.id || "");
+  const { mutate: updateStatus, isPending: pendingUpdateStatus } =
+    useUpdateEventStatus();
   const [expoPushToken, setExpoPushToken] = useState("");
   useEffect(() => {
     // Lấy token và lưu lại (ví dụ: gửi lên server)
@@ -195,15 +209,80 @@ export default function Index() {
       }
     });
   }, []);
+
+  const upcomingEventsToday = useMemo(() => {
+    if (!events) return [];
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const res = events
+      ?.filter((event) => {
+        const start = new Date(event.start);
+
+        // Only check if the event is on today's date (local)
+        return start >= todayStart && start <= todayEnd;
+      })
+      ?.filter((event) => {
+        return (
+          event.status !== EventStatus.CANCELLED &&
+          event.status !== EventStatus.COMPLETED
+        );
+      })
+      .sort(
+        (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
+      );
+
+    return res;
+  }, [events]);
+
+  const todoList = useMemo(() => {
+    if (!events) return [];
+
+    const statusOrder = {
+      [EventStatus.IN_PROGRESS]: 0,
+      [EventStatus.SCHEDULED]: 1,
+      [EventStatus.COMPLETED]: 2,
+    } as Record<EventStatus, number>;
+
+    return events
+      .filter((e) => e.status !== EventStatus.CANCELLED)
+      .sort((a, b) => {
+        // First, sort by status
+        const statusDiff = statusOrder[a.status ] - statusOrder[b.status];
+        if (statusDiff !== 0) return statusDiff;
+
+        // If same status, sort by start time (latest to earliest)
+        return new Date(b.start).getTime() - new Date(a.start).getTime();
+      });
+  }, [events]);
+
+  const handleUpdateStatus = (
+    id: string,
+    workspaceId: string,
+    status: EventStatus
+  ) => {
+    updateStatus({ id, workspaceId, payload: { status } });
+  };
   return (
-    <View className="flex-1 -mb-10 p-4 ">
+    <View className="flex-1 -mb-10 p-4">
       <View className="">
         <Header />
         <SearchBar />
       </View>
 
-      <ScrollView className="flex-1 " contentContainerClassName="pb-20">
-        <View className="bg-surface p-4 rounded-xl shadow-sm mb-3 flex-row items-center gap-4">
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={pendingEvents} onRefresh={refetch} />
+        }
+        className="flex-1 "
+        contentContainerClassName="pb-20  gap-3 "
+      >
+        <View className="bg-surface p-4 rounded-xl flex-row items-center gap-4">
           <FontAwesome6
             name="face-smile-beam"
             size={30}
@@ -217,27 +296,18 @@ export default function Index() {
           </View>
         </View>
 
-        <View className="flex-1 bg-surface p-4 rounded-xl shadow-sm mb-3">
-          <Text className="font-semibold text-text opacity-50">Reminder</Text>
-          <Text className="font-bold text-lg text-text mt-2">Học bài</Text>
-          <Text className="text-text opacity-50">06:00 PM</Text>
-          <View className="flex-row gap-2 mt-3">
-            <TouchableOpacity className="flex-row items-center bg-green-100 p-2 rounded-full">
-              <FontAwesome6 name="check-circle" size={12} color="green" />
-              <Text className="text-green-800 ml-1 text-xs font-semibold">
-                Took
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="flex-row items-center bg-yellow-100 p-2 rounded-full">
-              <FontAwesome6 name="clock" size={12} color="#854d0e" />
-              <Text className="text-yellow-800 ml-1 text-xs font-semibold">
-                Snooze
-              </Text>
-            </TouchableOpacity>
-          </View>
+        <View className="gap-2 rounded-xl p-2 bg-surface">
+          <Text className="font-semibold text-text-tertiary">Reminder</Text>
+          <FlatList
+            horizontal
+            data={upcomingEventsToday}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <EventReminderCard event={item} />}
+            ItemSeparatorComponent={() => <View className="w-2" />}
+          />
         </View>
 
-        <View className="flex-1 bg-surface p-4 rounded-xl shadow-sm mb-3">
+        {/* <View className="flex-1 bg-surface p-4 rounded-xl shadow-sm mb-3">
           <Text className="font-semibold text-text opacity-50">
             Appointment
           </Text>
@@ -249,25 +319,14 @@ export default function Index() {
               Get Directions
             </Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
 
-        <View className=" bg-surface p-4 rounded-xl shadow-sm ">
-          <View className="flex-row justify-between items-center">
-            <Text className="text-lg text-text font-bold">To-do list</Text>
-          </View>
-          <View className="mt-4 space-y-3">
-            <View className="flex-row items-center">
-              <View className="w-5 h-5 border-2 border-accent rounded-md mr-3" />
-              <Text className="text-base text-text opacity-50">
-                Schedule blood work
-              </Text>
-            </View>
-            <View className="flex-row items-center">
-              <View className="w-5 h-5 border-2 border-accent rounded-md mr-3" />
-              <Text className="text-base text-text opacity-50">
-                Pick up medication
-              </Text>
-            </View>
+        <View className="gap-2 bg-surface p-2 rounded-xl">
+          <Text className="text-text-tertiary font-semibold">To-do list</Text>
+          <View className="gap-3 flex-col">
+            {todoList?.map((e, idx) => (
+              <EventToDoItem key={e.id} event={e} onChange={handleUpdateStatus} />
+            ))}
           </View>
         </View>
       </ScrollView>
