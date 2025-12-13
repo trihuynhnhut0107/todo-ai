@@ -6,6 +6,7 @@ import { Workspace } from "./entities/workspace.entity";
 import * as dotenv from "dotenv";
 import { Message } from "./entities/message.entity";
 import { Session } from "./entities/session.entity";
+import { Reminder } from "./entities/reminder.entity";
 
 dotenv.config();
 
@@ -18,10 +19,10 @@ export const AppDataSource = new DataSource({
   username: DB_USERNAME,
   password: DB_PASSWORD,
   database: DB_DATABASE,
-  synchronize: true,
+  synchronize: false,
   //logging logs sql command on the treminal
   logging: false,
-  entities: [User, Event, Workspace, Message, Session],
+  entities: [User, Event, Workspace, Message, Session, Reminder],
   migrations: [__dirname + "/database/migrations/*.ts"],
   subscribers: [],
 });

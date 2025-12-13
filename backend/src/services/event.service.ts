@@ -9,10 +9,8 @@ import {
   EventResponse,
   EventQueryDto,
 } from "../dtos/event.dto";
-import {
-  scheduleEventNotification,
-  cancelEventNotification,
-} from "./notification-queue.service";
+import { reminderService } from "./reminder.service";
+import { cancelEventNotification } from "./notification-queue.service";
 import {
   validateAndNormalizeLocation,
   validateTravelLogistics,
@@ -32,10 +30,7 @@ export class EventService {
     createDto: CreateEventDto
   ): Promise<EventResponse> {
     // Verify workspace exists and user has access
-    await this.verifyWorkspaceAccess(
-      createDto.workspaceId,
-      userId
-    );
+    await this.verifyWorkspaceAccess(createDto.workspaceId, userId);
 
     // Validate dates
     const start = new Date(createDto.start);
@@ -130,7 +125,8 @@ export class EventService {
     const savedEvent = await this.eventRepository.save(event);
 
     // Schedule notification for the event (15 minutes before)
-    await scheduleEventNotification(savedEvent.id, savedEvent.start);
+    // await scheduleEventNotification(savedEvent.id, savedEvent.start);
+    await reminderService.scheduleDefaultReminder(savedEvent);
 
     return this.formatEventResponse(savedEvent);
   }
@@ -271,7 +267,10 @@ export class EventService {
       }
 
       // If location or coordinates are being updated with valid data
-      if (updateDto.location || (updateDto.lat !== undefined && updateDto.lng !== undefined)) {
+      if (
+        updateDto.location ||
+        (updateDto.lat !== undefined && updateDto.lng !== undefined)
+      ) {
         const validatedLocation = await validateAndNormalizeLocation({
           location: updateDto.location,
           lat: updateDto.lat,
@@ -334,7 +333,9 @@ export class EventService {
 
     // Reschedule notification if start time changed or event was updated
     if (updatedEvent.status !== "cancelled") {
-      await scheduleEventNotification(updatedEvent.id, updatedEvent.start);
+      // await scheduleEventNotification(updatedEvent.id, updatedEvent.start);
+      // Logic inside scheduleDefaultReminder handles updating the time
+      await reminderService.scheduleDefaultReminder(updatedEvent);
     } else {
       // Cancel notification if event is cancelled
       await cancelEventNotification(updatedEvent.id);

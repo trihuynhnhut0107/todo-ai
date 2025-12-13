@@ -31,6 +31,12 @@ export class User {
   @OneToMany(() => Session, (session) => session.user)
   sessions: Session[];
 
+  @Column({ type: "text", nullable: true })
+  currentLat?: string;
+
+  @Column({ type: "text", nullable: true })
+  currentLng?: string;
+
   @CreateDateColumn()
   createdAt!: Date;
 
