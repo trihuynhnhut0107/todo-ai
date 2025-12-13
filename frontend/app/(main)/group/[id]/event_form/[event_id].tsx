@@ -84,7 +84,10 @@ const Event_form = () => {
         end: new Date(event?.end),
         color: event?.color,
         location: event?.location,
-        coordinates: event?.coordinates
+        ...(event?.lat &&
+          event?.lng && {
+            coordinates: [parseFloat(event.lng), parseFloat(event.lat)],
+          }),
       });
   }, [event, reset]);
 
@@ -97,6 +100,8 @@ const Event_form = () => {
       end: data.end,
       color: data.color,
       location: data.location,
+      lng: data.coordinates?.at(0),
+      lat: data.coordinates?.at(1),
       // workspaceId: id
     };
     if (isEditmode) {
@@ -237,7 +242,9 @@ const Event_form = () => {
               />
             )}
           />
-          <Text className="text-center text-text-tertiary p-1 text-sm">Or pin a location on the map</Text>
+          <Text className="text-center text-text-tertiary p-1 text-sm">
+            Or pin a location on the map
+          </Text>
           <Controller
             control={control}
             name="coordinates"

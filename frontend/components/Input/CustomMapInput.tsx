@@ -1,10 +1,6 @@
-import Mapbox from "@rnmapbox/maps";
+import MapView, { Marker, PROVIDER_GOOGLE, MapPressEvent } from "react-native-maps";
 import { useState } from "react";
 import { View, StyleSheet } from "react-native";
-
-const MAPBOX_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN!;
-
-Mapbox.setAccessToken(MAPBOX_TOKEN);
 
 export interface CustomMapInputProps {
   coord: number[] | undefined;
@@ -12,34 +8,37 @@ export interface CustomMapInputProps {
 }
 
 const CustomMapInput = ({ coord, onChange }: CustomMapInputProps) => {
-  const [markerCoord, setMarkerCoord] = useState(coord);
-  const handleMapPress = (feature: any) => {
-    const { geometry } = feature;
-    if (geometry && geometry.coordinates) {
-      const newCoord = geometry.coordinates;
-      setMarkerCoord(newCoord);
-      onChange(newCoord);
-    }
+  // Convert from Mapbox format [lng, lat] to react-native-maps format
+  const initialCoord = coord 
+    ? { latitude: coord[1], longitude: coord[0] }
+    : { latitude: 10.8231, longitude: 106.6297 };
+    
+  const [markerCoord, setMarkerCoord] = useState(initialCoord);
+
+  const handleMapPress = (event: MapPressEvent) => {
+    const { coordinate } = event.nativeEvent;
+    setMarkerCoord(coordinate);
+    // Convert back to Mapbox format [lng, lat] for your onChange
+    onChange([coordinate.longitude, coordinate.latitude]);
   };
+
   return (
     <View style={styles.container}>
-      <Mapbox.MapView
+      <MapView
+        provider={PROVIDER_GOOGLE}
         style={styles.map}
-        styleURL="mapbox://styles/mapbox/streets-v12"
+        initialRegion={{
+          latitude: 10.8231,
+          longitude: 106.6297,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        }}
         onPress={handleMapPress}
       >
-        <Mapbox.Camera
-          zoomLevel={12}
-          centerCoordinate={[106.6297, 10.8231]}
-          animationDuration={1000}
-        />
-
-        {markerCoord && (
-          <Mapbox.PointAnnotation id="location-marker" coordinate={markerCoord}>
-            <View style={styles.marker} />
-          </Mapbox.PointAnnotation>
-        )}
-      </Mapbox.MapView>
+        <Marker coordinate={markerCoord}>
+          <View style={styles.marker} />
+        </Marker>
+      </MapView>
     </View>
   );
 };
@@ -66,4 +65,5 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 });
+
 export default CustomMapInput;

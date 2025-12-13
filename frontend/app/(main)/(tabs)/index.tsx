@@ -28,7 +28,8 @@ import { useUpdateEventStatus, useUserEvents } from "@/query/event.query";
 import EventReminderCard from "@/components/UI/Event/EventReminderCard";
 import EventToDoItem from "@/components/UI/Event/EventToDoItem";
 import { EventStatus } from "@/enum/event";
-
+import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import Map from "@/components/UI/Map";
 const profileScheme = z.object({
   name: z.string().min(1, "Please enter your name"),
 });
@@ -252,7 +253,7 @@ export default function Index() {
       .filter((e) => e.status !== EventStatus.CANCELLED)
       .sort((a, b) => {
         // First, sort by status
-        const statusDiff = statusOrder[a.status ] - statusOrder[b.status];
+        const statusDiff = statusOrder[a.status] - statusOrder[b.status];
         if (statusDiff !== 0) return statusDiff;
 
         // If same status, sort by start time (latest to earliest)
@@ -296,6 +297,10 @@ export default function Index() {
           </View>
         </View>
 
+        <View className="h-[300px] w-full">
+         <Map coordinates={[]}/>
+        </View>
+
         <View className="gap-2 rounded-xl p-2 bg-surface">
           <Text className="font-semibold text-text-tertiary">Reminder</Text>
           <FlatList
@@ -325,7 +330,11 @@ export default function Index() {
           <Text className="text-text-tertiary font-semibold">To-do list</Text>
           <View className="gap-3 flex-col">
             {todoList?.map((e, idx) => (
-              <EventToDoItem key={e.id} event={e} onChange={handleUpdateStatus} />
+              <EventToDoItem
+                key={e.id}
+                event={e}
+                onChange={handleUpdateStatus}
+              />
             ))}
           </View>
         </View>
