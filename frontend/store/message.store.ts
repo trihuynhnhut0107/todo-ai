@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 // 1. Cập nhật Interface cho Message, ID bây giờ là number
 interface Message {
-  id: number; // Đổi từ string sang number
+  id: number;
   text: string;
   author: string | null | undefined;
   timestamp: number;
@@ -14,9 +14,10 @@ interface MessageState {
   isLoading: boolean;
   error: string | null;
   nextId: number; // Biến đếm ID
-  
+
   // Action bây giờ nhận text và author, không nhận cả object Message
   addMessage: (text: string, author: string | null | undefined) => void;
+  resetMessages: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
 }
@@ -46,9 +47,12 @@ export const useMessageStore = create<MessageState>((set) => ({
       };
     }),
 
+  resetMessages: () =>
+    set({ messages: [], nextId: 1 }), // Reset cả messages và nextId
+  
   setLoading: (loading) =>
     set({ isLoading: loading }),
-    
+
   setError: (error) =>
     set({ error: error }),
 }));

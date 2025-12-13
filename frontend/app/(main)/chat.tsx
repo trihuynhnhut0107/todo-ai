@@ -6,7 +6,7 @@ import { useMessageStore } from "@/store/message.store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Keyboard,
@@ -39,6 +39,7 @@ const ChatScreen = () => {
 
   const messages = useMessageStore((state) => state.messages);
   const addMessage = useMessageStore((state) => state.addMessage);
+  const resetMessages = useMessageStore((state) => state.resetMessages);
 
   const [recognizing, setRecognizing] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -59,6 +60,7 @@ const ChatScreen = () => {
     async function initSession() {
       if (!user?.id) return;
       console.log("Initializing chat session for user:", user.id);
+      resetMessages();
       try {
         const session = await createSession(user.id);
         setSessionId(session?.id || null);
@@ -68,7 +70,7 @@ const ChatScreen = () => {
       }
     }
     initSession();
-  }, [user?.id]);
+  }, [user?.id, resetMessages]);
 
   const scrollToBottom = () => {
     if (flatListRef.current) {
@@ -76,24 +78,27 @@ const ChatScreen = () => {
     }
   };
 
-  const handleSendMessage = (messageText?: string) => {
-    const textToSend = messageText ?? message;
-    if (textToSend.trim() === "" || isResponding) return;
-    setIsResponding(true);
-    addMessage(textToSend.trim(), user?.id || null);
-    setTimeout(() => scrollToBottom(), 100);
-    getAIMessage2({
-      sessionId: sessionId || "",
-      senderId: user?.id || "",
-      content: textToSend.trim(),
-      senderType: "user",
-    }).then((response) => {
-      console.log("AI response:", response);
-      addMessage(response.content, null);
-      setIsResponding(false);
-    });
-    setMessage("");
-  };
+  const handleSendMessage = useCallback(
+    (messageText?: string) => {
+      const textToSend = messageText ?? message;
+      if (textToSend.trim() === "" || isResponding) return;
+      setIsResponding(true);
+      addMessage(textToSend.trim(), user?.id || null);
+      setTimeout(() => scrollToBottom(), 100);
+      getAIMessage2({
+        sessionId: sessionId || "",
+        senderId: user?.id || "",
+        content: textToSend.trim(),
+        senderType: "user",
+      }).then((response) => {
+        console.log("AI response:", response);
+        addMessage(response.content, null);
+        setIsResponding(false);
+      });
+      setMessage("");
+    },
+    [message, isResponding, user?.id, sessionId, addMessage]
+  );
 
   useSpeechRecognitionEvent("start", () => {
     setRecognizing(true);
@@ -135,7 +140,7 @@ const ChatScreen = () => {
     if (query && sessionId) {
       handleSendMessage(query);
     }
-  }, [query, sessionId]);
+  }, [query, sessionId, handleSendMessage]);
 
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-background">
@@ -184,11 +189,22 @@ const ChatScreen = () => {
             <View className="flex-1">
               <View className="items-center justify-center mt-12 mb-4">
                 <View className="bg-white rounded-full w-14 h-14 items-center justify-center mb-3 shadow-md">
-                  <Ionicons name="sparkles-sharp" size={32} color="#FF6347" />
+                  <Ionicons
+                    name="sparkles-sharp"
+                    size={32}
+                    color={theme === "dark" ? "#a78bfa" : "#3b82f6"} // #a78bfa = purple-400, #3b82f6 = blue-500
+                  />
                 </View>
                 <Text className="text-4xl font-bold text-white">Hey, Eva!</Text>
                 <Text className="text-4xl font-bold text-white ">
-                  How can I <Text className="text-red-500">help you?</Text>
+                  How can I{" "}
+                  <Text
+                    className={`${
+                      theme === "dark" ? "text-purple-500" : "text-blue-500"
+                    }`}
+                  >
+                    help you?
+                  </Text>
                 </Text>
               </View>
 
