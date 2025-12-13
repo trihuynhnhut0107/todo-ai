@@ -13,7 +13,7 @@ export interface MapMarker {
 }
 
 export interface MapProps {
-  coordinates: Array<MapMarker>;
+  coordinates: MapMarker[];
   displayUser?: boolean;
 }
 

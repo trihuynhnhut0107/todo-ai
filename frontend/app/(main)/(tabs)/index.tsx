@@ -28,7 +28,6 @@ import { useUpdateEventStatus, useUserEvents } from "@/query/event.query";
 import EventReminderCard from "@/components/UI/Event/EventReminderCard";
 import EventToDoItem from "@/components/UI/Event/EventToDoItem";
 import { EventStatus } from "@/enum/event";
-import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 import Map from "@/components/UI/Map";
 const profileScheme = z.object({
   name: z.string().min(1, "Please enter your name"),
@@ -190,7 +189,7 @@ export default function Index() {
     refetch,
     isLoading: pendingEvents,
   } = useUserEvents(user?.id || "");
-  const { mutate: updateStatus, isPending: pendingUpdateStatus } =
+  const { mutate: updateStatus } =
     useUpdateEventStatus();
   //event time filter
   const [open, setOpen] = useState(false);

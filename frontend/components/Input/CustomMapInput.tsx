@@ -3,7 +3,7 @@ import MapView, {
   PROVIDER_GOOGLE,
   MapPressEvent,
 } from "react-native-maps";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { useLocation } from "@/hooks/useLocation";
 import { Ionicons } from "@expo/vector-icons";

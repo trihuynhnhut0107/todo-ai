@@ -1,8 +1,8 @@
-import { Pressable, View, Text } from "react-native";
-import { Entypo, FontAwesome, FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { Pressable, View } from "react-native";
+import { Entypo, FontAwesome5 } from "@expo/vector-icons";
 import { EventStatus } from "@/enum/event";
 import { getStatusStyles } from "@/lib/utils";
-
+import cn from "clsx";
 interface CustomEventCheckboxProps {
   status: EventStatus;
   onStatusChange: (status: EventStatus) => void;
@@ -43,9 +43,10 @@ const CustomEventCheckbox = ({
       className="flex-row items-center gap-2"
     >
       <View
-        className={`w-6 h-6 border-2 rounded-md items-center justify-center ${getStatusStyles(
-          status
-        )}`}
+        className={cn(
+          `w-6 h-6 border-2 rounded-md items-center justify-center`,
+          getStatusStyles(status)
+        )}
       >
         {getIcon()}
       </View>
