@@ -11,24 +11,25 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We need your location to show nearby events",
         "NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to use speech recognition.",
         "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone."
       },
-      "bundleIdentifier": "com.anonymous.todoai"
+      "bundleIdentifier": "com.anonymo  us.todoai"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "foregroundImage": "./assets/images/Logo.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "googleServicesFile": "./android/app/google-services.json",
-      "useNextNotificationsApi": true,
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.todoai",
       "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
         "RECORD_AUDIO",
         "android.permission.RECORD_AUDIO"
       ]
@@ -43,7 +44,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/Logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -56,7 +57,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/icon.png",
+          "icon": "./assets/images/Logo.png",
           "color": "#ffffff",
           "defaultSound": true,
           "sounds": [
@@ -69,12 +70,6 @@
         {
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone.",
           "speechRecognitionPermission": "Allow $(PRODUCT_NAME) to use speech recognition."
-        }
-      ],
-      [
-        "@rnmapbox/maps",
-        {
-          "RNMapboxMapsDownloadToken": "EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN"
         }
       ]
     ],

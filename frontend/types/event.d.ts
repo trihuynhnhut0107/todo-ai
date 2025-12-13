@@ -21,6 +21,8 @@ export interface EventPayload {
   tags?: string[];
   metadata?: Record<string, string>;
 
+  lat?:string;
+  lng?:string;
   workspaceId?: string;
   assigneeIds?: string[];
 }
@@ -45,4 +47,6 @@ export interface Event extends EventItem {
   updatedAt: Date | string;
   assigneeIds: string[];
   assignees?: Assignee[];
+  lat?:string;
+  lng?:string;
 }

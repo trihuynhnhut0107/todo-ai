@@ -75,10 +75,10 @@ const SignIn = () => {
       />
 
       <Text className="base-regular text-center text-text-tertiary">
-        {"Don't have an account?"}
+        {"Don't have an account? "}
         <Link
           href={"/sign-up"}
-          className="base-bold text-primary text-orange-500"
+          className="base-bold text-primary font-bold"
         >
           Sign up
         </Link>
