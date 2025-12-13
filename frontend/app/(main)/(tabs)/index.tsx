@@ -38,6 +38,7 @@ const Header = () => {
   const queryClient = useQueryClient();
   const { user, logout } = useAuthStore();
   const [isEdit, setEdit] = useState(false);
+
   const { mutate: update, isPending: pendingUpdate } = useUpdateProfile();
   const {
     control,
@@ -111,9 +112,6 @@ const Header = () => {
           </View>
         </View>
 
-        <Text className="text-4xl font-bold text-white">
-          {getGreeting()}, {user?.name}
-        </Text>
         <View className="bg-surface p-2 rounded-full flex-col gap-2">
           <View className="flex-row items-center gap-2">
             <Ionicons
@@ -175,17 +173,15 @@ const Header = () => {
     </View>
   );
 };
-const SearchBar = () => (
-  <View className="my-2">
-    <SearchInput
-      placeholder="Ask me about anything!"
-      onSubmitEditing={(e) => {
-        const searchText = e.nativeEvent.text;
-        router.push(`/(main)/chat?query=${encodeURIComponent(searchText)}`);
-      }}
-    />
-  </View>
-);
+
+export const EVENT_TIME_FILTERS = {
+  TODAY: "today",
+  THIS_WEEK: "this week",
+  THIS_MONTH: "this month",
+} as const;
+
+export type EventTimeFilter =
+  (typeof EVENT_TIME_FILTERS)[keyof typeof EVENT_TIME_FILTERS];
 
 export default function Index() {
   const { user } = useAuthStore();
@@ -196,6 +192,10 @@ export default function Index() {
   } = useUserEvents(user?.id || "");
   const { mutate: updateStatus, isPending: pendingUpdateStatus } =
     useUpdateEventStatus();
+  //event time filter
+  const [open, setOpen] = useState(false);
+  const [filter, setFilter] = useState<EventTimeFilter>("today");
+
   const [expoPushToken, setExpoPushToken] = useState("");
   useEffect(() => {
     // Lấy token và lưu lại (ví dụ: gửi lên server)
@@ -261,6 +261,64 @@ export default function Index() {
       });
   }, [events]);
 
+  const eventLocations = useMemo(() => {
+    if (!events) return [];
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    return events
+      .filter((event) => {
+        // Filter out events without coordinates
+        if (!event.lat || !event.lng) return false;
+
+        const eventStart = new Date(event.start);
+        const eventEnd = new Date(event.end);
+
+        // Filter out past events (event has completely ended)
+        if (eventEnd < now) return false;
+
+        switch (filter) {
+          case EVENT_TIME_FILTERS.TODAY:
+            const eventDate = new Date(
+              eventStart.getFullYear(),
+              eventStart.getMonth(),
+              eventStart.getDate()
+            );
+            return eventDate.getTime() === today.getTime();
+
+          case EVENT_TIME_FILTERS.THIS_WEEK:
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay());
+
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            endOfWeek.setHours(23, 59, 59, 999);
+
+            return eventStart >= startOfWeek && eventStart <= endOfWeek;
+
+          case EVENT_TIME_FILTERS.THIS_MONTH:
+            return (
+              eventStart.getMonth() === now.getMonth() &&
+              eventStart.getFullYear() === now.getFullYear()
+            );
+
+          default:
+            return true;
+        }
+      })
+      .map((event) => ({
+        id: event.id,
+        latitude: parseFloat(event.lat!),
+        longitude: parseFloat(event.lng!),
+        title: event.name,
+        description:
+          format(event.start, "HH:mm a") + " - " + format(event.end, "HH:mm a"),
+        color: event.color,
+        // Add any other properties you need for the map
+      }));
+  }, [events, filter]);
+
   const handleUpdateStatus = (
     id: string,
     workspaceId: string,
@@ -270,11 +328,7 @@ export default function Index() {
   };
   return (
     <View className="flex-1 -mb-10 p-4">
-      <View className="">
-        <Header />
-        <SearchBar />
-      </View>
-
+      <Header />
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -283,6 +337,18 @@ export default function Index() {
         className="flex-1 "
         contentContainerClassName="pb-20  gap-3 "
       >
+        <Text className="text-4xl font-bold text-white my-4">
+          {getGreeting()}, {user?.name}
+        </Text>
+
+        <SearchInput
+          placeholder="Ask me about anything!"
+          onSubmitEditing={(e) => {
+            const searchText = e.nativeEvent.text;
+            router.push(`/(main)/chat?query=${encodeURIComponent(searchText)}`);
+          }}
+        />
+
         <View className="bg-surface p-4 rounded-xl flex-row items-center gap-4">
           <FontAwesome6
             name="face-smile-beam"
@@ -297,10 +363,6 @@ export default function Index() {
           </View>
         </View>
 
-        <View className="h-[300px] w-full">
-         <Map coordinates={[]}/>
-        </View>
-
         <View className="gap-2 rounded-xl p-2 bg-surface">
           <Text className="font-semibold text-text-tertiary">Reminder</Text>
           <FlatList
@@ -312,6 +374,54 @@ export default function Index() {
           />
         </View>
 
+        <View className=" w-full rounded-xl bg-surface overflow-hidden gap-2  ">
+          <View className="flex-row justify-between items-center p-2">
+            <Text className="font-semibold text-text-tertiary">
+              Event locations
+            </Text>
+            <TouchableOpacity
+              onPress={() => setOpen(true)}
+              className="rounded-lg p-1 px-2 bg-accent"
+            >
+              <Text className="text-text font-semibold">{filter}</Text>
+            </TouchableOpacity>
+            <Modal visible={open} animationType="fade" transparent>
+              {/* backdrop */}
+              <TouchableOpacity
+                className="flex-1 bg-black/40"
+                activeOpacity={1}
+                onPress={() => setOpen(false)}
+              />
+
+              {/* color picker panel */}
+              <View className="absolute left-6 right-6 bottom-6 rounded-2xl p-4 shadow-xl gap-2 bg-card border-2 border-border">
+                {Object.entries(EVENT_TIME_FILTERS).map(([key, value]) => (
+                  <TouchableOpacity
+                    key={value}
+                    onPress={() => setFilter(value)}
+                    className={`p-3 rounded-lg ${
+                      filter === value ? "bg-primary" : "bg-surface"
+                    }`}
+                  >
+                    <Text
+                      className={`text-center font-semibold ${
+                        filter === value ? "text-white" : "text-text"
+                      }`}
+                    >
+                      {key
+                        .replace(/_/g, " ")
+                        .toLowerCase()
+                        .replace(/\b\w/g, (l) => l.toUpperCase())}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </Modal>
+          </View>
+          <View className="h-[300px] w-full">
+            <Map coordinates={eventLocations}  displayUser/>
+          </View>
+        </View>
         {/* <View className="flex-1 bg-surface p-4 rounded-xl shadow-sm mb-3">
           <Text className="font-semibold text-text opacity-50">
             Appointment

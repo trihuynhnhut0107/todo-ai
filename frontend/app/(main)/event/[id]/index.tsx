@@ -180,7 +180,17 @@ const EventDetail = () => {
       {event?.location ? (
         <View className="rounded-xl flex-1 bg-surface overflow-hidden">
           {event?.lat && event?.lng ? (
-            <Map coordinate={[parseFloat(event.lng), parseFloat(event.lat)]} />
+            <Map
+              coordinates={[
+                {
+                  id: id,
+                  title: event.name,
+                  color:event.color,
+                  latitude: parseFloat(event.lat),
+                  longitude: parseFloat(event.lng),
+                },
+              ]}
+            />
           ) : null}
           <View className="flex flex-row flex-wrap items-center gap-2  p-4">
             <View className="w-full opacity-50 flex-row gap-2 items-center">
