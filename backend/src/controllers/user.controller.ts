@@ -14,6 +14,7 @@ import {
   SuccessResponse,
   Tags,
 } from "tsoa";
+import { User } from "../entities/user.entity";
 import { UserService } from "../services/user.service";
 import {
   UpdateUserDto,
@@ -23,6 +24,7 @@ import {
 } from "../dtos/user.dto";
 import { ApiResponse, ErrorResponse } from "../types/api-response.types";
 import * as express from "express";
+import { Request as ExpressRequest } from "express";
 
 @Route("api/users")
 @Tags("Users")
@@ -157,5 +159,20 @@ export class UserController extends Controller {
       data: null,
       timestamp: new Date().toISOString(),
     };
+  }
+
+  @Security("jwt")
+  @Post("location")
+  @SuccessResponse("200", "Location updated")
+  public async updateLocation(
+    @Request() request: ExpressRequest,
+    @Body() body: { lat: number; lng: number }
+  ): Promise<{ message: string }> {
+    const userId = request.user?.userId;
+    if (!userId) {
+      throw new Error("User not found in request");
+    }
+    await this.userService.updateLocation(userId, body.lat, body.lng);
+    return { message: "Location updated and reminders checked" };
   }
 }

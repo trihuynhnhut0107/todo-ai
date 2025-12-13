@@ -1,11 +1,13 @@
 import { AppDataSource } from "../data-source";
 import { User } from "../entities/user.entity";
+import { mapboxService } from "./mapbox.service";
+import { reminderService } from "./reminder.service";
 import {
   UpdateUserDto,
   UserResponseDto,
   UsersListResponseDto,
 } from "../dtos/user.dto";
-import { NotFoundError, ConflictError } from "../utils/errors";
+import { NotFoundError, ConflictError, BadRequestError } from "../utils/errors";
 
 export class UserService {
   private userRepository = AppDataSource.getRepository(User);
@@ -130,6 +132,35 @@ export class UserService {
 
     user.pushToken = pushToken;
     await this.userRepository.save(user);
+  }
+
+  async updateLocation(
+    userId: string,
+    latitude: number,
+    longitude: number
+  ): Promise<void> {
+    // 1. Validate coordinates with Mapbox
+    try {
+      await mapboxService.reverseGeocode(longitude, latitude);
+    } catch (error) {
+      console.error("Mapbox validation error:", error);
+      throw new BadRequestError(
+        "Invalid coordinates or map service unavailable"
+      );
+    }
+
+    // 2. Update User entity
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    user.currentLat = latitude.toString();
+    user.currentLng = longitude.toString();
+    await this.userRepository.save(user);
+
+    // 3. Trigger reminder check
+    await reminderService.checkAndPrepareReminders(userId, latitude, longitude);
   }
 
   /**
