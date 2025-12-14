@@ -177,9 +177,21 @@ const EventDetail = () => {
         ))}
       </View>
 
-      {event?.location && (
+      {event?.location ? (
         <View className="rounded-xl flex-1 bg-surface overflow-hidden">
-          <Map address={event.location} />
+          {event?.lat && event?.lng ? (
+            <Map
+              coordinates={[
+                {
+                  id: id,
+                  title: event.name,
+                  color:event.color,
+                  latitude: parseFloat(event.lat),
+                  longitude: parseFloat(event.lng),
+                },
+              ]}
+            />
+          ) : null}
           <View className="flex flex-row flex-wrap items-center gap-2  p-4">
             <View className="w-full opacity-50 flex-row gap-2 items-center">
               <Feather
@@ -195,7 +207,7 @@ const EventDetail = () => {
             </Text>
           </View>
         </View>
-      )}
+      ) : null}
       {user?.id === event?.createdById && (
         <>
           <CustomButton

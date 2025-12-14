@@ -1,4 +1,4 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text } from "react-native";
 import { Event } from "@/types/event";
 import { EventStatus } from "@/enum/event";
 import CustomEventCheckbox from "@/components/Input/CustomEventCheckbox";

@@ -39,7 +39,12 @@ export const schema = z
     end: z.date({
       required_error: "Please choose end time",
     }),
-    coordinates: z.array(z.number()).optional(),
+    coordinates: z
+      .object({
+        lat: z.number(),
+        lng: z.number(),
+      })
+      .optional(),
     location: z.string().optional(),
   })
   .refine((data) => data.end > data.start, {
@@ -77,14 +82,20 @@ const Event_form = () => {
   useEffect(() => {
     if (event)
       reset({
-        name: event?.name,
+        name: event?.name ||"",
         tags: event?.tags ?? [],
-        description: event?.description,
+        description: event?.description||"",
         start: new Date(event?.start),
         end: new Date(event?.end),
         color: event?.color,
         location: event?.location,
-        coordinates: event?.coordinates
+        ...(event?.lat &&
+          event?.lng && {
+            coordinates: {
+              lng: parseFloat(event.lng),
+              lat: parseFloat(event.lat),
+            },
+          }),
       });
   }, [event, reset]);
 
@@ -97,6 +108,8 @@ const Event_form = () => {
       end: data.end,
       color: data.color,
       location: data.location,
+      lng: data.coordinates?.lng,
+      lat: data.coordinates?.lat,
       // workspaceId: id
     };
     if (isEditmode) {
@@ -237,7 +250,9 @@ const Event_form = () => {
               />
             )}
           />
-          <Text className="text-center text-text-tertiary p-1 text-sm">Or pin a location on the map</Text>
+          <Text className="text-center text-text-tertiary p-1 text-sm">
+            Or pin a location on the map
+          </Text>
           <Controller
             control={control}
             name="coordinates"
