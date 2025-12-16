@@ -14,10 +14,14 @@ import { LangchainService } from "./langchain.service";
 import { SenderType } from "../enums/role.enum";
 import { AIMessage, HumanMessage } from "@langchain/core/messages";
 
+import { PromptService } from "./prompt.service";
+import { PromptType } from "../entities/ai-prompt.entity";
+
 export class ChatService {
   constructor(
     private langgraphService: LanggraphService,
-    private langchainService?: LangchainService
+    private langchainService?: LangchainService,
+    private promptService?: PromptService
   ) {}
   private messageRepository = AppDataSource.getRepository(Message);
   private sessionRepository = AppDataSource.getRepository(Session);
@@ -36,6 +40,16 @@ export class ChatService {
     const session = this.sessionRepository.create({
       userId: createSessionDto.userId,
     });
+
+    // Fetch latest system prompt and attach to session
+    if (this.promptService) {
+      const latestPrompt = await this.promptService.getLatestPrompt(
+        PromptType.SYSTEM
+      );
+      if (latestPrompt) {
+        session.promptId = latestPrompt.id;
+      }
+    }
 
     const savedSession = await this.sessionRepository.save(session);
 
@@ -446,10 +460,26 @@ export class ChatService {
       })
       .filter((msg): msg is HumanMessage | AIMessage => msg !== undefined);
 
+    // 1. Fetch the prompt attached to the session
+    let systemPrompt: string | undefined;
+    let currentPromptRecord;
+
+    // Reload session with prompt relation
+    const sessionWithPrompt = await this.sessionRepository.findOne({
+      where: { id: createMessageDto.sessionId },
+      relations: ["prompt"],
+    });
+
+    if (sessionWithPrompt && sessionWithPrompt.prompt) {
+      currentPromptRecord = sessionWithPrompt.prompt;
+      systemPrompt = currentPromptRecord.promptText;
+    }
+
     // Invoke agent with user message and userId for context
     const agentResult = await this.langchainService.generateAgentResponse(
       baseMessages,
-      createMessageDto.senderId
+      createMessageDto.senderId,
+      systemPrompt
     );
 
     // Create a record for the agent response
@@ -461,11 +491,13 @@ export class ChatService {
       metadata: {
         toolsUsed: agentResult.toolsUsed,
         type: "agent",
+        promptVersion: currentPromptRecord ? currentPromptRecord.id : "default",
       },
     };
 
     // Save agent response to database
     const response = await this.createMessage(createdBotMessage);
+
     return response;
   }
 }

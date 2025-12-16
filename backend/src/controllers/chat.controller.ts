@@ -16,6 +16,8 @@ import { ChatService } from "../services/chat.service";
 import { LangchainService } from "../services/langchain.service";
 import { LanggraphService } from "../services/langgraph.service";
 import { EventService } from "../services/event.service";
+import { PromptService } from "../services/prompt.service";
+import { EvaluationService } from "../services/evaluation.service";
 import {
   CreateMessageDto,
   CreateSessionDto,
@@ -36,6 +38,8 @@ export class ChatController extends Controller {
   private langchainService: LangchainService;
   private langgraphService: LanggraphService;
   private eventService: EventService;
+  private promptService: PromptService;
+  private evaluationService: EvaluationService;
 
   constructor() {
     super();
@@ -43,13 +47,20 @@ export class ChatController extends Controller {
     // Initialize services with proper dependency injection
     this.langchainService = new LangchainService();
     this.eventService = new EventService();
+    this.promptService = new PromptService();
+    this.evaluationService = new EvaluationService(
+      this.langchainService,
+      this.promptService
+    );
+
     this.langgraphService = new LanggraphService(
       this.langchainService,
       this.eventService
     );
     this.chatService = new ChatService(
       this.langgraphService,
-      this.langchainService
+      this.langchainService,
+      this.promptService
     );
   }
 
@@ -75,17 +86,25 @@ export class ChatController extends Controller {
         throw new Error("Message field is required and cannot be empty");
       }
 
-      if (!createMessageDto.sessionId || createMessageDto.sessionId.trim().length === 0) {
+      if (
+        !createMessageDto.sessionId ||
+        createMessageDto.sessionId.trim().length === 0
+      ) {
         this.setStatus(400);
         throw new Error("Session ID is required and cannot be empty");
       }
 
-      if (!createMessageDto.senderId || createMessageDto.senderId.trim().length === 0) {
+      if (
+        !createMessageDto.senderId ||
+        createMessageDto.senderId.trim().length === 0
+      ) {
         this.setStatus(400);
         throw new Error("Sender ID is required and cannot be empty");
       }
 
-      const response = await this.chatService.handleChatWithAgent(createMessageDto);
+      const response = await this.chatService.handleChatWithAgent(
+        createMessageDto
+      );
 
       return {
         success: true,

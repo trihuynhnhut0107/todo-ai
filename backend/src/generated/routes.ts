@@ -12,6 +12,8 @@ import { MapboxController } from './../controllers/mapbox.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { EventController } from './../controllers/event.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { EvaluationController } from './../controllers/evaluation.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { ChatController } from './../controllers/chat.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AuthController } from './../controllers/auth.controller';
@@ -435,6 +437,30 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "userId": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BatchEvaluationStats": {
+        "dataType": "refObject",
+        "properties": {
+            "totalSessions": {"dataType":"double","required":true},
+            "accuracyRate": {"dataType":"double","required":true},
+            "overallScore": {"dataType":"double","required":true},
+            "passRate": {"dataType":"double","required":true},
+            "evaluatedSessions": {"dataType":"double","required":true},
+            "timestamp": {"dataType":"datetime","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse_BatchEvaluationStats_": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "message": {"dataType":"string","required":true},
+            "data": {"ref":"BatchEvaluationStats"},
+            "timestamp": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -1566,6 +1592,35 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'unassignUser',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsEvaluationController_triggerEvaluation: Record<string, TsoaRoute.ParameterSchema> = {
+        };
+        app.post('/evaluation/trigger',
+            ...(fetchMiddlewares<RequestHandler>(EvaluationController)),
+            ...(fetchMiddlewares<RequestHandler>(EvaluationController.prototype.triggerEvaluation)),
+
+            async function EvaluationController_triggerEvaluation(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsEvaluationController_triggerEvaluation, request, response });
+
+                const controller = new EvaluationController();
+
+              await templateService.apiHandler({
+                methodName: 'triggerEvaluation',
                 controller,
                 response,
                 next,

@@ -164,9 +164,19 @@ export class LangchainService {
    * @param userId The ID of the user making the request
    * @returns Agent response and list of tools used
    */
+  /**
+   * Generate response using agent with tool access
+   * Handles event creation, querying, and management through natural language
+   *
+   * @param sessionMessages Array of LangChain BaseMessage objects with full conversation history
+   * @param userId The ID of the user making the request
+   * @param systemPrompt Optional dynamic system prompt to use. If not provided, uses default.
+   * @returns Agent response and list of tools used
+   */
   async generateAgentResponse(
     sessionMessages: BaseMessage[],
-    userId: string
+    userId: string,
+    systemPrompt?: string
   ): Promise<{
     response: string;
     toolsUsed: string[];
@@ -187,8 +197,19 @@ export class LangchainService {
       // Add userId context to the formatted messages for the agent
       formattedSessionMessages = `User ID: ${userId}\n\n${formattedSessionMessages}`;
 
+      // Construct prompt template dynamically
+      // If systemPrompt is provided, use it. Otherwise, use the imported default.
+      let promptTemplate = agentAssistantPrompt;
+
+      if (systemPrompt) {
+        promptTemplate = ChatPromptTemplate.fromMessages([
+          ["system", systemPrompt],
+          ["human", "{messages}"],
+        ]);
+      }
+
       // Format messages using the agent assistant prompt template
-      const promptMessages = await agentAssistantPrompt.formatMessages({
+      const promptMessages = await promptTemplate.formatMessages({
         messages: formattedSessionMessages,
       });
 

@@ -7,6 +7,7 @@ import * as dotenv from "dotenv";
 import { Message } from "./entities/message.entity";
 import { Session } from "./entities/session.entity";
 import { Reminder } from "./entities/reminder.entity";
+import { AIPrompt } from "./entities/ai-prompt.entity";
 
 dotenv.config();
 
@@ -22,7 +23,7 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   //logging logs sql command on the treminal
   logging: false,
-  entities: [User, Event, Workspace, Message, Session, Reminder],
+  entities: [User, Event, Workspace, Message, Session, Reminder, AIPrompt],
   migrations: [__dirname + "/database/migrations/*.ts"],
   subscribers: [],
 });

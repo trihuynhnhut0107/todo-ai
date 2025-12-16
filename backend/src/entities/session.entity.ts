@@ -10,6 +10,7 @@ import {
 } from "typeorm";
 import { Message } from "./message.entity";
 import { User } from "./user.entity";
+import { AIPrompt } from "./ai-prompt.entity";
 
 @Entity({ name: "sessions" })
 export class Session {
@@ -25,6 +26,13 @@ export class Session {
 
   @Column({ nullable: false })
   userId!: string;
+
+  @Column({ nullable: true })
+  promptId?: string;
+
+  @ManyToOne(() => AIPrompt)
+  @JoinColumn({ name: "promptId" })
+  prompt?: AIPrompt;
 
   @CreateDateColumn()
   createdAt!: Date;

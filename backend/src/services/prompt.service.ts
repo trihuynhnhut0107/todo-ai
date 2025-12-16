@@ -1,9 +1,8 @@
-import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { AppDataSource } from "../data-source";
+import { AIPrompt, PromptType } from "../entities/ai-prompt.entity";
+import { Repository } from "typeorm";
 
-export const agentAssistantPrompt = ChatPromptTemplate.fromMessages([
-  [
-    "system",
-    `You are a personal assistant agent managing events and workspaces.
+const AGENT_ASSISTANT_PROMPT_TEXT = `You are a personal assistant agent managing events and workspaces.
 
 CORE IDENTITY
 - Create, read, update, delete events (meetings, tasks, deadlines)
@@ -246,9 +245,141 @@ RESPONSE FORMATS
 - Always show GMT +7 times to user
 - Be conversational but structured
 - For lists: Use "- " format for clarity
-- For confirmations: Explicitly ask "Yes/No" or similar`,
-  ],
-  ["human", "{messages}"],
-]);
+- For confirmations: Explicitly ask "Yes/No" or similar`;
 
-export default agentAssistantPrompt;
+export class PromptService {
+  private promptRepository: Repository<AIPrompt>;
+
+  constructor() {
+    this.promptRepository = AppDataSource.getRepository(AIPrompt);
+  }
+
+  /**
+   * Get the latest prompt of a specific type
+   */
+  async getLatestPrompt(
+    type: PromptType = PromptType.SYSTEM
+  ): Promise<AIPrompt | null> {
+    return this.promptRepository.findOne({
+      where: { type },
+      order: { createdAt: "DESC" },
+    });
+  }
+
+  /**
+   * Save a new prompt
+   */
+  async saveNewPrompt(
+    promptText: string,
+    type: PromptType = PromptType.SYSTEM,
+    originSessionId?: string,
+    previousPromptId?: string,
+    metadata?: any
+  ): Promise<AIPrompt> {
+    const prompt = this.promptRepository.create({
+      promptText,
+      type,
+      originSessionId,
+      previousPromptId,
+      evaluationResult: metadata, // Store initial metadata here if any
+    });
+
+    return this.promptRepository.save(prompt);
+  }
+
+  /**
+   * Update prompt with evaluation result
+   */
+  async updatePromptEvaluation(
+    promptId: string,
+    evaluationResult: any
+  ): Promise<AIPrompt> {
+    const prompt = await this.promptRepository.findOne({
+      where: { id: promptId },
+    });
+
+    if (!prompt) {
+      throw new Error(`Prompt with ID ${promptId} not found`);
+    }
+
+    prompt.evaluationResult = evaluationResult;
+    return this.promptRepository.save(prompt);
+  }
+
+  /**
+   * Get prompt history
+   */
+  async getPromptHistory(limit: number = 10): Promise<AIPrompt[]> {
+    return this.promptRepository.find({
+      order: { createdAt: "DESC" },
+      take: limit,
+      relations: ["previousPrompt"],
+    });
+  }
+
+  /**
+   * Initialize system prompt if table is empty
+   * Creates the default agent-response prompt as a SYSTEM type
+   */
+  async initializeSystemPrompt(): Promise<AIPrompt | null> {
+    // Check if any SYSTEM prompts exist
+    const existingSystemPrompt = await this.promptRepository.findOne({
+      where: { type: PromptType.SYSTEM },
+      order: { createdAt: "DESC" },
+    });
+
+    if (existingSystemPrompt) {
+      console.log("✅ System prompt already exists:", existingSystemPrompt.id);
+      return existingSystemPrompt;
+    }
+
+    // Check if table is completely empty
+    const totalPrompts = await this.promptRepository.count();
+    console.log(`📊 AI Prompts table status: ${totalPrompts} total prompts`);
+
+    if (totalPrompts === 0) {
+      console.log("🔄 Creating initial system prompt...");
+      const newPrompt = await this.saveNewPrompt(
+        AGENT_ASSISTANT_PROMPT_TEXT,
+        PromptType.SYSTEM
+      );
+      console.log("✅ Initial system prompt created:", newPrompt.id);
+      return newPrompt;
+    }
+
+    return null;
+  }
+
+  /**
+   * Check if ai-prompt table is empty
+   */
+  async isPromptTableEmpty(): Promise<boolean> {
+    const count = await this.promptRepository.count();
+    return count === 0;
+  }
+
+  /**
+   * Get table status information
+   */
+  async getTableStatus(): Promise<{
+    isEmpty: boolean;
+    totalCount: number;
+    systemCount: number;
+    userPreferenceCount: number;
+  }> {
+    const totalCount = await this.promptRepository.count();
+    const systemCount = await this.promptRepository.count({
+      where: { type: PromptType.SYSTEM },
+    });
+    const userPreferenceCount = await this.promptRepository.count({
+      where: { type: PromptType.USER_PREFERENCE },
+    });
+
+    return {
+      isEmpty: totalCount === 0,
+      totalCount,
+      systemCount,
+      userPreferenceCount,
+    };
+  }
+}

@@ -1209,6 +1209,69 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"BatchEvaluationStats": {
+				"description": "Batch evaluation statistics",
+				"properties": {
+					"totalSessions": {
+						"type": "number",
+						"format": "double"
+					},
+					"accuracyRate": {
+						"type": "number",
+						"format": "double"
+					},
+					"overallScore": {
+						"type": "number",
+						"format": "double"
+					},
+					"passRate": {
+						"type": "number",
+						"format": "double"
+					},
+					"evaluatedSessions": {
+						"type": "number",
+						"format": "double"
+					},
+					"timestamp": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"totalSessions",
+					"accuracyRate",
+					"overallScore",
+					"passRate",
+					"evaluatedSessions",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_BatchEvaluationStats_": {
+				"description": "Standard API Response wrapper\nUsed by all TSOA controllers",
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {
+						"$ref": "#/components/schemas/BatchEvaluationStats"
+					},
+					"timestamp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"success",
+					"message",
+					"timestamp"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"SenderType": {
 				"enum": [
 					"user",
@@ -3887,6 +3950,50 @@
 						}
 					}
 				}
+			}
+		},
+		"/evaluation/trigger": {
+			"post": {
+				"operationId": "TriggerEvaluation",
+				"responses": {
+					"200": {
+						"description": "Evaluation triggered successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_BatchEvaluationStats_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "No sessions to evaluate",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Evaluation failed",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Manually trigger batch evaluation of all sessions using current prompt",
+				"summary": "Trigger manual evaluation",
+				"tags": [
+					"Evaluation"
+				],
+				"security": [],
+				"parameters": []
 			}
 		},
 		"/api/chat": {
