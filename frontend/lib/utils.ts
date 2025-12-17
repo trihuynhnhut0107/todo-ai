@@ -1,4 +1,5 @@
 import { EventStatus } from "@/enum/event";
+import { Linking, Platform } from "react-native";
 
 export function getColorFromString(str: string): string {
   let hash = 0;
@@ -86,7 +87,7 @@ export function getReadableTextColor(bgHex: string): string {
   return luminance > 186 ? "#000000" : "#FFFFFF";
 }
 
-export const getStatusStyles = (status:EventStatus) => {
+export const getStatusStyles = (status: EventStatus) => {
   switch (status) {
     case EventStatus.SCHEDULED:
       return "bg-gray-500 border border-gray-500";
@@ -101,7 +102,7 @@ export const getStatusStyles = (status:EventStatus) => {
   }
 };
 
-export const getStatusTextStyles = (status:EventStatus) => {
+export const getStatusTextStyles = (status: EventStatus) => {
   switch (status) {
     case EventStatus.SCHEDULED:
       return "text-blue-300";
@@ -118,7 +119,7 @@ export const getStatusTextStyles = (status:EventStatus) => {
 
 export const getGreeting = () => {
   const hour = new Date().getHours();
-  
+
   if (hour >= 5 && hour < 12) {
     return "Good morning";
   } else if (hour >= 12 && hour < 17) {
@@ -128,4 +129,25 @@ export const getGreeting = () => {
   } else {
     return "Good night";
   }
+};
+
+export const openInGoogleMap = (lng: number, lat: number) => {
+  const scheme = Platform.select({
+    ios: `comgooglemaps://?q=${lat},${lng}`,
+    android: `geo:${lat},${lng}?q=${lat},${lng}`,
+  });
+
+  const fallbackUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+
+  Linking.canOpenURL(scheme!)
+    .then((supported) => {
+      if (supported) {
+        Linking.openURL(scheme!);
+      } else {
+        Linking.openURL(fallbackUrl);
+      }
+    })
+    .catch(() => {
+      Linking.openURL(fallbackUrl);
+    });
 };

@@ -68,11 +68,11 @@ const CustomMapInput = ({ coord, onChange }: CustomMapInputProps) => {
     onChange(undefined); // Or pass undefined if you prefer
   };
   return (
-    <View style={styles.container}>
+    <View className="flex-1 min-h-[400px]">
       <MapView
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
-        style={styles.map}
+        style={{ flex: 1 }}
         initialRegion={getInitialCoordinate()}
         onPress={handleMapPress}
         showsUserLocation={true}
@@ -86,52 +86,23 @@ const CustomMapInput = ({ coord, onChange }: CustomMapInputProps) => {
           >
             <View style={{ alignItems: "center" }}>
               {/* Pin head */}
-              <View
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
-                  backgroundColor: "blue", // Your hex color works here!
-                  borderWidth: 3,
-                  borderColor: "white",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 3,
-                  elevation: 5,
-                }}
-              >
+              <View className="size-8 border-2 border-white items-center justify-center bg-primary rounded-full">
                 <Ionicons name="location" size={16} color="white" />
               </View>
               {/* Pin point */}
-              <View
-                style={{
-                  width: 0,
-                  height: 0,
-                  backgroundColor: "transparent",
-                  borderStyle: "solid",
-                  borderLeftWidth: 3,
-                  borderRightWidth: 3,
-                  borderTopWidth: 10,
-                  borderLeftColor: "transparent",
-                  borderRightColor: "transparent",
-                  borderTopColor: "blue", // Hex color for the point
-                }}
-              />
+              <View className="border-t-8 border-4 border-b-0 border-transparent size-0 bg-transparent border-t-primary" />
             </View>
           </Marker>
         )}
       </MapView>
 
       {/* Control buttons */}
-      <View style={styles.controls}>
+      <View className="absolute top-2 right-2 gap-2">
         {/* Center on user location button */}
         {userLocation && (
           <TouchableOpacity
             onPress={handleCenterOnUser}
-            style={styles.controlButton}
+            className="bg-white rounded-lg size-8 items-center justify-center shadow"
           >
             <Ionicons name="locate" size={20} color="#1F2937" />
           </TouchableOpacity>
@@ -141,7 +112,7 @@ const CustomMapInput = ({ coord, onChange }: CustomMapInputProps) => {
         {coord?.lat && coord?.lng && coord.lat !== 0 && coord.lng !== 0 && (
           <TouchableOpacity
             onPress={handleClearMarker}
-            style={[styles.controlButton, { backgroundColor: "#EF4444" }]}
+            className="bg-[#EF4444] rounded-lg size-8 items-center justify-center shadow"
           >
             <Ionicons name="close" size={20} color="white" />
           </TouchableOpacity>
@@ -150,31 +121,5 @@ const CustomMapInput = ({ coord, onChange }: CustomMapInputProps) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    minHeight: 300,
-  },
-  map: {
-    flex: 1,
-  },
-  controls: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    gap: 8,
-  },
-  controlButton: {
-    backgroundColor: "white",
-    borderRadius: 8,
-    padding: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-});
 
 export default CustomMapInput;

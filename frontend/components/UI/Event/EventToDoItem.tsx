@@ -16,11 +16,26 @@ const EventToDoItem = ({ event, onChange }: EventToDoItemProps) => {
           onChange(event.id, event.workspaceId, status)
         }
       />
-      <View>
-        <Text className="text-text-secondary text-lg">{event.name}</Text>
-        <Text className="text-text-tertiary text-xs">
-          {format(event.start, "HH:mm a") + "-" + format(event.end, "HH:mm a")}
+      <View className="flex-1 gap-1">
+        <Text className="text-text-secondary text-base font-semibold">
+          {event.name}
         </Text>
+        <View className="flex-row flex-wrap gap-x-2 justify-between items-center">
+          <View className="flex-row items-center gap-1.5">
+            <Text className="text-text-tertiary text-xs font-medium">
+              Start:
+            </Text>
+            <Text className="text-text-secondary text-xs">
+              {format(event.start, "dd/MM (HH:mm a)")}
+            </Text>
+          </View>
+          <View className="flex-row items-center gap-1.5">
+            <Text className="text-text-tertiary text-xs font-medium">End:</Text>
+            <Text className="text-text-secondary text-xs">
+              {format(event.end, "dd/MM (HH:mm a)")}
+            </Text>
+          </View>
+        </View>
       </View>
     </View>
   );
