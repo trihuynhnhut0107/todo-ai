@@ -187,10 +187,9 @@ export default function Index() {
   const {
     data: events,
     refetch,
-    isLoading: pendingEvents,
+    isFetching: pendingEvents,
   } = useUserEvents(user?.id || "");
-  const { mutate: updateStatus } =
-    useUpdateEventStatus();
+  const { mutate: updateStatus } = useUpdateEventStatus();
   //event time filter
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<EventTimeFilter>("today");
@@ -311,8 +310,9 @@ export default function Index() {
         latitude: parseFloat(event.lat!),
         longitude: parseFloat(event.lng!),
         title: event.name,
-        description:
-          format(event.start, "HH:mm a") + " - " + format(event.end, "HH:mm a"),
+        start: event.start,
+        end: event.end,
+        location: event.location,
         color: event.color,
         // Add any other properties you need for the map
       }));
@@ -417,8 +417,12 @@ export default function Index() {
               </View>
             </Modal>
           </View>
-          <View className="h-[300px] w-full">
-            <Map coordinates={eventLocations}  displayUser/>
+          <View className="w-full">
+            <Map
+              coordinates={eventLocations}
+              displayUser
+              loading={pendingEvents}
+            />
           </View>
         </View>
         {/* <View className="flex-1 bg-surface p-4 rounded-xl shadow-sm mb-3">
