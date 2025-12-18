@@ -17,6 +17,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import StatusChip from "@/components/UI/Calendar/StatusChip";
 import useThemeColor from "@/hooks/useThemeColor";
 import Map from "@/components/UI/Map";
+import { removeTodoFromCalendar } from "@/services/calendar";
 
 const EventDetail = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -41,6 +42,7 @@ const EventDetail = () => {
         text: "Delete",
         style: "destructive",
         onPress: () => {
+          removeTodoFromCalendar("361");
           deleteEvent({
             id: event?.id as string,
             wp_id: event?.workspaceId as string,

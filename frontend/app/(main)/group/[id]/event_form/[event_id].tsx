@@ -25,6 +25,7 @@ import { EventPayload } from "@/types/event";
 import CustomColorPicker from "@/components/Input/CustomColorPicker";
 import CustomTagInput from "@/components/Input/CustomTagInput";
 import CustomMapInput from "@/components/Input/CustomMapInput";
+import { addEventToCalendar } from "@/services/calendar";
 
 export const schema = z
   .object({
@@ -112,9 +113,11 @@ const Event_form = () => {
       lat: data.coordinates?.lat,
       // workspaceId: id
     };
+
     if (isEditmode) {
       updateEvent({ id: event_id, workspaceId: id, payload });
     } else {
+      addEventToCalendar(data.name, data.description || '', data.start);
       createEvent({ ...payload, workspaceId: id });
       reset();
     }
