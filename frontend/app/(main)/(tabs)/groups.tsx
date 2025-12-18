@@ -13,7 +13,6 @@ import { FlatList } from "react-native-gesture-handler";
 import { useGroup } from "@/query/group.query";
 import { router } from "expo-router";
 import GroupCard from "@/components/UI/Group/GroupCard";
-import Loader from "@/components/UI/Loader";
 import Empty from "@/components/UI/Empty";
 
 const Groups = () => {
