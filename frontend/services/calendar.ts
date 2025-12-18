@@ -1,4 +1,4 @@
-import { AddCalenderReq } from '@/types/calender';
+import { AddCalenderReq, CalendarEvent } from '@/types/calender';
 import * as Calendar from 'expo-calendar';
 import { Alert, Platform } from 'react-native';
 
@@ -155,6 +155,7 @@ export async function addEventToCalendar(req: AddCalenderReq): Promise<string | 
       title: req.title,
       startDate: startDateObj,
       endDate: endDateObj,
+      notes: req.description,
       timeZone: 'Asia/Ho_Chi_Minh', // Quan trọng cho Android
       location: req.location || 'Trên ứng dụng Todo AI',
       alarms: [{ relativeOffset: -10 }], // Nhắc trước 10 phút
@@ -181,14 +182,9 @@ export async function addEventToCalendar(req: AddCalenderReq): Promise<string | 
  * @param date Thời gian bắt đầu mới
  * @returns Trả về true nếu thành công, false nếu thất bại
  */
-export async function updateCalendarEvent(
-  calendarEventId: string,
-  title: string,
-  notes: string,
-  date: string | Date
-): Promise<boolean> {
+export async function updateCalendarEvent(req:CalendarEvent): Promise<boolean> {
   // Kiểm tra đầu vào cơ bản
-  if (!calendarEventId) {
+  if (!req.id) {
     console.warn('[Calendar] Không có ID sự kiện để cập nhật');
     return false;
   }
@@ -205,7 +201,7 @@ export async function updateCalendarEvent(
     // (Phòng trường hợp người dùng đã xóa tay trong ứng dụng Lịch)
     let existingEvent;
     try {
-      existingEvent = await Calendar.getEventAsync(calendarEventId);
+      existingEvent = await Calendar.getEventAsync(req.id);
     } catch (e) {
       console.warn('[Calendar] Không tìm thấy sự kiện gốc, có thể đã bị xóa.');
       existingEvent = null;
@@ -217,31 +213,70 @@ export async function updateCalendarEvent(
     }
 
     // 3. Xử lý thời gian
-    const startDate = new Date(date);
+    const startDate = new Date(req.startDate);
     // Giữ nguyên logic cũ: sự kiện kéo dài 1 tiếng
-    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); 
+    const endDate = new Date(req.endDate); 
 
     // 4. Cấu hình thông tin mới
     const eventDetails: Partial<Calendar.Event> = {
-      title: title,
+      title: req.title,
       startDate: startDate,
       endDate: endDate,
       timeZone: 'Asia/Ho_Chi_Minh', // Đảm bảo múi giờ không bị lệch trên Android
-      notes: notes,
+      notes: req.description,
       // Nếu muốn giữ nguyên báo thức cũ thì không cần truyền alarms, 
       // hoặc truyền mới để ghi đè:
       alarms: [{ relativeOffset: -10 }], 
     };
 
     // 5. Gọi API cập nhật
-    await Calendar.updateEventAsync(calendarEventId, eventDetails);
+    await Calendar.updateEventAsync(req.id, eventDetails);
     
-    console.log(`[Calendar] Đã cập nhật thành công sự kiện: ${calendarEventId}`);
+    console.log(`[Calendar] Đã cập nhật thành công sự kiện: ${req.id}`);
     return true;
 
   } catch (error) {
     console.error('[Calendar] Lỗi khi cập nhật:', error);
     Alert.alert('Lỗi', 'Không thể cập nhật sự kiện này.');
+    return false;
+  }
+}
+
+/**
+ * Hàm chỉ cập nhật riêng trường Location (Địa điểm)
+ * @param calendarEventId ID của sự kiện cần sửa
+ * @param newLocation Địa điểm mới (Ví dụ: "Phòng họp 1" hoặc Link Google Maps)
+ */
+export async function updateEventLocation(
+  calendarEventId: string,
+  newLocation: string
+): Promise<boolean> {
+  
+  if (!calendarEventId) {
+    console.warn('[Calendar] Không có ID để cập nhật location');
+    return false;
+  }
+
+  try {
+    // 1. Vẫn cần kiểm tra quyền để tránh crash
+    const { status } = await Calendar.requestCalendarPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Lỗi', 'Cần quyền truy cập lịch để cập nhật địa điểm.');
+      return false;
+    }
+
+    // 2. Gọi hàm update với object chỉ chứa location
+    // Các thông tin khác (title, startDate, endDate...) sẽ KHÔNG bị mất
+    await Calendar.updateEventAsync(calendarEventId, {
+      location: newLocation
+    });
+
+    console.log(`[Calendar] Đã cập nhật location cho event ${calendarEventId}`);
+    return true;
+
+  } catch (error) {
+    console.error('[Calendar] Lỗi cập nhật location:', error);
+    // Trường hợp hay gặp nhất là ID không còn tồn tại
     return false;
   }
 }

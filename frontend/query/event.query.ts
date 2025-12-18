@@ -1,3 +1,4 @@
+import { addEventToCalendar, updateEventLocation } from "@/services/calendar";
 import {
   assignMember,
   createEvent,
@@ -40,7 +41,9 @@ export const useCreateEvent = () => {
 
   return useMutation({
     mutationFn: createEvent,
-    onSuccess: (_, { workspaceId }) => {
+    onSuccess: (response, { workspaceId }) => {
+      console.log("Create Event Response:", response);
+      // updateEventLocation(response.calendarId, response.location || "");
       queryClient.invalidateQueries({
         queryKey: ["workspace", workspaceId, "events"],
       });

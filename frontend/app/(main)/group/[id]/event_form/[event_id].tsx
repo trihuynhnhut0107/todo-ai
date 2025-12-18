@@ -25,7 +25,7 @@ import { EventPayload } from "@/types/event";
 import CustomColorPicker from "@/components/Input/CustomColorPicker";
 import CustomTagInput from "@/components/Input/CustomTagInput";
 import CustomMapInput from "@/components/Input/CustomMapInput";
-import { addEventToCalendar } from "@/services/calendar";
+import { addEventToCalendar, updateCalendarEvent } from "@/services/calendar";
 
 export const schema = z
   .object({
@@ -115,9 +115,15 @@ const Event_form = () => {
       // workspaceId: id
     };
 
-    console.log("Payload:", payload);
-
     if (isEditmode) {
+      updateCalendarEvent({
+        id: event_id,
+        title: data.name,
+        description: data.description,
+        startDate: data.start,
+        endDate: data.end,
+        location: data.location,
+      });
       updateEvent({ id: event_id, workspaceId: id, payload });
     } else {
       addEventToCalendar({
@@ -128,7 +134,6 @@ const Event_form = () => {
         location: data.location,
       });
       createEvent({ ...payload, workspaceId: id });
-      reset();
     }
   };
   return (

@@ -7,3 +7,12 @@ export interface AddCalenderReq{
     endDate: string | Date;
     location?: string;
 }
+
+export interface CalendarEvent {
+    id: string;
+    title: string;
+    description: string;
+    startDate: Date;
+    endDate: Date;
+    location?: string;
+}
