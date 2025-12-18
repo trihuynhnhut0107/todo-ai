@@ -1,15 +1,8 @@
+import { AddCalenderReq } from '@/types/calender';
 import * as Calendar from 'expo-calendar';
-import { Platform, Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 
-// 1. Định nghĩa Interface cho Todo của bạn
-export interface TodoItem {
-  id: string;
-  title: string;
-  description?: string;
-  deadline: string | Date; // Hỗ trợ cả string ISO hoặc Date object
-  isCompleted: boolean;
-  calendarEventId?: string; // ID lưu trữ liên kết với Calendar
-}
+
 
 // Tên hiển thị của lịch trong ứng dụng Lịch (Google Calendar / Apple Calendar)
 const CALENDAR_TITLE = 'Todo AI Calendar';
@@ -65,65 +58,64 @@ export async function getAppCalendarId(): Promise<string> {
   return newCalendarId;
 }
 
-/**
- * Hàm chính: Sync Todo sang Calendar (Tạo mới hoặc Cập nhật)
- * @param todo Đối tượng Todo cần sync
- * @returns Trả về eventId (string) nếu thành công, hoặc null nếu lỗi
- */
-export async function syncTodoToCalendar(todo: TodoItem): Promise<string | null> {
-  try {
-    // 1. Kiểm tra quyền
-    const { status } = await Calendar.requestCalendarPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Quyền truy cập', 'Bạn cần cấp quyền Lịch để sử dụng tính năng này.');
-      return null;
-    }
+// /**
+//  * Hàm chính: Sync Todo sang Calendar (Tạo mới hoặc Cập nhật)
+//  * @param todo Đối tượng Todo cần sync
+//  * @returns Trả về eventId (string) nếu thành công, hoặc null nếu lỗi
+//  */
+// export async function syncTodoToCalendar(todo: TodoItem): Promise<string | null> {
+//   try {
+//     // 1. Kiểm tra quyền
+//     const { status } = await Calendar.requestCalendarPermissionsAsync();
+//     if (status !== 'granted') {
+//       Alert.alert('Quyền truy cập', 'Bạn cần cấp quyền Lịch để sử dụng tính năng này.');
+//       return null;
+//     }
 
-    // 2. Lấy ID lịch
-    const calendarId = await getAppCalendarId();
+//     // 2. Lấy ID lịch
+//     const calendarId = await getAppCalendarId();
 
-    // 3. Chuẩn bị dữ liệu sự kiện
-    const deadlineDate = new Date(todo.deadline);
-    // Tạo thời gian kết thúc (Mặc định là deadline + 1 tiếng)
-    const endDate = new Date(deadlineDate.getTime() + 60 * 60 * 1000);
+//     // 3. Chuẩn bị dữ liệu sự kiện
+//     const startDate = new Date(todo.startDate);
+//     const endDate = new Date(todo.endDate);
 
-    const eventConfig:Partial<Calendar.Event> = {
-      title: `[Todo] ${todo.title}`,
-      startDate: deadlineDate,
-      endDate: endDate,
-      timeZone: 'Asia/Ho_Chi_Minh', // Hoặc dùng Localization.timezone
-      notes: todo.description || 'Được tạo từ ứng dụng Todo AI',
-      alarms: [{ relativeOffset: -15 }], // Nhắc trước 15 phút
-    };
+//     const eventConfig:Partial<Calendar.Event> = {
+//       title: `[Todo] ${todo.title}`,
+//       startDate: startDate,
+//       endDate: endDate,
+//       timeZone: 'Asia/Ho_Chi_Minh', // Hoặc dùng Localization.timezone
+//       notes: todo.description || 'Được tạo từ ứng dụng Todo AI',
+//       alarms: [{ relativeOffset: -15 }], // Nhắc trước 15 phút
+//     };
 
-    // 4. Logic Sync (Update hoặc Create)
-    if (todo.calendarEventId) {
-      try {
-        // Kiểm tra xem event cũ còn tồn tại không
-        const existingEvent = await Calendar.getEventAsync(todo.calendarEventId);
+//     // 4. Logic Sync (Update hoặc Create)
+//     if (todo.calendarEventId) {
+//       try {
+//         // Kiểm tra xem event cũ còn tồn tại không
+//         const existingEvent = await Calendar.getEventAsync(todo.calendarEventId);
         
-        if (existingEvent) {
-          // Nếu còn -> Update
-          await Calendar.updateEventAsync(todo.calendarEventId, eventConfig);
-          console.log(`[Calendar] Updated event: ${todo.calendarEventId}`);
-          return todo.calendarEventId;
-        }
-      } catch (error) {
-        console.warn('[Calendar] Event cũ không tìm thấy, sẽ tạo mới...');
-      }
-    }
+//         if (existingEvent) {
+//           // Nếu còn -> Update
+//           await Calendar.updateEventAsync(todo.calendarEventId, eventConfig);
+//           console.log(`[Calendar] Updated event: ${todo.calendarEventId}`);
+//           return todo.calendarEventId;
+//         }
+//       } catch (error) {
+//         console.warn('[Calendar] Event cũ không tìm thấy, sẽ tạo mới...');
+//       }
+//     }
 
-    // Nếu chưa có ID hoặc event cũ bị xóa -> Tạo mới
-    const newEventId = await Calendar.createEventAsync(calendarId, eventConfig);
-    console.log(`[Calendar] Created new event: ${newEventId}`);
-    return newEventId;
+//     // Nếu chưa có ID hoặc event cũ bị xóa -> Tạo mới
+//     const newEventId = await Calendar.createEventAsync(calendarId, eventConfig);
+//     console.log(`[Calendar] Created new event: ${newEventId}`);
+//     return newEventId;
 
-  } catch (error) {
-    console.error('[Calendar] Sync Error:', error);
-    Alert.alert('Lỗi', 'Không thể đồng bộ lịch.');
-    return null;
-  }
-}
+//   } catch (error) {
+//     console.error('[Calendar] Sync Error:', error);
+//     Alert.alert('Lỗi', 'Không thể đồng bộ lịch.');
+//     return null;
+//   }
+// }
 
 /**
  * Hàm xóa sự kiện khỏi lịch
@@ -142,11 +134,7 @@ export async function removeTodoFromCalendar(calendarEventId?: string): Promise<
   }
 }
 
-export async function addEventToCalendar(
-  title: string,
-  notes: string,
-  date: string | Date
-): Promise<string | null> {
+export async function addEventToCalendar(req: AddCalenderReq): Promise<string | null> {
   try {
     // 1. Xin quyền truy cập
     const { status } = await Calendar.requestCalendarPermissionsAsync();
@@ -159,17 +147,16 @@ export async function addEventToCalendar(
     const calendarId = await getAppCalendarId();
 
     // 3. Xử lý thời gian
-    const startDate = new Date(date);
-    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // Mặc định sự kiện dài 1 tiếng
+    const startDateObj = new Date(req.startDate);
+    const endDateObj = new Date(req.endDate);
 
     // 4. Cấu hình sự kiện (Sử dụng Partial<Calendar.Event> để tránh lỗi TS)
     const eventDetails: Partial<Calendar.Event> = {
-      title: title,
-      startDate: startDate,
-      endDate: endDate,
+      title: req.title,
+      startDate: startDateObj,
+      endDate: endDateObj,
       timeZone: 'Asia/Ho_Chi_Minh', // Quan trọng cho Android
-      location: 'Trên ứng dụng Todo AI',
-      notes: notes,
+      location: req.location || 'Trên ứng dụng Todo AI',
       alarms: [{ relativeOffset: -10 }], // Nhắc trước 10 phút
     };
 
@@ -183,5 +170,78 @@ export async function addEventToCalendar(
     console.error('Lỗi khi thêm lịch:', error);
     Alert.alert('Lỗi', 'Không thể thêm vào lịch.');
     return null;
+  }
+}
+
+/**
+ * Hàm cập nhật sự kiện đã có trên lịch
+ * @param calendarEventId ID của sự kiện cần sửa (Bắt buộc)
+ * @param title Tiêu đề mới
+ * @param notes Ghi chú mới
+ * @param date Thời gian bắt đầu mới
+ * @returns Trả về true nếu thành công, false nếu thất bại
+ */
+export async function updateCalendarEvent(
+  calendarEventId: string,
+  title: string,
+  notes: string,
+  date: string | Date
+): Promise<boolean> {
+  // Kiểm tra đầu vào cơ bản
+  if (!calendarEventId) {
+    console.warn('[Calendar] Không có ID sự kiện để cập nhật');
+    return false;
+  }
+
+  try {
+    // 1. Xin quyền truy cập (Luôn cần thiết để đảm bảo app không bị crash)
+    const { status } = await Calendar.requestCalendarPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Thiếu quyền', 'Cần quyền truy cập lịch để cập nhật sự kiện.');
+      return false;
+    }
+
+    // 2. Kiểm tra xem sự kiện này còn tồn tại trên điện thoại không
+    // (Phòng trường hợp người dùng đã xóa tay trong ứng dụng Lịch)
+    let existingEvent;
+    try {
+      existingEvent = await Calendar.getEventAsync(calendarEventId);
+    } catch (e) {
+      console.warn('[Calendar] Không tìm thấy sự kiện gốc, có thể đã bị xóa.');
+      existingEvent = null;
+    }
+
+    if (!existingEvent) {
+      Alert.alert('Lỗi', 'Sự kiện này không còn tồn tại trên lịch.');
+      return false;
+    }
+
+    // 3. Xử lý thời gian
+    const startDate = new Date(date);
+    // Giữ nguyên logic cũ: sự kiện kéo dài 1 tiếng
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); 
+
+    // 4. Cấu hình thông tin mới
+    const eventDetails: Partial<Calendar.Event> = {
+      title: title,
+      startDate: startDate,
+      endDate: endDate,
+      timeZone: 'Asia/Ho_Chi_Minh', // Đảm bảo múi giờ không bị lệch trên Android
+      notes: notes,
+      // Nếu muốn giữ nguyên báo thức cũ thì không cần truyền alarms, 
+      // hoặc truyền mới để ghi đè:
+      alarms: [{ relativeOffset: -10 }], 
+    };
+
+    // 5. Gọi API cập nhật
+    await Calendar.updateEventAsync(calendarEventId, eventDetails);
+    
+    console.log(`[Calendar] Đã cập nhật thành công sự kiện: ${calendarEventId}`);
+    return true;
+
+  } catch (error) {
+    console.error('[Calendar] Lỗi khi cập nhật:', error);
+    Alert.alert('Lỗi', 'Không thể cập nhật sự kiện này.');
+    return false;
   }
 }

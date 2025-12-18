@@ -73,6 +73,7 @@ const Event_form = () => {
       start: new Date(), // ✅ always give Date object
       end: new Date(), // ✅ same here
       color: "#000000",
+      location: "",
     },
   });
 
@@ -114,10 +115,18 @@ const Event_form = () => {
       // workspaceId: id
     };
 
+    console.log("Payload:", payload);
+
     if (isEditmode) {
       updateEvent({ id: event_id, workspaceId: id, payload });
     } else {
-      addEventToCalendar(data.name, data.description || '', data.start);
+      addEventToCalendar({
+        title: data.name,
+        description: data.description,
+        startDate: data.start,
+        endDate: data.end,
+        location: data.location,
+      });
       createEvent({ ...payload, workspaceId: id });
       reset();
     }
