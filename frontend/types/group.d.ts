@@ -1,3 +1,5 @@
+import { User } from "./auth";
+
 export interface Group {
   id: string;
   name: string;
@@ -22,4 +24,8 @@ export interface GroupPayload {
   color: string;
   icon: string;
   order: number;
+}
+
+export interface GroupMember extends User {
+  role: string;
 }

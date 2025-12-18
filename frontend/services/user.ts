@@ -26,3 +26,11 @@ export const getUserById = async (
 ): Promise<UserProfile | undefined> => {
   return await api.get(`/users/${id}`);
 };
+
+
+export const sendUserLocation = async (payload: {
+  lng:number,
+  lat:number,
+}) => {
+  return api.post("/users/location",payload)
+}

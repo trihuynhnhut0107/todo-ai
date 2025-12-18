@@ -5,14 +5,14 @@ import { Event, EventPayload } from "@/types/event";
 
 export const getEvents = async ({
   wp_id,
-  user_id,
+  assigneeId,
 }: {
   wp_id?: string;
-  user_id?: string;
+  assigneeId?: string;
 }): Promise<Event[]> => {
   const params: Record<string, string> = {};
   if (wp_id) params.workspaceId = wp_id;
-  if (user_id) params.userId = user_id;
+  if (assigneeId) params.assigneeId = assigneeId;
   return await api.get("/events", { params });
 };
 

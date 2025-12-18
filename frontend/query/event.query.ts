@@ -98,6 +98,7 @@ export const useUpdateEventStatus = () => {
 
 export const useDeleteEvent = (callback?: any) => {
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
   return useMutation({
     mutationFn: deleteEvent,
 
@@ -107,6 +108,9 @@ export const useDeleteEvent = (callback?: any) => {
       });
       queryClient.invalidateQueries({
         queryKey: ["workspace", wp_id, "events"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user", user?.id, "events"],
       });
       showMessage({
         message: "Event deleted!",
