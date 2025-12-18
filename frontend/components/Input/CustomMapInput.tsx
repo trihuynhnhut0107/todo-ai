@@ -4,7 +4,7 @@ import MapView, {
   MapPressEvent,
 } from "react-native-maps";
 import { useRef } from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity } from "react-native";
 import { useLocation } from "@/hooks/useLocation";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -76,6 +76,8 @@ const CustomMapInput = ({ coord, onChange }: CustomMapInputProps) => {
         initialRegion={getInitialCoordinate()}
         onPress={handleMapPress}
         showsUserLocation={true}
+        showsMyLocationButton={false}
+        toolbarEnabled={false}
       >
         {coord?.lat && coord?.lng && (
           <Marker

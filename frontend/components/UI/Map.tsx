@@ -4,16 +4,10 @@ import { openInGoogleMap } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Animated,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Animated, Platform, Text, TouchableOpacity, View } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from "react-native-maps";
 import Loader from "./Loader";
-
+import cn from "clsx";
 export interface MapMarker {
   id: string;
   latitude: number;
@@ -36,12 +30,13 @@ export default function Map({
   displayUser = false,
   loading = false,
 }: MapProps) {
-  const { userLocation, refetch } = useLocation();
+  const { userLocation } = useLocation();
   const colors = useThemeColor();
   const mapRef = useRef<MapView>(null);
   const [mapRegion, setMapRegion] = useState<Region | null>(null);
   const [mapLayout, setMapLayout] = useState({ width: 0, height: 0 });
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const slideAnim = useRef(new Animated.Value(300)).current;
 
   useEffect(() => {
@@ -101,11 +96,11 @@ export default function Map({
   };
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && loaded) {
       const init = getInitialRegion();
       snapToCoord(init.longitude, init.latitude);
     }
-  }, [loading]);
+  }, [loading, loaded]);
 
   const snapToCoord = (lng: number, lat: number) => {
     console.log(`snapping to: lng:${lng},lat:${lat}`);
@@ -124,7 +119,7 @@ export default function Map({
   const getEdgeIndicators = () => {
     if (!mapRegion || !mapLayout.width) return [];
 
-    const indicators: Array<{
+    const indicators: {
       marker: MapMarker;
       position: {
         top?: number;
@@ -132,7 +127,7 @@ export default function Map({
         left?: number;
         right?: number;
       };
-    }> = [];
+    }[] = [];
 
     const { latitude, longitude, latitudeDelta, longitudeDelta } = mapRegion;
     const northBound = latitude + latitudeDelta / 2;
@@ -187,7 +182,7 @@ export default function Map({
   const edgeIndicators = getEdgeIndicators();
   const selectedMarker = useMemo(
     () => coordinates.find((c) => c.id === selectedMarkerId),
-    [selectedMarkerId]
+    [selectedMarkerId, coordinates]
   );
 
   if (loading) return <Loader />;
@@ -201,15 +196,20 @@ export default function Map({
         }}
       >
         <MapView
+          
           ref={mapRef}
+          onMapLoaded={() => setLoaded(true)}
           provider={PROVIDER_GOOGLE}
           className="flex-1"
           style={{ flex: 1 }}
           showsUserLocation
           onRegionChange={setMapRegion}
           onRegionChangeComplete={setMapRegion}
+          showsMyLocationButton={false}
+          toolbarEnabled={false}
           // scrollEnabled={false}
         >
+            
           {coordinates.map((coord) => (
             <Marker
               key={coord.id}
@@ -219,30 +219,33 @@ export default function Map({
               }}
               // title={coord.title}
               // description={coord.description}
-              tracksViewChanges={false}
+              // tracksViewChanges={false}
               onPress={() => {
                 setSelectedMarkerId(coord.id);
               }}
             >
-              <View style={{ alignItems: "center" }}>
+              {/* {Platform.OS === "ios" && ( */}
+              <View className="items-center">
                 {/* Pin head */}
                 <View
-                  className="size-8 items-center justify-center rounded-full border-2 border-white"
-                  style={{
-                    backgroundColor: coord.color,
-                    transform: [
-                      { scale: selectedMarkerId === coord.id ? 1.2 : 1 },
-                    ],
-                  }}
+                  className={cn(
+                    "size-8 items-center justify-center rounded-full border-2 border-white "
+                  )}
+                  style={{ backgroundColor: coord.color }}
                 >
                   <Ionicons name="location" size={16} color="white" />
                 </View>
+
                 {/* Pin point */}
                 <View
-                  className="border-t-8 border-4 border-b-0 border-transparent size-0 bg-transparent "
+                  className={cn(
+                    "border-t-8 border-4 border-b-0 border-transparent size-0 bg-transparent"
+                  )}
                   style={{ borderTopColor: coord.color }}
+                  // style={{ borderTopColor: coord.color }}
                 />
               </View>
+              {/* )} */}
             </Marker>
           ))}
         </MapView>
@@ -258,7 +261,7 @@ export default function Map({
         ))}
       </View>
       <View className="absolute top-4 right-4 flex-col gap-2">
-        {userLocation && (
+        {userLocation  && (
           <TouchableOpacity
             className="bg-white rounded-lg size-8 items-center justify-center shadow"
             onPress={() =>
@@ -358,6 +361,7 @@ export default function Map({
                 <Text className="text-white text-center">
                   Open in Google Map
                 </Text>
+
               </TouchableOpacity>
             </View>
           </View>
