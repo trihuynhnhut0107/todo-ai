@@ -16,11 +16,13 @@ import {
   validateTravelLogistics,
 } from "../utils/location-validation";
 import { BadRequestError } from "../utils/errors";
+import { NotificationService } from "./notification.service";
 
 export class EventService {
   private eventRepository = AppDataSource.getRepository(Event);
   private workspaceRepository = AppDataSource.getRepository(Workspace);
   private userRepository = AppDataSource.getRepository(User);
+  private notificationService = new NotificationService();
 
   /**
    * Create a new event
@@ -128,6 +130,17 @@ export class EventService {
     // await scheduleEventNotification(savedEvent.id, savedEvent.start);
     await reminderService.scheduleDefaultReminder(savedEvent);
 
+    // Send immediate notification to assignees for calendar sync
+    if (assignees.length > 0) {
+      const pushTokens = assignees
+        .map((assignee) => assignee.pushToken)
+        .filter((token): token is string => !!token);
+
+      if (pushTokens.length > 0) {
+        await this.notificationService.sendEventCreated(pushTokens, savedEvent);
+      }
+    }
+
     return this.formatEventResponse(savedEvent);
   }
 
@@ -222,7 +235,7 @@ export class EventService {
   ): Promise<EventResponse> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
-      relations: ["workspace", "workspace.members"],
+      relations: ["workspace", "workspace.members", "assignees", "createdBy"],
     });
 
     if (!event) {
@@ -341,6 +354,29 @@ export class EventService {
       await cancelEventNotification(updatedEvent.id);
     }
 
+    // Send immediate notification to assignees and creator for calendar sync
+    // Collect unique push tokens (exclude the user who made the update)
+    const notificationRecipients = new Set<string>();
+
+    // Add creator if not the one updating
+    if (event.createdBy && event.createdBy.id !== userId && event.createdBy.pushToken) {
+      notificationRecipients.add(event.createdBy.pushToken);
+    }
+
+    // Add assignees (excluding the user who made the update)
+    if (event.assignees) {
+      event.assignees.forEach((assignee) => {
+        if (assignee.id !== userId && assignee.pushToken) {
+          notificationRecipients.add(assignee.pushToken);
+        }
+      });
+    }
+
+    const pushTokens = Array.from(notificationRecipients);
+    if (pushTokens.length > 0) {
+      await this.notificationService.sendEventUpdated(pushTokens, updatedEvent);
+    }
+
     return this.formatEventResponse(updatedEvent);
   }
 
@@ -350,7 +386,7 @@ export class EventService {
   async deleteEvent(eventId: string, userId: string): Promise<void> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
-      relations: ["workspace"],
+      relations: ["workspace", "assignees", "createdBy"],
     });
 
     if (!event) {
@@ -365,10 +401,36 @@ export class EventService {
       throw new Error("Access denied");
     }
 
+    // Collect push tokens before deleting (exclude the user who deleted)
+    const notificationRecipients = new Set<string>();
+
+    // Add creator if not the one deleting
+    if (event.createdBy && event.createdBy.id !== userId && event.createdBy.pushToken) {
+      notificationRecipients.add(event.createdBy.pushToken);
+    }
+
+    // Add assignees (excluding the user who deleted)
+    if (event.assignees) {
+      event.assignees.forEach((assignee) => {
+        if (assignee.id !== userId && assignee.pushToken) {
+          notificationRecipients.add(assignee.pushToken);
+        }
+      });
+    }
+
+    // Store event name before deleting
+    const eventName = event.name;
+
     // Cancel scheduled notification before deleting
     await cancelEventNotification(eventId);
 
     await this.eventRepository.remove(event);
+
+    // Send deletion notification for calendar sync
+    const pushTokens = Array.from(notificationRecipients);
+    if (pushTokens.length > 0) {
+      await this.notificationService.sendEventDeleted(pushTokens, eventId, eventName);
+    }
   }
 
   /**
