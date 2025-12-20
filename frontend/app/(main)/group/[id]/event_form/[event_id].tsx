@@ -88,7 +88,7 @@ const Event_form = () => {
         start: new Date(event?.start),
         end: new Date(event?.end),
         color: event?.color,
-        location: event?.location,
+        location: event?.location ||"",
         ...(event?.lat &&
           event?.lng && {
             coordinates: {

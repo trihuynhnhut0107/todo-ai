@@ -34,3 +34,23 @@ export interface MapboxGeocodingResponse {
   features: MapboxFeature[];
   attribution?: string;
 }
+
+export interface MapboxTravelTimeResponse {
+  travelTimeMinutes: number;
+}
+
+export interface MapboxDistanceResponse {
+  distanceKm: number
+}
+
+export interface TravelTimePayload {
+  origin: {
+    latitude: number;
+    longitude: number;
+  };
+  destination: {
+    latitude: number;
+    longitude: number;
+  };
+  profile: string;
+}

@@ -1,13 +1,21 @@
 import { useLocation } from "@/hooks/useLocation";
 import useThemeColor from "@/hooks/useThemeColor";
 import { openInGoogleMap } from "@/lib/utils";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  AntDesign,
+  Ionicons,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 import { format } from "date-fns";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Platform, Text, TouchableOpacity, View } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from "react-native-maps";
 import Loader from "./Loader";
 import cn from "clsx";
+import {
+  useDistanceFromDestination,
+  useTravelTimeFromDestination,
+} from "@/query/map.query";
 export interface MapMarker {
   id: string;
   latitude: number;
@@ -38,6 +46,21 @@ export default function Map({
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const slideAnim = useRef(new Animated.Value(300)).current;
+
+  const selectedMarker = useMemo(
+    () => coordinates.find((c) => c.id === selectedMarkerId),
+    [selectedMarkerId, coordinates]
+  );
+
+  const { data: travelTime } = useTravelTimeFromDestination({
+    lat: selectedMarker?.latitude!,
+    lng: selectedMarker?.longitude!,
+  });
+
+  const { data: distance } = useDistanceFromDestination({
+    lat: selectedMarker?.latitude!,
+    lng: selectedMarker?.longitude!,
+  });
 
   useEffect(() => {
     if (selectedMarkerId) {
@@ -180,10 +203,6 @@ export default function Map({
   };
 
   const edgeIndicators = getEdgeIndicators();
-  const selectedMarker = useMemo(
-    () => coordinates.find((c) => c.id === selectedMarkerId),
-    [selectedMarkerId, coordinates]
-  );
 
   if (loading) return <Loader />;
   return (
@@ -196,7 +215,6 @@ export default function Map({
         }}
       >
         <MapView
-          
           ref={mapRef}
           onMapLoaded={() => setLoaded(true)}
           provider={PROVIDER_GOOGLE}
@@ -209,7 +227,6 @@ export default function Map({
           toolbarEnabled={false}
           // scrollEnabled={false}
         >
-            
           {coordinates.map((coord) => (
             <Marker
               key={coord.id}
@@ -254,14 +271,16 @@ export default function Map({
             key={`indicator-${marker.id}`}
             className="absolute size-8 items-center justify-center rounded-full border-2 border-white"
             style={[position, { backgroundColor: marker.color || "#007AFF" }]}
-            onPress={() => snapToCoord(marker.longitude, marker.latitude)}
+            onPress={() => {
+              setSelectedMarkerId(marker.id);
+              snapToCoord(marker.longitude, marker.latitude)}}
           >
             <Ionicons name="location" size={16} color="white" />
           </TouchableOpacity>
         ))}
       </View>
       <View className="absolute top-4 right-4 flex-col gap-2">
-        {userLocation  && (
+        {userLocation && (
           <TouchableOpacity
             className="bg-white rounded-lg size-8 items-center justify-center shadow"
             onPress={() =>
@@ -304,6 +323,24 @@ export default function Map({
                   color={colors["text-secondary"]}
                 />
               </TouchableOpacity>
+            </View>
+            <View className="flex-row flex-wrap items-center gap-x-2">
+              <View className="flex-row items-center gap-1.5 p-1 rounded bg-card">
+                <AntDesign name="car" size={12} color={colors.accent} />
+                <Text className="text-text text-xs">
+                  {travelTime?.travelTimeMinutes} min
+                </Text>
+              </View>
+              <View className="flex-row items-center gap-1.5 p-1 rounded bg-card">
+                <MaterialCommunityIcons
+                  name="map-marker-distance"
+                  size={12}
+                  color={colors.accent}
+                />
+                <Text className="text-text-secondary text-xs">
+                  {distance?.distanceKm} Km
+                </Text>
+              </View>
             </View>
             {(selectedMarker?.start || selectedMarker?.end) && (
               <View className="flex-row flex-wrap items-center gap-x-2 justify-between">
@@ -361,7 +398,6 @@ export default function Map({
                 <Text className="text-white text-center">
                   Open in Google Map
                 </Text>
-
               </TouchableOpacity>
             </View>
           </View>
