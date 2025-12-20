@@ -75,17 +75,25 @@ export class ChatController extends Controller {
         throw new Error("Message field is required and cannot be empty");
       }
 
-      if (!createMessageDto.sessionId || createMessageDto.sessionId.trim().length === 0) {
+      if (
+        !createMessageDto.sessionId ||
+        createMessageDto.sessionId.trim().length === 0
+      ) {
         this.setStatus(400);
         throw new Error("Session ID is required and cannot be empty");
       }
 
-      if (!createMessageDto.senderId || createMessageDto.senderId.trim().length === 0) {
+      if (
+        !createMessageDto.senderId ||
+        createMessageDto.senderId.trim().length === 0
+      ) {
         this.setStatus(400);
         throw new Error("Sender ID is required and cannot be empty");
       }
 
-      const response = await this.chatService.handleChatWithAgent(createMessageDto);
+      const response = await this.chatService.handleChatWithAgent(
+        createMessageDto
+      );
 
       return {
         success: true,
@@ -141,194 +149,6 @@ export class ChatController extends Controller {
       throw error;
     }
   }
-
-  // /**
-  //  * Agent chat with event and workspace tools
-  //  * @summary Chat with AI agent that can manage events and workspaces
-  //  * @param agentChatDto User message and ID for agent
-  //  * @returns Agent response with tools used
-  //  */
-  // @Post("agent")
-  // @SuccessResponse("200", "Agent response generated successfully")
-  // @Response<ErrorResponse>("400", "Validation Error")
-  // @Response<ErrorResponse>("500", "Internal Server Error")
-  // public async agentChat(
-  //   @Body() agentChatDto: { userId: string; message: string }
-  // ): Promise<
-  //   ApiResponse<{
-  //     response: string;
-  //     toolsUsed: string[];
-  //   }>
-  // > {
-  //   try {
-  //     if (!agentChatDto.userId || agentChatDto.userId.trim().length === 0) {
-  //       this.setStatus(400);
-  //       throw new Error("User ID field is required and cannot be empty");
-  //     }
-
-  //     if (!agentChatDto.message || agentChatDto.message.trim().length === 0) {
-  //       this.setStatus(400);
-  //       throw new Error("Message field is required and cannot be empty");
-  //     }
-
-  //     const result = await this.langchainService.generateAgentResponse(
-  //       agentChatDto.message,
-  //       agentChatDto.userId
-  //     );
-
-  //     return {
-  //       success: true,
-  //       message: "Agent response generated successfully",
-  //       data: {
-  //         response: result.response,
-  //         toolsUsed: result.toolsUsed,
-  //       },
-  //       timestamp: new Date().toISOString(),
-  //     };
-  //   } catch (error) {
-  //     if (error instanceof Error && error.message.includes("required")) {
-  //       this.setStatus(400);
-  //     } else {
-  //       this.setStatus(500);
-  //     }
-  //     throw error;
-  //   }
-  // }
-
-  // /**
-  //  * Chat with agent in session context
-  //  * @summary Chat with AI agent with session history and persistence
-  //  * @param chatWithAgentDto Session ID, user message, and user ID
-  //  * @returns Agent response with message record
-  //  */
-  // @Post("session-agent")
-  // @SuccessResponse("200", "Agent message processed successfully")
-  // @Response<ErrorResponse>("400", "Validation Error")
-  // @Response<ErrorResponse>("500", "Internal Server Error")
-  // public async chatWithAgent(
-  //   @Body()
-  //   chatWithAgentDto: {
-  //     sessionId: string;
-  //     content: string;
-  //     senderId: string;
-  //     userId: string;
-  //   }
-  // ): Promise<ApiResponse<MessageResponse>> {
-  //   try {
-  //     // Validate required fields
-  //     if (
-  //       !chatWithAgentDto.sessionId ||
-  //       chatWithAgentDto.sessionId.trim().length === 0
-  //     ) {
-  //       this.setStatus(400);
-  //       throw new Error("Session ID field is required and cannot be empty");
-  //     }
-
-  //     if (
-  //       !chatWithAgentDto.content ||
-  //       chatWithAgentDto.content.trim().length === 0
-  //     ) {
-  //       this.setStatus(400);
-  //       throw new Error(
-  //         "Message content field is required and cannot be empty"
-  //       );
-  //     }
-
-  //     if (
-  //       !chatWithAgentDto.senderId ||
-  //       chatWithAgentDto.senderId.trim().length === 0
-  //     ) {
-  //       this.setStatus(400);
-  //       throw new Error("Sender ID field is required and cannot be empty");
-  //     }
-
-  //     if (
-  //       !chatWithAgentDto.userId ||
-  //       chatWithAgentDto.userId.trim().length === 0
-  //     ) {
-  //       this.setStatus(400);
-  //       throw new Error("User ID field is required and cannot be empty");
-  //     }
-
-  //     // Create message DTO and process through agent
-  //     const createMessageDto = {
-  //       sessionId: chatWithAgentDto.sessionId,
-  //       senderId: chatWithAgentDto.senderId,
-  //       content: chatWithAgentDto.content,
-  //       senderType: SenderType.USER,
-  //     };
-
-  //     const result = await this.chatService.handleChatWithAgent(
-  //       createMessageDto,
-  //       chatWithAgentDto.userId
-  //     );
-
-  //     return {
-  //       success: true,
-  //       message: "Agent message processed successfully",
-  //       data: result,
-  //       timestamp: new Date().toISOString(),
-  //     };
-  //   } catch (error) {
-  //     if (error instanceof Error && error.message.includes("required")) {
-  //       this.setStatus(400);
-  //     } else {
-  //       this.setStatus(500);
-  //     }
-  //     throw error;
-  //   }
-  // }
-
-  // /**
-  //  * Detect intent from messages
-  //  * @summary Detect user intent and extract information
-  //  * @param messages Array of message strings to analyze
-  //  * @returns Intent detection result
-  //  */
-  // @Post("detect-intent")
-  // @SuccessResponse("200", "Intent detected successfully")
-  // @Response<ErrorResponse>("400", "Validation Error")
-  // @Response<ErrorResponse>("500", "Internal Server Error")
-  // public async detectIntent(@Body() input: { messages: string[] }): Promise<
-  //   ApiResponse<{
-  //     intent: string;
-  //     confidence: number;
-  //     extractedInfo: Record<string, unknown>;
-  //     missingRequiredFields: string[];
-  //     reasoning: string;
-  //   }>
-  // > {
-  //   try {
-  //     if (!input.messages || input.messages.length === 0) {
-  //       this.setStatus(400);
-  //       throw new Error("Messages array is required and cannot be empty");
-  //     }
-
-  //     const intentResult = await this.langchainService.detectIntent(
-  //       input.messages
-  //     );
-
-  //     return {
-  //       success: true,
-  //       message: "Intent detected successfully",
-  //       data: {
-  //         intent: intentResult.intent,
-  //         confidence: intentResult.confidence,
-  //         extractedInfo: intentResult.extractedInfo || {},
-  //         missingRequiredFields: intentResult.missingRequiredFields || [],
-  //         reasoning: intentResult.reasoning || "",
-  //       },
-  //       timestamp: new Date().toISOString(),
-  //     };
-  //   } catch (error) {
-  //     if (error instanceof Error && error.message.includes("required")) {
-  //       this.setStatus(400);
-  //     } else {
-  //       this.setStatus(500);
-  //     }
-  //     throw error;
-  //   }
-  // }
 
   /**
    * Create a new chat session
@@ -778,4 +598,192 @@ export class ChatController extends Controller {
       throw error;
     }
   }
+
+  // /**
+  //  * Agent chat with event and workspace tools
+  //  * @summary Chat with AI agent that can manage events and workspaces
+  //  * @param agentChatDto User message and ID for agent
+  //  * @returns Agent response with tools used
+  //  */
+  // @Post("agent")
+  // @SuccessResponse("200", "Agent response generated successfully")
+  // @Response<ErrorResponse>("400", "Validation Error")
+  // @Response<ErrorResponse>("500", "Internal Server Error")
+  // public async agentChat(
+  //   @Body() agentChatDto: { userId: string; message: string }
+  // ): Promise<
+  //   ApiResponse<{
+  //     response: string;
+  //     toolsUsed: string[];
+  //   }>
+  // > {
+  //   try {
+  //     if (!agentChatDto.userId || agentChatDto.userId.trim().length === 0) {
+  //       this.setStatus(400);
+  //       throw new Error("User ID field is required and cannot be empty");
+  //     }
+
+  //     if (!agentChatDto.message || agentChatDto.message.trim().length === 0) {
+  //       this.setStatus(400);
+  //       throw new Error("Message field is required and cannot be empty");
+  //     }
+
+  //     const result = await this.langchainService.generateAgentResponse(
+  //       agentChatDto.message,
+  //       agentChatDto.userId
+  //     );
+
+  //     return {
+  //       success: true,
+  //       message: "Agent response generated successfully",
+  //       data: {
+  //         response: result.response,
+  //         toolsUsed: result.toolsUsed,
+  //       },
+  //       timestamp: new Date().toISOString(),
+  //     };
+  //   } catch (error) {
+  //     if (error instanceof Error && error.message.includes("required")) {
+  //       this.setStatus(400);
+  //     } else {
+  //       this.setStatus(500);
+  //     }
+  //     throw error;
+  //   }
+  // }
+
+  // /**
+  //  * Chat with agent in session context
+  //  * @summary Chat with AI agent with session history and persistence
+  //  * @param chatWithAgentDto Session ID, user message, and user ID
+  //  * @returns Agent response with message record
+  //  */
+  // @Post("session-agent")
+  // @SuccessResponse("200", "Agent message processed successfully")
+  // @Response<ErrorResponse>("400", "Validation Error")
+  // @Response<ErrorResponse>("500", "Internal Server Error")
+  // public async chatWithAgent(
+  //   @Body()
+  //   chatWithAgentDto: {
+  //     sessionId: string;
+  //     content: string;
+  //     senderId: string;
+  //     userId: string;
+  //   }
+  // ): Promise<ApiResponse<MessageResponse>> {
+  //   try {
+  //     // Validate required fields
+  //     if (
+  //       !chatWithAgentDto.sessionId ||
+  //       chatWithAgentDto.sessionId.trim().length === 0
+  //     ) {
+  //       this.setStatus(400);
+  //       throw new Error("Session ID field is required and cannot be empty");
+  //     }
+
+  //     if (
+  //       !chatWithAgentDto.content ||
+  //       chatWithAgentDto.content.trim().length === 0
+  //     ) {
+  //       this.setStatus(400);
+  //       throw new Error(
+  //         "Message content field is required and cannot be empty"
+  //       );
+  //     }
+
+  //     if (
+  //       !chatWithAgentDto.senderId ||
+  //       chatWithAgentDto.senderId.trim().length === 0
+  //     ) {
+  //       this.setStatus(400);
+  //       throw new Error("Sender ID field is required and cannot be empty");
+  //     }
+
+  //     if (
+  //       !chatWithAgentDto.userId ||
+  //       chatWithAgentDto.userId.trim().length === 0
+  //     ) {
+  //       this.setStatus(400);
+  //       throw new Error("User ID field is required and cannot be empty");
+  //     }
+
+  //     // Create message DTO and process through agent
+  //     const createMessageDto = {
+  //       sessionId: chatWithAgentDto.sessionId,
+  //       senderId: chatWithAgentDto.senderId,
+  //       content: chatWithAgentDto.content,
+  //       senderType: SenderType.USER,
+  //     };
+
+  //     const result = await this.chatService.handleChatWithAgent(
+  //       createMessageDto,
+  //       chatWithAgentDto.userId
+  //     );
+
+  //     return {
+  //       success: true,
+  //       message: "Agent message processed successfully",
+  //       data: result,
+  //       timestamp: new Date().toISOString(),
+  //     };
+  //   } catch (error) {
+  //     if (error instanceof Error && error.message.includes("required")) {
+  //       this.setStatus(400);
+  //     } else {
+  //       this.setStatus(500);
+  //     }
+  //     throw error;
+  //   }
+  // }
+
+  // /**
+  //  * Detect intent from messages
+  //  * @summary Detect user intent and extract information
+  //  * @param messages Array of message strings to analyze
+  //  * @returns Intent detection result
+  //  */
+  // @Post("detect-intent")
+  // @SuccessResponse("200", "Intent detected successfully")
+  // @Response<ErrorResponse>("400", "Validation Error")
+  // @Response<ErrorResponse>("500", "Internal Server Error")
+  // public async detectIntent(@Body() input: { messages: string[] }): Promise<
+  //   ApiResponse<{
+  //     intent: string;
+  //     confidence: number;
+  //     extractedInfo: Record<string, unknown>;
+  //     missingRequiredFields: string[];
+  //     reasoning: string;
+  //   }>
+  // > {
+  //   try {
+  //     if (!input.messages || input.messages.length === 0) {
+  //       this.setStatus(400);
+  //       throw new Error("Messages array is required and cannot be empty");
+  //     }
+
+  //     const intentResult = await this.langchainService.detectIntent(
+  //       input.messages
+  //     );
+
+  //     return {
+  //       success: true,
+  //       message: "Intent detected successfully",
+  //       data: {
+  //         intent: intentResult.intent,
+  //         confidence: intentResult.confidence,
+  //         extractedInfo: intentResult.extractedInfo || {},
+  //         missingRequiredFields: intentResult.missingRequiredFields || [],
+  //         reasoning: intentResult.reasoning || "",
+  //       },
+  //       timestamp: new Date().toISOString(),
+  //     };
+  //   } catch (error) {
+  //     if (error instanceof Error && error.message.includes("required")) {
+  //       this.setStatus(400);
+  //     } else {
+  //       this.setStatus(500);
+  //     }
+  //     throw error;
+  //   }
+  // }
 }
