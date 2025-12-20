@@ -7,9 +7,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import useAuthStore from "@/store/auth.store";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import FlashMessage from "react-native-flash-message";
 import Loader from "@/components/UI/Loader";
 import { useColorScheme, View } from "react-native";
+import Toaster from "@/components/UI/Toaster/Toaster";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,7 +46,7 @@ export default function RootLayout() {
                 headerShown: false,
               }}
             />
-            <FlashMessage position="top" floating />
+            <Toaster />
           </BottomSheetModalProvider>
         </GestureHandlerRootView>
         {/* </ThemeProvider> */}
