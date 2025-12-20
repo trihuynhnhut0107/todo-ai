@@ -14,7 +14,8 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:generate": "npm run typeorm migration:generate -- -d ./src/data-source.ts",
     "migration:run": "npm run typeorm migration:run -- -d ./src/data-source.ts",
-    "migration:revert": "npm run typeorm migration:revert -- -d ./src/data-source.ts"
+    "migration:revert": "npm run typeorm migration:revert -- -d ./src/data-source.ts",
+    "eval": "ts-node --transpile-only src/services/__tests__/langchain.service.eval.ts"
   },
   "keywords": [],
   "author": "",
@@ -40,7 +41,10 @@
     "ioredis": "^5.8.2",
     "jsonwebtoken": "^9.0.2",
     "langchain": "^1.1.1",
+    "langsmith": "^0.4.0",
     "morgan": "^1.10.1",
+    "openai": "^6.15.0",
+    "openevals": "^0.1.4",
     "pg": "^8.16.3",
     "pg-hstore": "^2.3.4",
     "reflect-metadata": "^0.2.2",
