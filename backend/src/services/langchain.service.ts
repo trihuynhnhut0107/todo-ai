@@ -187,9 +187,13 @@ export class LangchainService {
       // Add userId context to the formatted messages for the agent
       formattedSessionMessages = `User ID: ${userId}\n\n${formattedSessionMessages}`;
 
+      // Get current UTC date/time for timezone reference
+      const currentUtcDate = new Date().toISOString();
+
       // Format messages using the agent assistant prompt template
       const promptMessages = await agentAssistantPrompt.formatMessages({
         messages: formattedSessionMessages,
+        current_utc_date: currentUtcDate,
       });
 
       const input = {
