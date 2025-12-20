@@ -46,7 +46,7 @@ export default function RootLayout() {
                 headerShown: false,
               }}
             />
-            <FlashMessage position="top" />
+            <FlashMessage position="top" floating />
           </BottomSheetModalProvider>
         </GestureHandlerRootView>
         {/* </ThemeProvider> */}

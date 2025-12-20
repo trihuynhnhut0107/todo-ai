@@ -3,10 +3,9 @@ import useThemeColor from "@/hooks/useThemeColor";
 import { TabBarIconProps } from "@/type";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, Tabs } from "expo-router";
+import { navigate } from "expo-router/build/global-state/routing";
 
-import {
-  View,
-} from "react-native";
+import { Pressable, View } from "react-native";
 
 const TabBarIcon = ({
   focused,
@@ -22,8 +21,6 @@ const TabBarIcon = ({
       ) : (
         <Ionicons name={icon} size={28} color={color.primary} />
       )}
-
-     
     </View>
   );
 };
@@ -40,7 +37,7 @@ const TabLayout = () => {
           backgroundColor: "transparent",
         },
         tabBarStyle: {
-          height:50,
+          height: 50,
           backgroundColor: color.surface,
           borderTopWidth: 0,
           //   borderRadius: 20,
@@ -80,6 +77,32 @@ const TabLayout = () => {
         }}
       />
       <Tabs.Screen
+        name="chat_holder"
+        options={{
+          title: "",
+          tabBarIcon: ({ focused }) => (
+            // <Link href={"/(main)/chat"}>
+            //   <TabBarIcon
+            //     title="Chat"
+            //     icon="sparkles-outline"
+            //     acactive_icon="sparkles"
+            //     focused={focused}
+            //   />
+            // </Link>
+            <View className="absolute rounded-full p-2 mb-4 bg-surface">
+              <Pressable
+                className="bg-primary w-16 h-16 rounded-full items-center justify-center "
+                onPress={() => {
+                  navigate("/(main)/chat"); // programmatic navigation
+                }}
+              >
+                <Ionicons name="sparkles-sharp" size={32} color="white" />
+              </Pressable>
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="groups"
         options={{
           title: "Groups",
@@ -93,33 +116,8 @@ const TabLayout = () => {
           ),
         }}
       />
-      <Tabs.Screen
-        name="chat_holder"
-        options={{
-          title: "",
-          tabBarIcon: ({ focused }) => (
-            <Link href={"/(main)/chat"}>
-              <TabBarIcon
-                title="Chat"
-                icon="sparkles-outline"
-                acactive_icon="sparkles"
-                focused={focused}
-              />
-            </Link>
-            // <View className="absolute rounded-full p-2 mb-4 bg-surface">
-            //   <Pressable
-            //     className="bg-primary w-16 h-16 rounded-full items-center justify-center "
-            //     onPress={() => {
-            //       navigate("/(main)/chat"); // programmatic navigation
-            //     }}
-            //   >
-            //     <Ionicons name="sparkles-sharp" size={32} color="white" />
-            //   </Pressable>
-            // </View>
-          ),
-        }}
-      />
-      <Tabs.Screen
+
+      {/* <Tabs.Screen
         name="notification"
         options={{
           title: "Notification",
@@ -142,7 +140,7 @@ const TabLayout = () => {
           //     transform: "translateY(10px), translateX(5px)",
           //   },
         }}
-      />
+      /> */}
     </Tabs>
   );
 };

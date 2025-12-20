@@ -299,7 +299,20 @@ const GroupDetail = () => {
         </BottomSheetModal>
 
         <TouchableOpacity
-          onPress={() => router.push(`/(main)/group/${id}/event_form/create`)}
+          onPress={() => {
+            const selectedDate = new Date(selected);
+            const now = new Date();
+            // Set the selected date but with the current time
+            selectedDate.setHours(
+              now.getHours(),
+              now.getMinutes(),
+              now.getSeconds(),
+              now.getMilliseconds()
+            );
+            router.push(
+              `/(main)/group/${id}/event_form/create?date=${selectedDate.toISOString()}`
+            );
+          }}
           className="absolute left-5 bottom-5 flex-row items-center p-3 bg-primary rounded-full "
         >
           <Ionicons name="add" size={32} color="white" />

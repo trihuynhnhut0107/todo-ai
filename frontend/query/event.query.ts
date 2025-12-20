@@ -35,7 +35,7 @@ export const useEventById = (id: string) =>
     enabled: !!id && id !== "create",
   });
 
-export const useCreateEvent = () => {
+export const useCreateEvent = (callback: () => void) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -44,6 +44,7 @@ export const useCreateEvent = () => {
       queryClient.invalidateQueries({
         queryKey: ["workspace", workspaceId, "events"],
       });
+      callback()
       showMessage({
         message: "Event created!",
         type: "success",
