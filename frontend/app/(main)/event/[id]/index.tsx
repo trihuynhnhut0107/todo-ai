@@ -18,6 +18,7 @@ import StatusChip from "@/components/UI/Calendar/StatusChip";
 import useThemeColor from "@/hooks/useThemeColor";
 import Map from "@/components/UI/Map";
 import { removeTodoFromCalendar } from "@/services/calendar";
+import { WEEKDAY_SHORT_LABELS, Weekday } from "@/enum/recurrence";
 
 const EventDetail = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -33,6 +34,53 @@ const EventDetail = () => {
 
   const color = useThemeColor();
   const [open, setOpen] = useState(false);
+
+  // Format recurrence rule for display
+  const formatRecurrenceDisplay = (rrule: string): string => {
+    if (!rrule) return "";
+
+    let display = "";
+
+    // Parse frequency
+    if (rrule.includes("FREQ=DAILY")) display = "Daily";
+    else if (rrule.includes("FREQ=WEEKLY")) {
+      if (rrule.includes("BYDAY=MO,TU,WE,TH,FR"))
+        display = "Weekdays (Mon-Fri)";
+      else if (rrule.includes("INTERVAL=2")) display = "Bi-weekly";
+      else display = "Weekly";
+    } else if (rrule.includes("FREQ=MONTHLY")) {
+      if (rrule.includes("INTERVAL=2")) display = "Bi-monthly";
+      else if (rrule.includes("INTERVAL=3")) display = "Quarterly";
+      else display = "Monthly";
+    } else if (rrule.includes("FREQ=YEARLY")) display = "Yearly";
+
+    // Parse BYDAY if weekly/biweekly and not weekdays pattern
+    const bydayMatch = rrule.match(/BYDAY=([A-Z,]+)/);
+    if (
+      bydayMatch &&
+      (display === "Weekly" || display === "Bi-weekly") &&
+      !rrule.includes("BYDAY=MO,TU,WE,TH,FR")
+    ) {
+      const days = bydayMatch[1]
+        .split(",")
+        .map((d) => WEEKDAY_SHORT_LABELS[d as Weekday])
+        .join(", ");
+      display += ` on ${days}`;
+    }
+
+    // Parse UNTIL
+    const untilMatch = rrule.match(/UNTIL=(\d{8})/);
+    if (untilMatch) {
+      const untilStr = untilMatch[1];
+      const year = untilStr.substring(0, 4);
+      const month = untilStr.substring(4, 6);
+      const day = untilStr.substring(6, 8);
+      const date = new Date(`${year}-${month}-${day}`);
+      display += ` until ${format(date, "MMM dd, yyyy")}`;
+    }
+
+    return display;
+  };
 
   const handleDelete = () =>
     Alert.alert("Delete event?", "This action cannot be undone.", [
@@ -68,7 +116,7 @@ const EventDetail = () => {
     <ScrollView className="flex-1" contentContainerClassName="p-4 gap-4">
       <View className="flex-row items-center justify-between">
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => router.push(`/(main)/group/${event?.workspaceId}`)}
           className=" bg-white/30 rounded-full p-2 px-4 z-10 flex-row items-center gap-2"
         >
           <Ionicons name="arrow-back" size={22} color="white" />
@@ -179,6 +227,25 @@ const EventDetail = () => {
             </Text>
           </View>
         ))}
+      </View>
+
+      <View className="flex flex-col gap-2 rounded-xl bg-surface p-4">
+        <View className="w-full opacity-50 flex-row gap-2 items-center">
+          <Ionicons name="repeat" size={16} color={color["text-tertiary"]} />
+          <Text className="text-sm text-text-tertiary">Recurrence</Text>
+        </View>
+        <View className="flex-row items-center gap-2">
+          <Text className="text-base text-text">
+            {event?.recurrenceRule
+              ? formatRecurrenceDisplay(event.recurrenceRule)
+              : "Does not repeat"}
+          </Text>
+        </View>
+        {event?.recurrenceGroupId && (
+          <Text className="text-xs text-text-secondary opacity-70">
+            Part of recurring event series
+          </Text>
+        )}
       </View>
 
       {event?.location ? (

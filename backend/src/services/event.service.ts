@@ -3,6 +3,7 @@ import { Event } from "../entities/event.entity";
 import { Workspace } from "../entities/workspace.entity";
 import { User } from "../entities/user.entity";
 import { In, Between, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
+import crypto from "crypto";
 import {
   CreateEventDto,
   UpdateEventDto,
@@ -17,12 +18,47 @@ import {
 } from "../utils/location-validation";
 import { BadRequestError } from "../utils/errors";
 import { NotificationService } from "./notification.service";
+import { parseRRule, validateRRule, generateRecurringEventInstances } from "../utils/recurrence.utils";
 
 export class EventService {
   private eventRepository = AppDataSource.getRepository(Event);
   private workspaceRepository = AppDataSource.getRepository(Workspace);
   private userRepository = AppDataSource.getRepository(User);
   private notificationService = new NotificationService();
+
+  /**
+   * Check if an event overlaps with user's existing events
+   * @param userId - User ID to check events for
+   * @param start - Start date of the event to check
+   * @param end - End date of the event to check
+   * @param excludeRecurrenceGroupId - Optional recurrence group ID to exclude from check
+   * @returns The overlapping event if found, null otherwise
+   */
+  private async checkEventOverlap(
+    userId: string,
+    start: Date,
+    end: Date,
+    excludeRecurrenceGroupId?: string
+  ): Promise<Event | null> {
+    const queryBuilder = this.eventRepository
+      .createQueryBuilder("event")
+      .where("event.createdById = :userId", { userId })
+      .andWhere("event.status != :cancelledStatus", { cancelledStatus: "cancelled" })
+      .andWhere(
+        "(event.start < :end AND event.end > :start)",
+        { start, end }
+      );
+
+    // Exclude events from the same recurrence group if specified
+    if (excludeRecurrenceGroupId) {
+      queryBuilder.andWhere(
+        "(event.recurrenceGroupId IS NULL OR event.recurrenceGroupId != :excludeRecurrenceGroupId)",
+        { excludeRecurrenceGroupId }
+      );
+    }
+
+    return await queryBuilder.getOne();
+  }
 
   /**
    * Create a new event
@@ -40,6 +76,18 @@ export class EventService {
 
     if (end <= start) {
       throw new BadRequestError("End time must be after start time");
+    }
+
+    // Validate recurrence rule if provided
+    if (createDto.recurrenceRule) {
+      try {
+        const parsedRule = parseRRule(createDto.recurrenceRule);
+        validateRRule(parsedRule);
+      } catch (error) {
+        throw new BadRequestError(
+          `Invalid recurrence rule: ${error instanceof Error ? error.message : "Unknown error"}`
+        );
+      }
     }
 
     // Get assignees if provided
@@ -107,6 +155,99 @@ export class EventService {
       }
     }
 
+    // Handle recurring events
+    if (createDto.recurrenceRule) {
+      const parsedRule = parseRRule(createDto.recurrenceRule);
+      const duration = end.getTime() - start.getTime();
+
+      // Generate all event instances
+      const instances = generateRecurringEventInstances(start, duration, parsedRule);
+
+      // Check for overlaps with each instance
+      for (const instance of instances) {
+        const overlap = await this.checkEventOverlap(
+          userId,
+          instance.start,
+          instance.end
+        );
+
+        if (overlap) {
+          throw new BadRequestError(
+            `Event conflicts with existing event "${overlap.name}" at ${instance.start.toISOString()}`
+          );
+        }
+      }
+
+      // Generate a recurrence group ID for all instances
+      const recurrenceGroupId = crypto.randomUUID();
+
+      // Create all event instances
+      const events = instances.map((instance) =>
+        this.eventRepository.create({
+          name: createDto.name,
+          description: createDto.description,
+          start: instance.start,
+          end: instance.end,
+          workspaceId: createDto.workspaceId,
+          createdById: userId,
+          assignees,
+          location: eventLocation,
+          lat: eventLat,
+          lng: eventLng,
+          color: createDto.color || "#3B82F6",
+          isAllDay: createDto.isAllDay || false,
+          recurrenceRule: createDto.recurrenceRule,
+          recurrenceGroupId,
+          tags: createDto.tags,
+        })
+      );
+
+      // Save all instances
+      const savedEvents = await this.eventRepository.save(events);
+
+      // Schedule reminders for all instances
+      for (const savedEvent of savedEvents) {
+        await reminderService.scheduleDefaultReminder(savedEvent);
+      }
+
+      // Send notification to creator and assignees for the first event
+      if (savedEvents.length > 0) {
+        const notificationRecipients = new Set<string>();
+
+        // Add creator's push token
+        const creator = await this.userRepository.findOne({ where: { id: userId } });
+        if (creator?.pushToken) {
+          notificationRecipients.add(creator.pushToken);
+        }
+
+        // Add assignees' push tokens
+        if (assignees.length > 0) {
+          assignees.forEach((assignee) => {
+            if (assignee.pushToken) {
+              notificationRecipients.add(assignee.pushToken);
+            }
+          });
+        }
+
+        const pushTokens = Array.from(notificationRecipients);
+        if (pushTokens.length > 0) {
+          await this.notificationService.sendEventCreated(pushTokens, savedEvents[0]);
+        }
+      }
+
+      // Return the first event instance
+      return this.formatEventResponse(savedEvents[0]);
+    }
+
+    // Handle single event (no recurrence)
+    // Check for overlap
+    const overlap = await this.checkEventOverlap(userId, start, end);
+    if (overlap) {
+      throw new BadRequestError(
+        `Event conflicts with existing event "${overlap.name}" at ${overlap.start.toISOString()}`
+      );
+    }
+
     const event = this.eventRepository.create({
       name: createDto.name,
       description: createDto.description,
@@ -120,7 +261,8 @@ export class EventService {
       lng: eventLng,
       color: createDto.color || "#3B82F6",
       isAllDay: createDto.isAllDay || false,
-      recurrenceRule: createDto.recurrenceRule,
+      recurrenceRule: undefined,
+      recurrenceGroupId: undefined,
       tags: createDto.tags,
     });
 
@@ -130,17 +272,30 @@ export class EventService {
     // await scheduleEventNotification(savedEvent.id, savedEvent.start);
     await reminderService.scheduleDefaultReminder(savedEvent);
 
-    // Send immediate notification to assignees for calendar sync
-    // if (assignees.length > 0) {
-    //   const pushTokens = assignees
-    //     .map((assignee) => assignee.pushToken)
-    //     .filter((token): token is string => !!token);
-    //   if (pushTokens.length > 0) {
-    //     await this.notificationService.sendEventCreated(pushTokens, savedEvent);
-    //   }
-    // }
+    // Send immediate notification to assignees and creator for calendar sync
+    const notificationRecipients = new Set<string>();
 
-    await this.notificationService.sendEventCreated(["ExponentPushToken[yVDFc4NHNYw-roAMPqlx6G]"], savedEvent);
+    // Add creator's push token
+    if (savedEvent.createdById) {
+      const creator = await this.userRepository.findOne({ where: { id: savedEvent.createdById } });
+      if (creator?.pushToken) {
+        notificationRecipients.add(creator.pushToken);
+      }
+    }
+
+    // Add assignees' push tokens
+    if (assignees.length > 0) {
+      assignees.forEach((assignee) => {
+        if (assignee.pushToken) {
+          notificationRecipients.add(assignee.pushToken);
+        }
+      });
+    }
+
+    const pushTokens = Array.from(notificationRecipients);
+    if (pushTokens.length > 0) {
+      await this.notificationService.sendEventCreated(pushTokens, savedEvent);
+    }
 
     return this.formatEventResponse(savedEvent);
   }
@@ -251,6 +406,207 @@ export class EventService {
       throw new BadRequestError("Access denied");
     }
 
+    // Handle recurrence group updates
+    if (event.recurrenceGroupId) {
+      // Delete this event and all future events in the recurrence group
+      await this.eventRepository
+        .createQueryBuilder()
+        .delete()
+        .from(Event)
+        .where("recurrenceGroupId = :groupId", { groupId: event.recurrenceGroupId })
+        .andWhere("start >= :eventStart", { eventStart: event.start })
+        .execute();
+
+      // Prepare updated event data
+      const start = updateDto.start ? new Date(updateDto.start) : event.start;
+      const end = updateDto.end ? new Date(updateDto.end) : event.end;
+
+      if (end <= start) {
+        throw new BadRequestError("End time must be after start time");
+      }
+
+      // Get assignees if provided
+      let assignees = event.assignees || [];
+      if (updateDto.assigneeIds && updateDto.assigneeIds.length > 0) {
+        assignees = await this.userRepository.findBy({
+          id: In(updateDto.assigneeIds),
+        });
+
+        if (assignees.length !== updateDto.assigneeIds.length) {
+          throw new BadRequestError("One or more assignees not found");
+        }
+      }
+
+      // Handle location validation
+      let eventLocation = updateDto.location !== undefined ? updateDto.location : event.location;
+      let eventLat = updateDto.lat !== undefined ? String(updateDto.lat) : event.lat;
+      let eventLng = updateDto.lng !== undefined ? String(updateDto.lng) : event.lng;
+
+      if (
+        (updateDto.lat !== undefined && updateDto.lng === undefined) ||
+        (updateDto.lng !== undefined && updateDto.lat === undefined)
+      ) {
+        throw new BadRequestError(
+          "Both latitude and longitude must be provided together. Provide neither, or both."
+        );
+      }
+
+      if (updateDto.location || (updateDto.lat && updateDto.lng)) {
+        const validatedLocation = await validateAndNormalizeLocation({
+          location: updateDto.location,
+          lat: updateDto.lat,
+          lng: updateDto.lng,
+        });
+
+        eventLocation = validatedLocation.location;
+        eventLat = validatedLocation.lat;
+        eventLng = validatedLocation.lng;
+      }
+
+      // Validate and parse updated recurrence rule
+      const recurrenceRule = updateDto.recurrenceRule !== undefined
+        ? updateDto.recurrenceRule
+        : event.recurrenceRule;
+
+      if (recurrenceRule) {
+        try {
+          const parsedRule = parseRRule(recurrenceRule);
+          validateRRule(parsedRule);
+
+          const duration = end.getTime() - start.getTime();
+
+          // Generate new instances starting from the edited event's date
+          const instances = generateRecurringEventInstances(start, duration, parsedRule);
+
+          // Check for overlaps (excluding the recurrence group being updated)
+          for (const instance of instances) {
+            const overlap = await this.checkEventOverlap(
+              userId,
+              instance.start,
+              instance.end,
+              event.recurrenceGroupId
+            );
+
+            if (overlap) {
+              throw new BadRequestError(
+                `Event conflicts with existing event "${overlap.name}" at ${instance.start.toISOString()}`
+              );
+            }
+          }
+
+          // Create new event instances with updated data
+          const newEvents = instances.map((instance) =>
+            this.eventRepository.create({
+              name: updateDto.name !== undefined ? updateDto.name : event.name,
+              description: updateDto.description !== undefined ? updateDto.description : event.description,
+              start: instance.start,
+              end: instance.end,
+              workspaceId: event.workspaceId,
+              createdById: userId,
+              assignees,
+              location: eventLocation,
+              lat: eventLat,
+              lng: eventLng,
+              color: updateDto.color !== undefined ? updateDto.color : event.color,
+              isAllDay: updateDto.isAllDay !== undefined ? updateDto.isAllDay : event.isAllDay,
+              recurrenceRule,
+              recurrenceGroupId: event.recurrenceGroupId,
+              tags: updateDto.tags !== undefined ? updateDto.tags : event.tags,
+              metadata: updateDto.metadata !== undefined ? updateDto.metadata : event.metadata,
+              status: updateDto.status !== undefined ? updateDto.status as any : event.status,
+            })
+          );
+
+          // Save all new instances
+          const savedEvents = await this.eventRepository.save(newEvents);
+
+          // Schedule reminders for all new instances
+          for (const savedEvent of savedEvents) {
+            await reminderService.scheduleDefaultReminder(savedEvent);
+          }
+
+          // Send notification to creator and assignees
+          if (savedEvents.length > 0) {
+            const notificationRecipients = new Set<string>();
+
+            // Add creator if not the one updating
+            if (event.createdBy && event.createdBy.id !== userId && event.createdBy.pushToken) {
+              notificationRecipients.add(event.createdBy.pushToken);
+            }
+
+            // Add assignees (excluding the user who made the update)
+            if (assignees.length > 0) {
+              assignees.forEach((assignee) => {
+                if (assignee.id !== userId && assignee.pushToken) {
+                  notificationRecipients.add(assignee.pushToken);
+                }
+              });
+            }
+
+            const pushTokens = Array.from(notificationRecipients);
+            if (pushTokens.length > 0) {
+              await this.notificationService.sendEventUpdated(pushTokens, savedEvents[0]);
+            }
+          }
+
+          return this.formatEventResponse(savedEvents[0]);
+        } catch (error) {
+          throw new BadRequestError(
+            `Invalid recurrence rule: ${error instanceof Error ? error.message : "Unknown error"}`
+          );
+        }
+      } else {
+        // No recurrence rule - create a single event
+        const overlap = await this.checkEventOverlap(userId, start, end);
+        if (overlap) {
+          throw new BadRequestError(
+            `Event conflicts with existing event "${overlap.name}" at ${overlap.start.toISOString()}`
+          );
+        }
+
+        const newEvent = this.eventRepository.create({
+          name: updateDto.name !== undefined ? updateDto.name : event.name,
+          description: updateDto.description !== undefined ? updateDto.description : event.description,
+          start,
+          end,
+          workspaceId: event.workspaceId,
+          createdById: userId,
+          assignees,
+          location: eventLocation,
+          lat: eventLat,
+          lng: eventLng,
+          color: updateDto.color !== undefined ? updateDto.color : event.color,
+          isAllDay: updateDto.isAllDay !== undefined ? updateDto.isAllDay : event.isAllDay,
+          recurrenceRule: undefined,
+          recurrenceGroupId: undefined,
+          tags: updateDto.tags !== undefined ? updateDto.tags : event.tags,
+          metadata: updateDto.metadata !== undefined ? updateDto.metadata : event.metadata,
+          status: updateDto.status !== undefined ? updateDto.status as any : event.status,
+        });
+
+        const savedEvent = await this.eventRepository.save(newEvent);
+        await reminderService.scheduleDefaultReminder(savedEvent);
+
+        return this.formatEventResponse(savedEvent);
+      }
+    }
+
+    // Handle non-recurring event updates
+    // Check for overlap before updating
+    const newStart = updateDto.start ? new Date(updateDto.start) : event.start;
+    const newEnd = updateDto.end ? new Date(updateDto.end) : event.end;
+
+    if (newEnd <= newStart) {
+      throw new BadRequestError("End time must be after start time");
+    }
+
+    const overlap = await this.checkEventOverlap(userId, newStart, newEnd);
+    if (overlap && overlap.id !== eventId) {
+      throw new BadRequestError(
+        `Event conflicts with existing event "${overlap.name}" at ${overlap.start.toISOString()}`
+      );
+    }
+
     // Validate dates if provided
     if (updateDto.start || updateDto.end) {
       const start = updateDto.start ? new Date(updateDto.start) : event.start;
@@ -331,6 +687,21 @@ export class EventService {
       }
     }
 
+    // Validate recurrence rule if being updated
+    if (updateDto.recurrenceRule !== undefined) {
+      if (updateDto.recurrenceRule) {
+        try {
+          const parsedRule = parseRRule(updateDto.recurrenceRule);
+          validateRRule(parsedRule);
+        } catch (error) {
+          throw new BadRequestError(
+            `Invalid recurrence rule: ${error instanceof Error ? error.message : "Unknown error"}`
+          );
+        }
+      }
+      event.recurrenceRule = updateDto.recurrenceRule;
+    }
+
     // Update other fields
     if (updateDto.name !== undefined) event.name = updateDto.name;
     if (updateDto.description !== undefined)
@@ -338,10 +709,9 @@ export class EventService {
     if (updateDto.status !== undefined) event.status = updateDto.status as any;
     if (updateDto.color !== undefined) event.color = updateDto.color;
     if (updateDto.isAllDay !== undefined) event.isAllDay = updateDto.isAllDay;
-    if (updateDto.recurrenceRule !== undefined)
-      event.recurrenceRule = updateDto.recurrenceRule;
     if (updateDto.tags !== undefined) event.tags = updateDto.tags;
     if (updateDto.metadata !== undefined) event.metadata = updateDto.metadata;
+    if (updateDto.calendarEventId !== undefined) event.calendarEventId = updateDto.calendarEventId;
 
     const updatedEvent = await this.eventRepository.save(event);
 
@@ -373,12 +743,10 @@ export class EventService {
       });
     }
 
-    // const pushTokens = Array.from(notificationRecipients);
-    // if (pushTokens.length > 0) {
-    //   await this.notificationService.sendEventUpdated(pushTokens, updatedEvent);
-    // }
-
-    await this.notificationService.sendEventUpdated(["ExponentPushToken[yVDFc4NHNYw-roAMPqlx6G]"], updatedEvent);
+    const pushTokens = Array.from(notificationRecipients);
+    if (pushTokens.length > 0) {
+      await this.notificationService.sendEventUpdated(pushTokens, updatedEvent);
+    }
 
     return this.formatEventResponse(updatedEvent);
   }
@@ -421,8 +789,9 @@ export class EventService {
       });
     }
 
-    // Store event name before deleting
+    // Store event name and calendarEventId before deleting
     const eventName = event.name;
+    const calendarEventId = event.calendarEventId;
 
     // Cancel scheduled notification before deleting
     await cancelEventNotification(eventId);
@@ -430,11 +799,10 @@ export class EventService {
     await this.eventRepository.remove(event);
 
     // Send deletion notification for calendar sync
-    // const pushTokens = Array.from(notificationRecipients);
-    // if (pushTokens.length > 0) {
-    //   await this.notificationService.sendEventDeleted(pushTokens, eventId, eventName);
-    // }
-    await this.notificationService.sendEventDeleted(["ExponentPushToken[yVDFc4NHNYw-roAMPqlx6G]"], eventId, eventName);
+    const pushTokens = Array.from(notificationRecipients);
+    if (pushTokens.length > 0) {
+      await this.notificationService.sendEventDeleted(pushTokens, eventId, eventName, calendarEventId);
+    }
   }
 
   /**
@@ -554,8 +922,10 @@ export class EventService {
       color: event.color,
       isAllDay: event.isAllDay,
       recurrenceRule: event.recurrenceRule,
+      recurrenceGroupId: event.recurrenceGroupId,
       tags: event.tags,
       metadata: event.metadata,
+      calendarEventId: event.calendarEventId,
       workspaceId: event.workspaceId,
       createdById: event.createdById,
       createdAt: event.createdAt,

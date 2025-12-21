@@ -235,6 +235,8 @@ const GroupDetail = () => {
             scrollByDay={true}
             numberOfDays={1}
             isLoading={pendingEvents}
+            minDate={`${new Date().getFullYear() - 2}-01-01`}
+            maxDate={`${new Date().getFullYear() + 5}-12-31`}
           >
             {/* <CalendarHeader /> */}
 

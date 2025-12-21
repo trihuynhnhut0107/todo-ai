@@ -67,6 +67,10 @@ export class Event {
   @Column({ type: "text", nullable: true })
   recurrenceRule?: string;
 
+  // Groups recurring event instances together
+  @Column({ type: "uuid", nullable: true })
+  recurrenceGroupId?: string;
+
   // Categories/tags as JSON array
   @Column({ type: "jsonb", nullable: true })
   tags?: string[];
@@ -74,6 +78,10 @@ export class Event {
   // Additional metadata (meeting links, attachments, etc.)
   @Column({ type: "jsonb", nullable: true })
   metadata?: Record<string, unknown>;
+
+  // Device calendar event ID for sync
+  @Column({ type: "text", nullable: true })
+  calendarEventId?: string;
 
   // Relations
   @Column({ type: "uuid" })

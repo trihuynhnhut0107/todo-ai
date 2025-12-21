@@ -53,24 +53,39 @@ export const useCreateEvent = (callback: () => void) => {
   });
 };
 
-export const useUpdateEvent = () => {
+export const useUpdateEvent = (callback?: (newEventId: string) => void) => {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   return useMutation({
     mutationFn: updateEvent,
 
-    onSuccess: (_, { id, workspaceId }) => {
-      queryClient.invalidateQueries({ queryKey: ["event", id] });
+    onSuccess: (data, { id, workspaceId }) => {
+      // For recurring events, the ID might change (old deleted, new created)
+      const newEventId = data.id;
+
+      // Remove old event from cache if ID changed
+      if (newEventId !== id) {
+        queryClient.removeQueries({ queryKey: ["event", id] });
+      }
+
+      // Invalidate new event query
+      queryClient.invalidateQueries({ queryKey: ["event", newEventId] });
+
+      // Invalidate workspace and user events
       queryClient.invalidateQueries({
         queryKey: ["workspace", workspaceId, "events"],
       });
       queryClient.invalidateQueries({
         queryKey: ["user", user?.id, "events"],
       });
+
       showMessage({
         message: "Event updated!",
         type: "success",
       });
+
+      // Call callback with new event ID (for navigation)
+      callback?.(newEventId);
     },
   });
 };

@@ -84,6 +84,7 @@ export interface UpdateEventDto {
   color?: string;
   isAllDay?: boolean;
   assigneeIds?: string[];
+  calendarEventId?: string;
 }
 
 /**
@@ -104,8 +105,10 @@ export interface EventResponse {
   lat?: string;
   lng?: string;
   recurrenceRule?: string;
+  recurrenceGroupId?: string;
   tags?: string[];
   metadata?: Record<string, unknown>;
+  calendarEventId?: string;
   createdAt: Date;
   updatedAt: Date;
   assigneeIds?: string[];

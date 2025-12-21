@@ -11,13 +11,14 @@ export interface Assignee extends User {
 export interface EventPayload {
   name?: string;
   description?: string;
-  start: string;
-  end: string;
+  start?: string;
+  end?: string;
   status?: EventStatus;
   location?: string;
   color?: string;
   isAllDay?: boolean;
   recurrenceRule?: string;
+  recurrenceGroupId?: string;
   tags?: string[];
   metadata?: Record<string, string>;
 
@@ -25,6 +26,7 @@ export interface EventPayload {
   lng?:string;
   workspaceId?: string;
   assigneeIds?: string[];
+  calendarEventId?: string;
 }
 
 export interface Event extends EventItem {
@@ -38,6 +40,7 @@ export interface Event extends EventItem {
   color: string;
   isAllDay: boolean;
   recurrenceRule: string;
+  recurrenceGroupId?: string;
   tags: string[];
   metadata: Record<string, string>;
   workspaceId: string;
@@ -49,4 +52,5 @@ export interface Event extends EventItem {
   assignees?: Assignee[];
   lat?:string;
   lng?:string;
+  calendarEventId?: string;
 }
