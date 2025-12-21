@@ -26,17 +26,25 @@ export const useLocation = () => {
         accuracy: Location.Accuracy.Balanced,
       });
 
+      const latitude = location.coords.latitude;
+      const longitude = location.coords.longitude;
+
       // Send location to backend
       await sendUserLocation({
-        lat: location.coords.latitude,
-        lng: location.coords.longitude,
+        lat: latitude,
+        lng: longitude,
       });
 
       setUserLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
+        latitude: latitude,
+        longitude: longitude,
       });
       setError(null);
+
+      return {
+        latitude,
+        longitude,
+      };
     } catch (err) {
       setError("Could not get location");
     } finally {

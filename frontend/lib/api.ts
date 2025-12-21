@@ -7,6 +7,7 @@ import {
 } from "@/store/storage";
 import { navigate } from "expo-router/build/global-state/routing";
 import { showMessage } from "react-native-flash-message";
+import { scanAndProcessUTCDates } from "./utils";
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const api = axios.create({
@@ -57,8 +58,12 @@ api.interceptors.response.use(
       }
     }
     showMessage({
-      message: error.response?.data?.message || error.message, // ✅ Access the API's error message
+      message: scanAndProcessUTCDates(error.response?.data?.message || error.message).processedString, // ✅ Access the API's error message
       type: "danger",
+      autoHide:false,
+      duration:0,
+      floating:true
+      
     });
     return Promise.reject(error.response?.data?.message || error.message);
     // return Promise.reject(error);
