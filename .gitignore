@@ -3,3 +3,5 @@
 
 # app.json - environment specific configuration
 frontend/app.json
+
+frontend/google-services.json

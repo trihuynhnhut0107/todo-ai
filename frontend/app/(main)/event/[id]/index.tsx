@@ -17,6 +17,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import StatusChip from "@/components/UI/Calendar/StatusChip";
 import useThemeColor from "@/hooks/useThemeColor";
 import Map from "@/components/UI/Map";
+import { removeTodoFromCalendar } from "@/services/calendar";
 import { WEEKDAY_SHORT_LABELS, Weekday } from "@/enum/recurrence";
 
 const EventDetail = () => {
@@ -43,7 +44,8 @@ const EventDetail = () => {
     // Parse frequency
     if (rrule.includes("FREQ=DAILY")) display = "Daily";
     else if (rrule.includes("FREQ=WEEKLY")) {
-      if (rrule.includes("BYDAY=MO,TU,WE,TH,FR")) display = "Weekdays (Mon-Fri)";
+      if (rrule.includes("BYDAY=MO,TU,WE,TH,FR"))
+        display = "Weekdays (Mon-Fri)";
       else if (rrule.includes("INTERVAL=2")) display = "Bi-weekly";
       else display = "Weekly";
     } else if (rrule.includes("FREQ=MONTHLY")) {
@@ -90,6 +92,7 @@ const EventDetail = () => {
         text: "Delete",
         style: "destructive",
         onPress: () => {
+          removeTodoFromCalendar("361");
           deleteEvent({
             id: event?.id as string,
             wp_id: event?.workspaceId as string,

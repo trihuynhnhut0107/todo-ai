@@ -194,6 +194,7 @@ export class NotificationService {
     eventId: string,
     eventName: string
   ): Promise<void> {
+    console.log("Sending event deleted notifications for event:", eventId);
     const validTokens = pushTokens.filter((token) =>
       Expo.isExpoPushToken(token)
     );
@@ -225,6 +226,7 @@ export class NotificationService {
   private async sendPushNotifications(
     messages: ExpoPushMessage[]
   ): Promise<void> {
+    console.log("Sending push notifications:", messages);
     const chunks = this.expo.chunkPushNotifications(messages);
     const ticketsWithTokens: { ticket: ExpoPushTicket; token: string }[] = [];
 

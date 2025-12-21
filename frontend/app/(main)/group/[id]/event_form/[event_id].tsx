@@ -1,14 +1,21 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Platform,
-  KeyboardAvoidingView,
-} from "react-native";
-import React, { useEffect } from "react";
+import CustomButton from "@/components/Input/CustomButton";
+import CustomDateTimePicker from "@/components/Input/CustomDateTimePicker";
+import CustomInput from "@/components/Input/CustomInput";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
+import CustomColorPicker from "@/components/Input/CustomColorPicker";
+import CustomMapInput from "@/components/Input/CustomMapInput";
+import CustomTagInput from "@/components/Input/CustomTagInput";
 import CustomButton from "@/components/Input/CustomButton";
 import CustomInput from "@/components/Input/CustomInput";
 import CustomDateTimePicker from "@/components/Input/CustomDateTimePicker";
@@ -22,11 +29,9 @@ import {
   useUpdateEvent,
 } from "@/query/event.query";
 import { EventPayload } from "@/types/event";
-import CustomColorPicker from "@/components/Input/CustomColorPicker";
-import CustomTagInput from "@/components/Input/CustomTagInput";
-import CustomMapInput from "@/components/Input/CustomMapInput";
+import { zodResolver } from "@hookform/resolvers/zod";
 import CustomRecurrencePicker from "@/components/Input/CustomRecurrencePicker";
-import { useSearchParams } from "expo-router/build/hooks";
+import { z } from "zod";
 
 export const schema = z
   .object({
@@ -86,13 +91,16 @@ const Event_form = () => {
   });
 
   const { data: event } = useEventById(event_id);
-  const { mutate: createEvent, isPending: pendingCreating } = useCreateEvent(reset);
-  const { mutate: updateEvent, isPending: pendingUpdating } = useUpdateEvent((newEventId) => {
-    // Navigate to new event if ID changed (recurring event update)
-    if (newEventId !== event_id) {
-      router.replace(`/(main)/event/${newEventId}`);
+  const { mutate: createEvent, isPending: pendingCreating } =
+    useCreateEvent(reset);
+  const { mutate: updateEvent, isPending: pendingUpdating } = useUpdateEvent(
+    (newEventId) => {
+      // Navigate to new event if ID changed (recurring event update)
+      if (newEventId !== event_id) {
+        router.replace(`/(main)/event/${newEventId}`);
+      }
     }
-  });
+  );
 
   // Watch start and end dates for auto-adjustment
   const startDate = useWatch({ control, name: "start" });
@@ -142,6 +150,7 @@ const Event_form = () => {
       recurrenceRule: data.recurrenceRule,
       // workspaceId: id
     };
+
     if (isEditmode) {
       updateEvent({ id: event_id, workspaceId: id, payload });
     } else {
