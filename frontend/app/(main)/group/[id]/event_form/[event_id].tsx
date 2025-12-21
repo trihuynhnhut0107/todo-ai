@@ -1,32 +1,29 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Platform,
-  KeyboardAvoidingView,
-} from "react-native";
-import React, { useEffect } from "react";
+import CustomButton from "@/components/Input/CustomButton";
+import CustomDateTimePicker from "@/components/Input/CustomDateTimePicker";
+import CustomInput from "@/components/Input/CustomInput";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import CustomButton from "@/components/Input/CustomButton";
-import CustomInput from "@/components/Input/CustomInput";
-import CustomDateTimePicker from "@/components/Input/CustomDateTimePicker";
-import { useForm, Controller } from "react-hook-form";
-
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import CustomColorPicker from "@/components/Input/CustomColorPicker";
+import CustomMapInput from "@/components/Input/CustomMapInput";
+import CustomTagInput from "@/components/Input/CustomTagInput";
 import {
   useCreateEvent,
   useEventById,
   useUpdateEvent,
 } from "@/query/event.query";
 import { EventPayload } from "@/types/event";
-import CustomColorPicker from "@/components/Input/CustomColorPicker";
-import CustomTagInput from "@/components/Input/CustomTagInput";
-import CustomMapInput from "@/components/Input/CustomMapInput";
-import { addEventToCalendar, updateCalendarEvent } from "@/services/calendar";
-import { useSearchParams } from "expo-router/build/hooks";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 
 export const schema = z
@@ -122,23 +119,8 @@ const Event_form = () => {
     };
 
     if (isEditmode) {
-      updateCalendarEvent({
-        id: event_id,
-        title: data.name,
-        description: data.description,
-        startDate: data.start,
-        endDate: data.end,
-        location: data.location,
-      });
       updateEvent({ id: event_id, workspaceId: id, payload });
     } else {
-      addEventToCalendar({
-        title: data.name,
-        description: data.description,
-        startDate: data.start,
-        endDate: data.end,
-        location: data.location,
-      });
       createEvent({ ...payload, workspaceId: id });
     }
   };
