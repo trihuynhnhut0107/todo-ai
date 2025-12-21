@@ -96,12 +96,52 @@ const Header = () => {
             </View>
           </View>
           <View className="ml-4 flex-row gap-3 items-center bg-white/30 p-1 rounded-lg">
-            <Link href={"/(main)/(tabs)/notification"}>
-              <View className="w-10 h-10 bg-white/30 rounded-full flex items-center justify-center">
-                <FontAwesome6 name="bell" size={20} color="white" />
-              </View>
-            </Link>
+          
 
+            <TouchableOpacity
+              onPress={() => setEdit((prev) => !prev)}
+              className="w-10 h-10 bg-white/30 rounded-full flex items-center justify-center ml-auto"
+            >
+              <AntDesign name="edit" size={20} color={color.text} />
+            </TouchableOpacity>
+
+            <Modal visible={isEdit} animationType="fade" transparent>
+              {/* backdrop */}
+              <TouchableOpacity
+                className="flex-1 bg-black/40"
+                activeOpacity={1}
+                onPress={() => setEdit(false)}
+              />
+              <View className="absolute left-6 right-6 top-36 rounded-2xl p-4 shadow-xl gap-2 bg-surface border-2 border-border">
+                <Text className="font-semibold mb-3 text-center text-text text-xl">
+                  Edit Your Profile
+                </Text>
+
+                <Controller
+                  control={control}
+                  name="name"
+                  render={({ field }) => (
+                    <View>
+                      <CustomInput
+                        value={field.value}
+                        onChangeText={field.onChange}
+                        label="Username"
+                        placeholder="Enter your username"
+                        error={!!errors.name}
+                      />
+                      <Text className="text-red-500">
+                        {errors.name?.message}
+                      </Text>
+                    </View>
+                  )}
+                />
+                <CustomButton
+                  isLoading={pendingUpdate}
+                  onPress={handleSubmit(handleUpdate)}
+                  title="Update"
+                />
+              </View>
+            </Modal>
             <TouchableOpacity
               onPress={confirmLogout}
               className="w-10 h-10 bg-white/30  rounded-full flex items-center justify-center"
@@ -124,49 +164,7 @@ const Header = () => {
                 {user?.email}
               </Text>
             </View>
-            <TouchableOpacity
-              onPress={() => setEdit((prev) => !prev)}
-              className="w-10 h-10 bg-white/30 rounded-full flex items-center justify-center ml-auto"
-            >
-              <AntDesign name="edit" size={24} color={color.text} />
-            </TouchableOpacity>
           </View>
-
-          <Modal visible={isEdit} animationType="fade" transparent>
-            {/* backdrop */}
-            <TouchableOpacity
-              className="flex-1 bg-black/40"
-              activeOpacity={1}
-              onPress={() => setEdit(false)}
-            />
-            <View className="absolute left-6 right-6 top-36 rounded-2xl p-4 shadow-xl gap-2 bg-surface border-2 border-border">
-              <Text className="font-semibold mb-3 text-center text-text text-xl">
-                Edit Your Profile
-              </Text>
-
-              <Controller
-                control={control}
-                name="name"
-                render={({ field }) => (
-                  <View>
-                    <CustomInput
-                      value={field.value}
-                      onChangeText={field.onChange}
-                      label="Username"
-                      placeholder="Enter your username"
-                      error={!!errors.name}
-                    />
-                    <Text className="text-red-500">{errors.name?.message}</Text>
-                  </View>
-                )}
-              />
-              <CustomButton
-                isLoading={pendingUpdate}
-                onPress={handleSubmit(handleUpdate)}
-                title="Update"
-              />
-            </View>
-          </Modal>
         </View>
       </View>
     </View>

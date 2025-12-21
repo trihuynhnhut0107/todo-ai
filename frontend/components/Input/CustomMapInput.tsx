@@ -3,7 +3,7 @@ import MapView, {
   PROVIDER_GOOGLE,
   MapPressEvent,
 } from "react-native-maps";
-import { useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { View, TouchableOpacity } from "react-native";
 import { useLocation } from "@/hooks/useLocation";
 import { Ionicons } from "@expo/vector-icons";
@@ -14,36 +14,9 @@ export interface CustomMapInputProps {
 }
 
 const CustomMapInput = ({ coord, onChange }: CustomMapInputProps) => {
-  const { userLocation } = useLocation();
+  const { userLocation, refetch } = useLocation();
   const mapRef = useRef<MapView>(null);
-  const getInitialCoordinate = () => {
-    // If coord exists, center on it
-    if (coord?.lat && coord?.lng) {
-      return {
-        latitude: coord.lat,
-        longitude: coord.lng,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      };
-    }
 
-    // Otherwise use user location or default
-    if (userLocation) {
-      return {
-        latitude: userLocation.latitude,
-        longitude: userLocation.longitude,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      };
-    }
-
-    return {
-      latitude: 10.8231,
-      longitude: 106.6297,
-      latitudeDelta: 0.05,
-      longitudeDelta: 0.05,
-    };
-  };
   // Convert from Mapbox format [lng, lat] to react-native-maps format
 
   const handleMapPress = (event: MapPressEvent) => {
@@ -67,14 +40,46 @@ const CustomMapInput = ({ coord, onChange }: CustomMapInputProps) => {
   const handleClearMarker = () => {
     onChange(undefined); // Or pass undefined if you prefer
   };
+
+  const getInitialCoordinate = () => {
+    
+    let reg = {
+      latitude: 10.8231,
+      longitude: 106.6297,
+      latitudeDelta: 0.05,
+      longitudeDelta: 0.05,
+    };
+
+    // Otherwise use user location or default
+    if (userLocation?.latitude && userLocation?.longitude) {
+      reg = {
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      };
+    }
+
+    // If coord exists, center on it
+    if (coord?.lat && coord?.lng) {
+      reg = {
+        latitude: coord.lat,
+        longitude: coord.lng,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      };
+    }
+
+    return reg;
+  };
   return (
     <View className="flex-1 min-h-[400px]">
       <MapView
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
         style={{ flex: 1 }}
-        initialRegion={getInitialCoordinate()}
         onPress={handleMapPress}
+        initialRegion={getInitialCoordinate()}
         showsUserLocation={true}
         showsMyLocationButton={false}
         toolbarEnabled={false}

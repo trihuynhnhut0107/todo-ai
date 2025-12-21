@@ -36,7 +36,7 @@ export const useEventById = (id: string) =>
     enabled: !!id && id !== "create",
   });
 
-export const useCreateEvent = () => {
+export const useCreateEvent = (callback: () => void) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -47,6 +47,7 @@ export const useCreateEvent = () => {
       queryClient.invalidateQueries({
         queryKey: ["workspace", workspaceId, "events"],
       });
+      callback()
       showMessage({
         message: "Event created!",
         type: "success",
@@ -101,6 +102,7 @@ export const useUpdateEventStatus = () => {
 
 export const useDeleteEvent = (callback?: any) => {
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
   return useMutation({
     mutationFn: deleteEvent,
 
@@ -110,6 +112,9 @@ export const useDeleteEvent = (callback?: any) => {
       });
       queryClient.invalidateQueries({
         queryKey: ["workspace", wp_id, "events"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user", user?.id, "events"],
       });
       showMessage({
         message: "Event deleted!",

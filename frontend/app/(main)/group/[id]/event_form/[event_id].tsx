@@ -26,6 +26,8 @@ import CustomColorPicker from "@/components/Input/CustomColorPicker";
 import CustomTagInput from "@/components/Input/CustomTagInput";
 import CustomMapInput from "@/components/Input/CustomMapInput";
 import { addEventToCalendar, updateCalendarEvent } from "@/services/calendar";
+import { useSearchParams } from "expo-router/build/hooks";
+
 
 export const schema = z
   .object({
@@ -54,9 +56,10 @@ export const schema = z
   });
 
 const Event_form = () => {
-  const { id, event_id } = useLocalSearchParams<{
+  const { id, event_id, date } = useLocalSearchParams<{
     id: string;
     event_id: string;
+    date: string;
   }>();
   const isEditmode = event_id && event_id !== "create";
   const {
@@ -70,27 +73,30 @@ const Event_form = () => {
       name: "",
       tags: [],
       description: "",
-      start: new Date(), // ✅ always give Date object
-      end: new Date(), // ✅ same here
+      start: date ? new Date(date) : new Date(), // ✅ always give Date object
+      end: date
+        ? new Date(new Date(date).getTime() + 30 * 60 * 1000)
+        : new Date(new Date().getTime() + 30 * 60 * 1000), // ✅ adds 30 minutes
       color: "#000000",
       location: "",
+      coordinates: undefined,
     },
   });
 
   const { data: event } = useEventById(event_id);
-  const { mutate: createEvent, isPending: pendingCreating } = useCreateEvent();
+  const { mutate: createEvent, isPending: pendingCreating } = useCreateEvent(reset);
   const { mutate: updateEvent, isPending: pendingUpdating } = useUpdateEvent();
 
   useEffect(() => {
     if (event)
       reset({
-        name: event?.name ||"",
+        name: event?.name || "",
         tags: event?.tags ?? [],
-        description: event?.description||"",
+        description: event?.description || "",
         start: new Date(event?.start),
         end: new Date(event?.end),
         color: event?.color,
-        location: event?.location,
+        location: event?.location || "",
         ...(event?.lat &&
           event?.lng && {
             coordinates: {

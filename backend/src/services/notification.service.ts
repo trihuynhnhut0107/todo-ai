@@ -88,6 +88,138 @@ export class NotificationService {
   }
 
   /**
+   * Send silent event created notification for calendar sync
+   * @param pushTokens - Array of Expo push tokens
+   * @param event - The created event
+   */
+  async sendEventCreated(
+    pushTokens: string[],
+    event: Event
+  ): Promise<void> {
+    const validTokens = pushTokens.filter((token) =>
+      Expo.isExpoPushToken(token)
+    );
+
+    if (validTokens.length === 0) {
+      console.log("No valid Expo push tokens to send to");
+      return;
+    }
+
+    const messages: ExpoPushMessage[] = validTokens.map((token) => ({
+      to: token,
+      data: {
+        type: "event_created",
+        silent: true,
+        eventId: event.id,
+        event: {
+          id: event.id,
+          name: event.name,
+          description: event.description,
+          start: event.start.toISOString(),
+          end: event.end.toISOString(),
+          status: event.status,
+          location: event.location,
+          lat: event.lat,
+          lng: event.lng,
+          color: event.color,
+          isAllDay: event.isAllDay,
+          recurrenceRule: event.recurrenceRule,
+          tags: event.tags,
+        },
+      },
+      priority: "default",
+      channelId: "calendar-sync",
+      _contentAvailable: true,
+    } as any));
+
+    await this.sendPushNotifications(messages);
+  }
+
+  /**
+   * Send silent event updated notification for calendar sync
+   * @param pushTokens - Array of Expo push tokens
+   * @param event - The updated event
+   */
+  async sendEventUpdated(
+    pushTokens: string[],
+    event: Event
+  ): Promise<void> {
+    const validTokens = pushTokens.filter((token) =>
+      Expo.isExpoPushToken(token)
+    );
+
+    if (validTokens.length === 0) {
+      console.log("No valid Expo push tokens to send to");
+      return;
+    }
+
+    const messages: ExpoPushMessage[] = validTokens.map((token) => ({
+      to: token,
+      data: {
+        type: "event_updated",
+        silent: true,
+        eventId: event.id,
+        event: {
+          id: event.id,
+          name: event.name,
+          description: event.description,
+          start: event.start.toISOString(),
+          end: event.end.toISOString(),
+          status: event.status,
+          location: event.location,
+          lat: event.lat,
+          lng: event.lng,
+          color: event.color,
+          isAllDay: event.isAllDay,
+          recurrenceRule: event.recurrenceRule,
+          tags: event.tags,
+        },
+      },
+      priority: "default",
+      channelId: "calendar-sync",
+      _contentAvailable: true,
+    } as any));
+
+    await this.sendPushNotifications(messages);
+  }
+
+  /**
+   * Send silent event deleted notification for calendar sync
+   * @param pushTokens - Array of Expo push tokens
+   * @param eventId - The ID of the deleted event
+   * @param eventName - The name of the deleted event
+   */
+  async sendEventDeleted(
+    pushTokens: string[],
+    eventId: string,
+    eventName: string
+  ): Promise<void> {
+    const validTokens = pushTokens.filter((token) =>
+      Expo.isExpoPushToken(token)
+    );
+
+    if (validTokens.length === 0) {
+      console.log("No valid Expo push tokens to send to");
+      return;
+    }
+
+    const messages: ExpoPushMessage[] = validTokens.map((token) => ({
+      to: token,
+      data: {
+        type: "event_deleted",
+        silent: true,
+        eventId: eventId,
+        eventName: eventName,
+      },
+      priority: "default",
+      channelId: "calendar-sync",
+      _contentAvailable: true,
+    } as any));
+
+    await this.sendPushNotifications(messages);
+  }
+
+  /**
    * Send push notifications in chunks (Expo recommends max 100 per request)
    */
   private async sendPushNotifications(

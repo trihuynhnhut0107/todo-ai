@@ -151,3 +151,86 @@ export const openInGoogleMap = (lng: number, lat: number) => {
       Linking.openURL(fallbackUrl);
     });
 };
+
+interface FoundDate {
+  original: string;
+  date: Date;
+  index: number;
+}
+
+interface ScanResult {
+  foundDates: FoundDate[];
+  processedString: string;
+  count: number;
+}
+
+/**
+ * Type for the date processor function
+ */
+type DateProcessor = (date: Date) => string;
+
+export function scanAndProcessUTCDates(
+  input: string,
+  processor?: DateProcessor | null
+): ScanResult {
+  // Regex patterns for different UTC date formats
+  const patterns: RegExp[] = [
+    // ISO 8601: 2024-03-15T14:30:00.000Z or 2024-03-15T14:30:00Z
+    /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z/g,
+    // UTC with timezone: 2024-03-15T14:30:00+00:00
+    /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?[+-]\d{2}:\d{2}/g,
+  ];
+
+  const foundDates: FoundDate[] = [];
+  let processedString = input;
+
+  // Default processor: format to local readable string
+  const defaultProcessor: DateProcessor = (dateObj: Date): string => {
+    return dateObj.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  const processorFn = processor || defaultProcessor;
+
+  // Scan for each pattern
+  patterns.forEach(pattern => {
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(input)) !== null) {
+      const dateString = match[0];
+      const dateObj = new Date(dateString);
+
+      // Validate the date
+      if (!isNaN(dateObj.getTime())) {
+        foundDates.push({
+          original: dateString,
+          date: dateObj,
+          index: match.index
+        });
+      }
+    }
+  });
+
+  // Sort by index (in reverse) to replace from end to start
+  foundDates.sort((a, b) => b.index - a.index);
+
+  // Replace UTC strings with processed versions
+  foundDates.forEach(item => {
+    const processed = processorFn(item.date);
+    processedString = 
+      processedString.slice(0, item.index) + 
+      processed + 
+      processedString.slice(item.index + item.original.length);
+  });
+
+  return {
+    foundDates: foundDates.reverse(), // Return in original order
+    processedString,
+    count: foundDates.length
+  };
+}
