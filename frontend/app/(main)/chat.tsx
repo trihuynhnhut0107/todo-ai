@@ -195,7 +195,7 @@ const ChatScreen = () => {
                     color={theme === "dark" ? "#a78bfa" : "#3b82f6"} // #a78bfa = purple-400, #3b82f6 = blue-500
                   />
                 </View>
-                <Text className="text-4xl font-bold text-white">Hey, Eva!</Text>
+                <Text className="text-4xl font-bold text-white">Hey, {user?.name}!</Text>
                 <Text className="text-4xl font-bold text-white ">
                   How can I{" "}
                   <Text

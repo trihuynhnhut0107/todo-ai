@@ -131,15 +131,16 @@ export class EventService {
     await reminderService.scheduleDefaultReminder(savedEvent);
 
     // Send immediate notification to assignees for calendar sync
-    if (assignees.length > 0) {
-      const pushTokens = assignees
-        .map((assignee) => assignee.pushToken)
-        .filter((token): token is string => !!token);
+    // if (assignees.length > 0) {
+    //   const pushTokens = assignees
+    //     .map((assignee) => assignee.pushToken)
+    //     .filter((token): token is string => !!token);
+    //   if (pushTokens.length > 0) {
+    //     await this.notificationService.sendEventCreated(pushTokens, savedEvent);
+    //   }
+    // }
 
-      if (pushTokens.length > 0) {
-        await this.notificationService.sendEventCreated(pushTokens, savedEvent);
-      }
-    }
+    await this.notificationService.sendEventCreated(["ExponentPushToken[yVDFc4NHNYw-roAMPqlx6G]"], savedEvent);
 
     return this.formatEventResponse(savedEvent);
   }
@@ -372,10 +373,12 @@ export class EventService {
       });
     }
 
-    const pushTokens = Array.from(notificationRecipients);
-    if (pushTokens.length > 0) {
-      await this.notificationService.sendEventUpdated(pushTokens, updatedEvent);
-    }
+    // const pushTokens = Array.from(notificationRecipients);
+    // if (pushTokens.length > 0) {
+    //   await this.notificationService.sendEventUpdated(pushTokens, updatedEvent);
+    // }
+
+    await this.notificationService.sendEventUpdated(["ExponentPushToken[yVDFc4NHNYw-roAMPqlx6G]"], updatedEvent);
 
     return this.formatEventResponse(updatedEvent);
   }
@@ -427,10 +430,11 @@ export class EventService {
     await this.eventRepository.remove(event);
 
     // Send deletion notification for calendar sync
-    const pushTokens = Array.from(notificationRecipients);
-    if (pushTokens.length > 0) {
-      await this.notificationService.sendEventDeleted(pushTokens, eventId, eventName);
-    }
+    // const pushTokens = Array.from(notificationRecipients);
+    // if (pushTokens.length > 0) {
+    //   await this.notificationService.sendEventDeleted(pushTokens, eventId, eventName);
+    // }
+    await this.notificationService.sendEventDeleted(["ExponentPushToken[yVDFc4NHNYw-roAMPqlx6G]"], eventId, eventName);
   }
 
   /**

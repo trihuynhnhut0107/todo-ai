@@ -10,6 +10,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Loader from "@/components/UI/Loader";
 import { useColorScheme, View } from "react-native";
 import Toaster from "@/components/UI/Toaster/Toaster";
+import { useCalendarSync } from "@/hooks/useCalendarSync";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,6 +23,7 @@ export const queryClient = new QueryClient({
 export default function RootLayout() {
   const { isLoading, fetchAuthenticatedUser } = useAuthStore();
   const colorScheme = useColorScheme();
+  useCalendarSync();
   useEffect(() => {
     fetchAuthenticatedUser();
   }, [fetchAuthenticatedUser]);
