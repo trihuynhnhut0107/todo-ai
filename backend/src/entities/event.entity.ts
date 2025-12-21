@@ -67,6 +67,10 @@ export class Event {
   @Column({ type: "text", nullable: true })
   recurrenceRule?: string;
 
+  // Groups recurring event instances together
+  @Column({ type: "uuid", nullable: true })
+  recurrenceGroupId?: string;
+
   // Categories/tags as JSON array
   @Column({ type: "jsonb", nullable: true })
   tags?: string[];

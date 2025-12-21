@@ -349,6 +349,7 @@ const models: TsoaRoute.Models = {
             "lat": {"dataType":"string"},
             "lng": {"dataType":"string"},
             "recurrenceRule": {"dataType":"string"},
+            "recurrenceGroupId": {"dataType":"string"},
             "tags": {"dataType":"array","array":{"dataType":"string"}},
             "metadata": {"ref":"Record_string.unknown_"},
             "createdAt": {"dataType":"datetime","required":true},

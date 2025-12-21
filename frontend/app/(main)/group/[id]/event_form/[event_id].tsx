@@ -12,7 +12,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import CustomButton from "@/components/Input/CustomButton";
 import CustomInput from "@/components/Input/CustomInput";
 import CustomDateTimePicker from "@/components/Input/CustomDateTimePicker";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +25,7 @@ import { EventPayload } from "@/types/event";
 import CustomColorPicker from "@/components/Input/CustomColorPicker";
 import CustomTagInput from "@/components/Input/CustomTagInput";
 import CustomMapInput from "@/components/Input/CustomMapInput";
+import CustomRecurrencePicker from "@/components/Input/CustomRecurrencePicker";
 import { useSearchParams } from "expo-router/build/hooks";
 
 export const schema = z
@@ -47,6 +48,7 @@ export const schema = z
       })
       .optional(),
     location: z.string().optional(),
+    recurrenceRule: z.string().optional(),
   })
   .refine((data) => data.end > data.start, {
     message: "End time must be after start time",
@@ -64,6 +66,7 @@ const Event_form = () => {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
@@ -78,12 +81,31 @@ const Event_form = () => {
       color: "#000000",
       location: "",
       coordinates: undefined,
+      recurrenceRule: undefined,
     },
   });
 
   const { data: event } = useEventById(event_id);
   const { mutate: createEvent, isPending: pendingCreating } = useCreateEvent(reset);
-  const { mutate: updateEvent, isPending: pendingUpdating } = useUpdateEvent();
+  const { mutate: updateEvent, isPending: pendingUpdating } = useUpdateEvent((newEventId) => {
+    // Navigate to new event if ID changed (recurring event update)
+    if (newEventId !== event_id) {
+      router.replace(`/(main)/event/${newEventId}`);
+    }
+  });
+
+  // Watch start and end dates for auto-adjustment
+  const startDate = useWatch({ control, name: "start" });
+  const endDate = useWatch({ control, name: "end" });
+
+  // Auto-adjust end date when start date is after end date
+  useEffect(() => {
+    if (startDate && endDate && startDate >= endDate) {
+      // Set end date to 1 minute after start date
+      const newEndDate = new Date(startDate.getTime() + 60 * 1000);
+      setValue("end", newEndDate);
+    }
+  }, [startDate, endDate, setValue]);
 
   useEffect(() => {
     if (event)
@@ -95,6 +117,7 @@ const Event_form = () => {
         end: new Date(event?.end),
         color: event?.color,
         location: event?.location || "",
+        recurrenceRule: event?.recurrenceRule || undefined,
         ...(event?.lat &&
           event?.lng && {
             coordinates: {
@@ -116,6 +139,7 @@ const Event_form = () => {
       location: data.location,
       lng: data.coordinates?.lng,
       lat: data.coordinates?.lat,
+      recurrenceRule: data.recurrenceRule,
       // workspaceId: id
     };
     if (isEditmode) {
@@ -239,6 +263,20 @@ const Event_form = () => {
                 />
                 <Text className="text-red-500">{errors.end?.message}</Text>
               </View>
+            )}
+          />
+        </View>
+        <View className="bg-surface rounded-xl p-4">
+          <Controller
+            control={control}
+            name="recurrenceRule"
+            render={({ field }) => (
+              <CustomRecurrencePicker
+                label="Repeat"
+                value={field.value}
+                startDate={control._formValues.start}
+                onChange={field.onChange}
+              />
             )}
           />
         </View>

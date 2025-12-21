@@ -934,6 +934,9 @@
 					"recurrenceRule": {
 						"type": "string"
 					},
+					"recurrenceGroupId": {
+						"type": "string"
+					},
 					"tags": {
 						"items": {
 							"type": "string"

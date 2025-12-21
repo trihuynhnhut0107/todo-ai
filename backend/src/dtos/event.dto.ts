@@ -104,6 +104,7 @@ export interface EventResponse {
   lat?: string;
   lng?: string;
   recurrenceRule?: string;
+  recurrenceGroupId?: string;
   tags?: string[];
   metadata?: Record<string, unknown>;
   createdAt: Date;

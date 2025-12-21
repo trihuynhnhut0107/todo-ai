@@ -18,6 +18,7 @@ export interface EventPayload {
   color?: string;
   isAllDay?: boolean;
   recurrenceRule?: string;
+  recurrenceGroupId?: string;
   tags?: string[];
   metadata?: Record<string, string>;
 
@@ -38,6 +39,7 @@ export interface Event extends EventItem {
   color: string;
   isAllDay: boolean;
   recurrenceRule: string;
+  recurrenceGroupId?: string;
   tags: string[];
   metadata: Record<string, string>;
   workspaceId: string;
