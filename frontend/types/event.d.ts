@@ -11,8 +11,8 @@ export interface Assignee extends User {
 export interface EventPayload {
   name?: string;
   description?: string;
-  start: string;
-  end: string;
+  start?: string;
+  end?: string;
   status?: EventStatus;
   location?: string;
   color?: string;
@@ -26,6 +26,7 @@ export interface EventPayload {
   lng?:string;
   workspaceId?: string;
   assigneeIds?: string[];
+  calendarEventId?: string;
 }
 
 export interface Event extends EventItem {
@@ -51,4 +52,5 @@ export interface Event extends EventItem {
   assignees?: Assignee[];
   lat?:string;
   lng?:string;
+  calendarEventId?: string;
 }

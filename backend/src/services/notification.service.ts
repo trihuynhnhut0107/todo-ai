@@ -125,6 +125,7 @@ export class NotificationService {
           isAllDay: event.isAllDay,
           recurrenceRule: event.recurrenceRule,
           tags: event.tags,
+          workspaceId: event.workspaceId,
         },
       },
       priority: "default",
@@ -159,6 +160,7 @@ export class NotificationService {
         type: "event_updated",
         silent: true,
         eventId: event.id,
+        calendarEventId: event.calendarEventId,
         event: {
           id: event.id,
           name: event.name,
@@ -173,6 +175,7 @@ export class NotificationService {
           isAllDay: event.isAllDay,
           recurrenceRule: event.recurrenceRule,
           tags: event.tags,
+          workspaceId: event.workspaceId,
         },
       },
       priority: "default",
@@ -188,11 +191,13 @@ export class NotificationService {
    * @param pushTokens - Array of Expo push tokens
    * @param eventId - The ID of the deleted event
    * @param eventName - The name of the deleted event
+   * @param calendarEventId - The device calendar event ID
    */
   async sendEventDeleted(
     pushTokens: string[],
     eventId: string,
-    eventName: string
+    eventName: string,
+    calendarEventId?: string
   ): Promise<void> {
     console.log("Sending event deleted notifications for event:", eventId);
     const validTokens = pushTokens.filter((token) =>
@@ -211,6 +216,7 @@ export class NotificationService {
         silent: true,
         eventId: eventId,
         eventName: eventName,
+        calendarEventId: calendarEventId,
       },
       priority: "default",
       channelId: "calendar-sync",

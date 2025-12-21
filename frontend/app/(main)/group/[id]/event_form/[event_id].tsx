@@ -1,10 +1,6 @@
-import CustomButton from "@/components/Input/CustomButton";
-import CustomDateTimePicker from "@/components/Input/CustomDateTimePicker";
-import CustomInput from "@/components/Input/CustomInput";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -20,9 +16,6 @@ import CustomButton from "@/components/Input/CustomButton";
 import CustomInput from "@/components/Input/CustomInput";
 import CustomDateTimePicker from "@/components/Input/CustomDateTimePicker";
 import { useForm, Controller, useWatch } from "react-hook-form";
-
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useCreateEvent,
   useEventById,

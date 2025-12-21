@@ -79,6 +79,10 @@ export class Event {
   @Column({ type: "jsonb", nullable: true })
   metadata?: Record<string, unknown>;
 
+  // Device calendar event ID for sync
+  @Column({ type: "text", nullable: true })
+  calendarEventId?: string;
+
   // Relations
   @Column({ type: "uuid" })
   workspaceId!: string;

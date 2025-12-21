@@ -210,12 +210,26 @@ export class EventService {
         await reminderService.scheduleDefaultReminder(savedEvent);
       }
 
-      // Send notification to assignees for the first event
-      if (assignees.length > 0 && savedEvents.length > 0) {
-        const pushTokens = assignees
-          .map((assignee) => assignee.pushToken)
-          .filter((token): token is string => !!token);
+      // Send notification to creator and assignees for the first event
+      if (savedEvents.length > 0) {
+        const notificationRecipients = new Set<string>();
 
+        // Add creator's push token
+        const creator = await this.userRepository.findOne({ where: { id: userId } });
+        if (creator?.pushToken) {
+          notificationRecipients.add(creator.pushToken);
+        }
+
+        // Add assignees' push tokens
+        if (assignees.length > 0) {
+          assignees.forEach((assignee) => {
+            if (assignee.pushToken) {
+              notificationRecipients.add(assignee.pushToken);
+            }
+          });
+        }
+
+        const pushTokens = Array.from(notificationRecipients);
         if (pushTokens.length > 0) {
           await this.notificationService.sendEventCreated(pushTokens, savedEvents[0]);
         }
@@ -258,17 +272,30 @@ export class EventService {
     // await scheduleEventNotification(savedEvent.id, savedEvent.start);
     await reminderService.scheduleDefaultReminder(savedEvent);
 
-    // Send immediate notification to assignees for calendar sync
-    // if (assignees.length > 0) {
-    //   const pushTokens = assignees
-    //     .map((assignee) => assignee.pushToken)
-    //     .filter((token): token is string => !!token);
-    //   if (pushTokens.length > 0) {
-    //     await this.notificationService.sendEventCreated(pushTokens, savedEvent);
-    //   }
-    // }
+    // Send immediate notification to assignees and creator for calendar sync
+    const notificationRecipients = new Set<string>();
 
-    await this.notificationService.sendEventCreated(["ExponentPushToken[yVDFc4NHNYw-roAMPqlx6G]"], savedEvent);
+    // Add creator's push token
+    if (savedEvent.createdById) {
+      const creator = await this.userRepository.findOne({ where: { id: savedEvent.createdById } });
+      if (creator?.pushToken) {
+        notificationRecipients.add(creator.pushToken);
+      }
+    }
+
+    // Add assignees' push tokens
+    if (assignees.length > 0) {
+      assignees.forEach((assignee) => {
+        if (assignee.pushToken) {
+          notificationRecipients.add(assignee.pushToken);
+        }
+      });
+    }
+
+    const pushTokens = Array.from(notificationRecipients);
+    if (pushTokens.length > 0) {
+      await this.notificationService.sendEventCreated(pushTokens, savedEvent);
+    }
 
     return this.formatEventResponse(savedEvent);
   }
@@ -498,12 +525,25 @@ export class EventService {
             await reminderService.scheduleDefaultReminder(savedEvent);
           }
 
-          // Send notification
-          if (assignees.length > 0 && savedEvents.length > 0) {
-            const pushTokens = assignees
-              .map((assignee) => assignee.pushToken)
-              .filter((token): token is string => !!token);
+          // Send notification to creator and assignees
+          if (savedEvents.length > 0) {
+            const notificationRecipients = new Set<string>();
 
+            // Add creator if not the one updating
+            if (event.createdBy && event.createdBy.id !== userId && event.createdBy.pushToken) {
+              notificationRecipients.add(event.createdBy.pushToken);
+            }
+
+            // Add assignees (excluding the user who made the update)
+            if (assignees.length > 0) {
+              assignees.forEach((assignee) => {
+                if (assignee.id !== userId && assignee.pushToken) {
+                  notificationRecipients.add(assignee.pushToken);
+                }
+              });
+            }
+
+            const pushTokens = Array.from(notificationRecipients);
             if (pushTokens.length > 0) {
               await this.notificationService.sendEventUpdated(pushTokens, savedEvents[0]);
             }
@@ -671,6 +711,7 @@ export class EventService {
     if (updateDto.isAllDay !== undefined) event.isAllDay = updateDto.isAllDay;
     if (updateDto.tags !== undefined) event.tags = updateDto.tags;
     if (updateDto.metadata !== undefined) event.metadata = updateDto.metadata;
+    if (updateDto.calendarEventId !== undefined) event.calendarEventId = updateDto.calendarEventId;
 
     const updatedEvent = await this.eventRepository.save(event);
 
@@ -702,12 +743,10 @@ export class EventService {
       });
     }
 
-    // const pushTokens = Array.from(notificationRecipients);
-    // if (pushTokens.length > 0) {
-    //   await this.notificationService.sendEventUpdated(pushTokens, updatedEvent);
-    // }
-
-    await this.notificationService.sendEventUpdated(["ExponentPushToken[yVDFc4NHNYw-roAMPqlx6G]"], updatedEvent);
+    const pushTokens = Array.from(notificationRecipients);
+    if (pushTokens.length > 0) {
+      await this.notificationService.sendEventUpdated(pushTokens, updatedEvent);
+    }
 
     return this.formatEventResponse(updatedEvent);
   }
@@ -750,8 +789,9 @@ export class EventService {
       });
     }
 
-    // Store event name before deleting
+    // Store event name and calendarEventId before deleting
     const eventName = event.name;
+    const calendarEventId = event.calendarEventId;
 
     // Cancel scheduled notification before deleting
     await cancelEventNotification(eventId);
@@ -759,11 +799,10 @@ export class EventService {
     await this.eventRepository.remove(event);
 
     // Send deletion notification for calendar sync
-    // const pushTokens = Array.from(notificationRecipients);
-    // if (pushTokens.length > 0) {
-    //   await this.notificationService.sendEventDeleted(pushTokens, eventId, eventName);
-    // }
-    await this.notificationService.sendEventDeleted(["ExponentPushToken[yVDFc4NHNYw-roAMPqlx6G]"], eventId, eventName);
+    const pushTokens = Array.from(notificationRecipients);
+    if (pushTokens.length > 0) {
+      await this.notificationService.sendEventDeleted(pushTokens, eventId, eventName, calendarEventId);
+    }
   }
 
   /**
@@ -886,6 +925,7 @@ export class EventService {
       recurrenceGroupId: event.recurrenceGroupId,
       tags: event.tags,
       metadata: event.metadata,
+      calendarEventId: event.calendarEventId,
       workspaceId: event.workspaceId,
       createdById: event.createdById,
       createdAt: event.createdAt,

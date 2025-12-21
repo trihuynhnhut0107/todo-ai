@@ -3,8 +3,8 @@ import { images } from "@/lib/image";
 import useAuthStore from "@/store/auth.store";
 
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import { useQueryClient } from "@tanstack/react-query";
 import { BlurView } from "expo-blur";
+import { queryClient } from "@/app/_layout";
 import { LinearGradient } from "expo-linear-gradient";
 import { Redirect, Slot } from "expo-router";
 import React, {
@@ -40,7 +40,6 @@ const AuthLayout = () => {
   const sheetRef = useRef<BottomSheetModal>(null);
   const { isAuthenticated, fetchAuthenticatedUser, logout } = useAuthStore();
   const [isOpen, setOpen] = useState("");
-  const queryClient = useQueryClient();
 
   useEffect(() => {
     Keyboard.dismiss();
