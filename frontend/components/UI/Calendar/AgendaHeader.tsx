@@ -81,7 +81,7 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
         loaded ? 0 : 1000
       );
     }
-  }, [selected, monthDates,loaded]);
+  }, [selected, monthDates, loaded]);
 
   const filterCount = useMemo(() => {
     let count = 0;
@@ -164,16 +164,14 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
         {format(new Date(selected), "EEEE, MMMM dd yyyy")}
       </Text>
 
-      <Modal visible={open} animationType="fade" transparent>
-        {/* backdrop */}
-        <TouchableOpacity
-          className="flex-1 bg-black/40"
-          activeOpacity={1}
-          onPress={() => setOpen(false)}
-        />
-
+      <Modal
+        visible={open}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setOpen(false)}
+      >
         {/* color picker panel */}
-        <View className="absolute left-6 right-6 bottom-6 rounded-2xl p-4 shadow-xl gap-2 bg-card border-2 border-border">
+        <View className="p-4 gap-2 bg-card flex-1">
           <Text className="text-text font-bold text-2xl">
             Events: {matched}
           </Text>

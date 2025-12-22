@@ -67,7 +67,7 @@ const Toaster = () => {
         return (
           <Pressable
             onPress={() => {
-              if (messageType === "danger") hideMessage();
+              hideMessage();
             }}
             style={{
               gap: 4,
