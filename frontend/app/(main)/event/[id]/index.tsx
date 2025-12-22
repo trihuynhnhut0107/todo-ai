@@ -92,7 +92,6 @@ const EventDetail = () => {
         text: "Delete",
         style: "destructive",
         onPress: () => {
-          removeTodoFromCalendar("361");
           deleteEvent({
             id: event?.id as string,
             wp_id: event?.workspaceId as string,
