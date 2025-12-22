@@ -1,27 +1,48 @@
 import useAuthStore from "@/store/auth.store";
 import { LinearGradient } from "expo-linear-gradient";
 import { Redirect, Stack } from "expo-router";
-import {
-  StatusBar,
-  StyleSheet,
-  useColorScheme
-} from "react-native";
+import { StatusBar, StyleSheet, useColorScheme } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useNotificationListeners } from "@/hooks/useNotificationListeners";
-
+import { useEffect } from "react";
+import { useLocation } from "@/hooks/useLocation";
+import { sendUserLocation } from "@/services/user";
 
 const MainLayout = () => {
   const { isAuthenticated } = useAuthStore();
   const theme = useColorScheme();
+  const {refetch } = useLocation();
 
   // Set up notification listeners for handling taps
   useNotificationListeners();
 
   if (!isAuthenticated) return <Redirect href="/sign-in" />;
 
+  const sendLocation = async () => {
+    const location = await refetch();
+    if (location?.latitude && location.longitude) {
+      // Send location to backend
+      await sendUserLocation({
+        lat: location?.latitude,
+        lng: location.longitude,
+      });
+    }
+  };
+  
+  useEffect(() => {
+    sendLocation();
+    // Set up interval to fetch and send location every 5 minute (300000 ms)
+    const intervalId = setInterval(() => {
+      sendLocation();
+    }, 300000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
-    <SafeAreaView  className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background">
       <StatusBar barStyle="light-content" />
       {/* === PHẦN NỀN "GIẢ LẬP" MỜ NHÒE (MỚI) === */}
       {/* Lớp 1: Vầng sáng cam-đỏ chính */}

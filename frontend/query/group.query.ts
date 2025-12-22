@@ -9,6 +9,7 @@ import {
   leaveGroup,
   updateGroup,
 } from "@/services/group";
+import useAuthStore from "@/store/auth.store";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { showMessage } from "react-native-flash-message";
 
@@ -127,6 +128,7 @@ export const useDeleteGroup = (callback?: any) => {
 
 export const useLeaveGroup = (callback?: any) => {
   const queryClient = useQueryClient();
+  const {user} = useAuthStore();
   return useMutation({
     mutationFn: leaveGroup,
 
@@ -136,6 +138,9 @@ export const useLeaveGroup = (callback?: any) => {
       });
       queryClient.removeQueries({
         queryKey: ["group", id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user", user?.id, "events"],
       });
       showMessage({
         message: "group left!",

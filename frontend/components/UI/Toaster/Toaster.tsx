@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Pressable } from "react-native";
+import { View, Text,  Pressable } from "react-native";
 import React from "react";
 import FlashMessage, {
   hideMessage,
@@ -62,7 +62,7 @@ const Toaster = () => {
           }
         };
 
-        const { iconName, color: iconColor, title } = getIconAndColor();
+        const { iconName, color: iconColor } = getIconAndColor();
 
         return (
           <Pressable

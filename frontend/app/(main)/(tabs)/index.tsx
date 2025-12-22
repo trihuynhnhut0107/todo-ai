@@ -419,7 +419,7 @@ export default function Index() {
             <Map
               coordinates={eventLocations}
               displayUser
-              loading={pendingEvents}
+              // loading={pendingEvents}
             />
           </View>
         </View>
