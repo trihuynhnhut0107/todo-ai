@@ -293,6 +293,7 @@ export class EventService {
     }
 
     const pushTokens = Array.from(notificationRecipients);
+    console.log("Push tokens for event creation notification:", pushTokens);
     if (pushTokens.length > 0) {
       await this.notificationService.sendEventCreated(pushTokens, savedEvent);
     }
@@ -743,6 +744,18 @@ export class EventService {
       });
     }
 
+    if(event.createdBy && event.createdBy.id === userId && event.createdBy.pushToken)
+      notificationRecipients.add(event.createdBy.pushToken);
+    else
+    {
+      if (event.assignees) {
+        event.assignees.forEach((assignee) => {
+          if (assignee.id === userId && assignee.pushToken) {
+            notificationRecipients.add(assignee.pushToken);
+          }
+        });
+      }
+    }
     const pushTokens = Array.from(notificationRecipients);
     if (pushTokens.length > 0) {
       await this.notificationService.sendEventUpdated(pushTokens, updatedEvent);
@@ -799,6 +812,18 @@ export class EventService {
     await this.eventRepository.remove(event);
 
     // Send deletion notification for calendar sync
+    if(event.createdBy && event.createdBy.id === userId && event.createdBy.pushToken)
+      notificationRecipients.add(event.createdBy.pushToken);
+    else
+    {
+      if (event.assignees) {
+        event.assignees.forEach((assignee) => {
+          if (assignee.id === userId && assignee.pushToken) {
+            notificationRecipients.add(assignee.pushToken);
+          }
+        });
+      }
+    }
     const pushTokens = Array.from(notificationRecipients);
     if (pushTokens.length > 0) {
       await this.notificationService.sendEventDeleted(pushTokens, eventId, eventName, calendarEventId);

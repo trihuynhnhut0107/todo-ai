@@ -200,6 +200,7 @@ export class NotificationService {
     calendarEventId?: string
   ): Promise<void> {
     console.log("Sending event deleted notifications for event:", eventId);
+    console.log("To push tokens:", pushTokens);
     const validTokens = pushTokens.filter((token) =>
       Expo.isExpoPushToken(token)
     );
