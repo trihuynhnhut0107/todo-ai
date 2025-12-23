@@ -26,8 +26,17 @@ const EventDetail = () => {
   const router = useRouter();
   const { mutate: deleteEvent } = useDeleteEvent(() => router.back());
   const { mutate: updateStatus, isPending: pendingUpdateStatus } =
-    useUpdateEventStatus();
-  const { data: eventdata, isFetching: pendingEvent, refetch } = useEventById(id);
+    useUpdateEventStatus((newEventId) => {
+      // Navigate to new event if ID changed (recurring event update)
+      if (newEventId !== id) {
+        router.replace(`/(main)/event/${newEventId}`);
+      }
+    });
+  const {
+    data: eventdata,
+    isFetching: pendingEvent,
+    refetch,
+  } = useEventById(id);
   const { data: members, isFetching: pendingMembers } = useGroupMember(
     eventdata?.workspaceId ?? ""
   );
@@ -112,10 +121,16 @@ const EventDetail = () => {
   }, [eventdata, members]);
 
   return (
-    <ScrollView className="flex-1" contentContainerClassName="p-4 gap-4" refreshControl={<RefreshControl refreshing={pendingEvent} onRefresh={refetch} />}>
+    <ScrollView
+      className="flex-1"
+      contentContainerClassName="p-4 gap-4"
+      refreshControl={
+        <RefreshControl refreshing={pendingEvent} onRefresh={refetch} />
+      }
+    >
       <View className="flex-row items-center justify-between">
         <TouchableOpacity
-          onPress={() => router.push(`/(main)/group/${event?.workspaceId}`)}
+          onPress={() => router.back()}
           className=" bg-white/30 rounded-full p-2 px-4 z-10 flex-row items-center gap-2"
         >
           <Ionicons name="arrow-back" size={22} color="white" />

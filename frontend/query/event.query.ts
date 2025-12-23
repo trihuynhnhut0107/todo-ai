@@ -44,7 +44,7 @@ export const useCreateEvent = (callback: () => void) => {
       queryClient.invalidateQueries({
         queryKey: ["workspace", workspaceId, "events"],
       });
-      callback()
+      callback();
       showMessage({
         message: "Event created!",
         type: "success",
@@ -69,7 +69,7 @@ export const useUpdateEvent = (callback?: (newEventId: string) => void) => {
       }
 
       // Invalidate new event query
-      queryClient.invalidateQueries({ queryKey: ["event", newEventId] });
+      // queryClient.invalidateQueries({ queryKey: ["event", newEventId] });
 
       // Invalidate workspace and user events
       queryClient.invalidateQueries({
@@ -90,14 +90,22 @@ export const useUpdateEvent = (callback?: (newEventId: string) => void) => {
   });
 };
 
-export const useUpdateEventStatus = () => {
+export const useUpdateEventStatus = (
+  callback?: (newEventId: string) => void
+) => {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   return useMutation({
     mutationFn: updateEventStatus,
 
-    onSuccess: (_, { id, workspaceId }) => {
-      queryClient.invalidateQueries({ queryKey: ["event", id] });
+    onSuccess: (data, { id, workspaceId }) => {
+      // For recurring events, the ID might change (old deleted, new created)
+      const newEventId = data.id;
+
+      // Remove old event from cache if ID changed
+      if (newEventId !== id) {
+        queryClient.removeQueries({ queryKey: ["event", id] });
+      }
       queryClient.invalidateQueries({
         queryKey: ["workspace", workspaceId, "events"],
       });
@@ -108,6 +116,9 @@ export const useUpdateEventStatus = () => {
         message: "Event status updated!",
         type: "success",
       });
+
+      // Call callback with new event ID (for navigation)
+      callback?.(newEventId);
     },
   });
 };
@@ -146,6 +157,9 @@ export const useAssignMember = () => {
       queryClient.invalidateQueries({
         queryKey: ["event", id],
       });
+      queryClient.removeQueries({
+        queryKey: ["event"],
+      });
       queryClient.invalidateQueries({
         queryKey: ["workspace", wp_id, "events"],
       });
@@ -168,6 +182,9 @@ export const useUnassignMember = () => {
     onSuccess: (_, { id, wp_id, payload }) => {
       queryClient.invalidateQueries({
         queryKey: ["event", id],
+      });
+      queryClient.removeQueries({
+        queryKey: ["event"],
       });
       queryClient.invalidateQueries({
         queryKey: ["workspace", wp_id, "events"],

@@ -5,7 +5,7 @@ import useAuthStore from "@/store/auth.store";
 import { useMessageStore } from "@/store/message.store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link, useLocalSearchParams } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
@@ -121,7 +121,6 @@ const ChatScreen = () => {
       console.warn("Permissions not granted", result);
       return;
     }
-
     // Start speech recognition
     ExpoSpeechRecognitionModule.start({
       lang: "vi-VN",
@@ -142,8 +141,10 @@ const ChatScreen = () => {
   }, [query, sessionId, handleSendMessage]);
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-background">
-      <StatusBar barStyle="light-content" />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "padding"}
+      className="flex-1 bg-background"
+    >
       <LinearGradient
         colors={
           theme === "dark"
@@ -168,25 +169,35 @@ const ChatScreen = () => {
         end={{ x: 0.5, y: 0.7 }}
       />
       {/* KAV là cha bọc toàn bộ nội dung cần điều chỉnh */}
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : "padding"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 20}
-      >
-        {/* View này chứa toàn bộ nội dung (header, list, input) */}
-        <View className="flex-1 p-5">
-          {/* Nền Gradient (vẫn dùng absolute) */}
-          <Link
-            href={"/"}
-            push
-            className="absolute bg-black/20 left-6 rounded-full p-2 z-10 "
-          >
-            <Ionicons name="close" size={22} color="white" />
-          </Link>
 
-          {messages.length === 0 && (
-            <View className="flex-1">
-              <View className="items-center justify-center mt-12 mb-4">
+      {/* View này chứa toàn bộ nội dung (header, list, input) */}
+      <View className="flex-1 p-4">
+        {/* Nền Gradient (vẫn dùng absolute) */}
+        <TouchableOpacity
+          onPress={() => router.push("/")}
+          className="absolute bg-black/20 left-4 top-4 rounded-full p-2 z-10 "
+        >
+          <Ionicons name="close" size={22} color="white" />
+        </TouchableOpacity>
+
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={({ item }) => (
+            <BubbleMessage author={item.author} message={item.text} />
+          )}
+          keyExtractor={(_, index) => index.toString()}
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          extraData={isResponding}
+          ListFooterComponent={() => (isResponding ? <TypingBubble /> : null)}
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: true })
+          }
+          onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          ListEmptyComponent={
+            <View className="flex-1 mt-12">
+              <View className="items-center justify-center">
                 <View className="bg-white rounded-full w-14 h-14 items-center justify-center mb-3 shadow-md">
                   <Ionicons
                     name="sparkles-sharp"
@@ -194,92 +205,69 @@ const ChatScreen = () => {
                     color={theme === "dark" ? "#a78bfa" : "#3b82f6"} // #a78bfa = purple-400, #3b82f6 = blue-500
                   />
                 </View>
-                <Text className="text-4xl font-bold text-white">Hey, {user?.name}!</Text>
-                <Text className="text-4xl font-bold text-white ">
-                  How can I{" "}
+                <Text className="text-4xl font-bold text-white">
+                  Hey,{" "}
                   <Text
                     className={`${
                       theme === "dark" ? "text-purple-500" : "text-blue-500"
                     }`}
                   >
-                    help you?
+                    {user?.name}!
                   </Text>
                 </Text>
+                <Text className="text-4xl text-white ">
+                  How can I help you?
+                </Text>
               </View>
-
             </View>
-          )}
+          }
+        />
 
-          {messages.length > 0 && (
-            <FlatList
-              ref={flatListRef}
-              data={messages}
-              renderItem={({ item }) => (
-                <BubbleMessage author={item.author} message={item.text} />
-              )}
-              keyExtractor={(_, index) => index.toString()}
-              className="flex-1 mt-12"
-              showsVerticalScrollIndicator={false}
-              extraData={isResponding}
-              ListFooterComponent={() =>
-                isResponding ? <TypingBubble /> : null
-              }
-              onContentSizeChange={() =>
-                flatListRef.current?.scrollToEnd({ animated: true })
-              }
-              onLayout={() =>
-                flatListRef.current?.scrollToEnd({ animated: true })
-              }
-            />
-          )}
+        {/* Thanh Input (nằm ở cuối KAV) */}
 
-          {/* Thanh Input (nằm ở cuối KAV) */}
-          <View className="bg-transparent mt-2">
-            <View
-              className="bg-white rounded-full flex-row items-center p-2 shadow-2xl shadow-black/20"
-              style={{ elevation: 10 }}
-            >
-              <TextInput
-                ref={inputRef}
-                className="flex-1 text-gray-800 pl-4 text-base"
-                placeholder="Type a message..."
-                placeholderTextColor="#9CA3AF"
-                value={message}
-                onChangeText={setMessage}
-                returnKeyType="send"
-                onSubmitEditing={() => handleSendMessage()}
-              />
-              <TouchableOpacity
-                className={`${
-                  theme === "dark" ? "bg-purple-500" : "bg-blue-500"
-                } rounded-full w-10 h-10 items-center justify-center`}
-                onPress={() => handleSendMessage()}
-              >
-                {message.trim() === "" ? (
-                  recognizing ? (
-                    <Ionicons
-                      name="mic-off"
-                      size={20}
-                      color="white"
-                      onPress={handleStop}
-                    />
-                  ) : (
-                    <Ionicons
-                      name="mic"
-                      size={20}
-                      color="white"
-                      onPress={handleStart}
-                    />
-                  )
-                ) : (
-                  <Ionicons name="send" size={20} color="white" />
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
+        <View
+          className="bg-white rounded-full flex-row items-center p-2 shadow-2xl shadow-black/20 mb-12"
+          style={{ elevation: 10 }}
+        >
+          <TextInput
+            ref={inputRef}
+            className="flex-1 text-gray-800 pl-4 text-base"
+            placeholder="Type a message..."
+            placeholderTextColor="#9CA3AF"
+            value={message}
+            onChangeText={setMessage}
+            returnKeyType="send"
+            onSubmitEditing={() => handleSendMessage()}
+          />
+          <TouchableOpacity
+            className={`${
+              theme === "dark" ? "bg-purple-500" : "bg-blue-500"
+            } rounded-full w-10 h-10 items-center justify-center`}
+            onPress={() => handleSendMessage()}
+          >
+            {message.trim() === "" ? (
+              recognizing ? (
+                <Ionicons
+                  name="mic-off"
+                  size={20}
+                  color="white"
+                  onPress={handleStop}
+                />
+              ) : (
+                <Ionicons
+                  name="mic"
+                  size={20}
+                  color="white"
+                  onPress={handleStart}
+                />
+              )
+            ) : (
+              <Ionicons name="send" size={20} color="white" />
+            )}
+          </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
