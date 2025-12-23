@@ -55,6 +55,109 @@ export class NotificationService {
   }
 
   /**
+   * Send location-based "Time to Leave" reminder notification
+   * @param pushTokens - Array of Expo push tokens
+   * @param event - The event to remind about
+   * @param travelTimeSeconds - Travel time in seconds
+   * @param bufferSeconds - Preparation buffer in seconds
+   */
+  async sendLocationBasedReminder(
+    pushTokens: string[],
+    event: Event,
+    travelTimeSeconds: number,
+    bufferSeconds: number
+  ): Promise<void> {
+    // Filter out invalid tokens
+    const validTokens = pushTokens.filter((token) =>
+      Expo.isExpoPushToken(token)
+    );
+
+    if (validTokens.length === 0) {
+      console.log("No valid Expo push tokens to send to");
+      return;
+    }
+
+    const travelMinutes = Math.ceil(travelTimeSeconds / 60);
+    const bufferMinutes = Math.ceil(bufferSeconds / 60);
+
+    // Construct message based on buffer time
+    let body: string;
+    if (bufferMinutes === 0) {
+      body = `Time to leave now! Driving time approximately ${travelMinutes} ${
+        travelMinutes === 1 ? "minute" : "minutes"
+      }${event.location ? ` to ${event.location}` : ""}`;
+    } else {
+      body = `Time to leave in ${bufferMinutes} ${
+        bufferMinutes === 1 ? "minute" : "minutes"
+      }. Driving time approximately ${travelMinutes} ${
+        travelMinutes === 1 ? "minute" : "minutes"
+      } and you will arrive on time${
+        event.location ? ` at ${event.location}` : ""
+      }`;
+    }
+
+    const messages: ExpoPushMessage[] = validTokens.map((token) => ({
+      to: token,
+      sound: "default",
+      title: `🚗 Time to Leave for ${event.name}`,
+      body,
+      data: {
+        eventId: event.id,
+        type: "location_reminder",
+        travelMinutes,
+        bufferMinutes,
+      },
+      priority: "high",
+      channelId: "event-reminders",
+    }));
+
+    await this.sendPushNotifications(messages);
+  }
+
+  /**
+   * Send "Running Late" warning notification when user is too far away
+   * @param pushTokens - Array of Expo push tokens
+   * @param event - The event to remind about
+   * @param lateByMinutes - How many minutes late the user will be
+   */
+  async sendRunningLateNotification(
+    pushTokens: string[],
+    event: Event,
+    lateByMinutes: number
+  ): Promise<void> {
+    // Filter out invalid tokens
+    const validTokens = pushTokens.filter((token) =>
+      Expo.isExpoPushToken(token)
+    );
+
+    if (validTokens.length === 0) {
+      console.log("No valid Expo push tokens to send to");
+      return;
+    }
+
+    const lateText =
+      lateByMinutes === 1 ? "1 minute" : `${lateByMinutes} minutes`;
+
+    const messages: ExpoPushMessage[] = validTokens.map((token) => ({
+      to: token,
+      sound: "default",
+      title: `⚠️ You may be ${lateText} late for ${event.name}`,
+      body: `Your current location is too far. You should leave immediately${
+        event.location ? ` to get to ${event.location}` : ""
+      }!`,
+      data: {
+        eventId: event.id,
+        type: "running_late",
+        lateByMinutes,
+      },
+      priority: "high",
+      channelId: "event-reminders",
+    }));
+
+    await this.sendPushNotifications(messages);
+  }
+
+  /**
    * Send a generic push notification
    * @param pushTokens - Array of Expo push tokens
    * @param title - Notification title

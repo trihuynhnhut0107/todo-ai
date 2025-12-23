@@ -18,6 +18,11 @@ import { EventStatus } from "@/enum/event";
 import StatusChip from "./StatusChip";
 import CustomDateTimePicker from "@/components/Input/CustomDateTimePicker";
 
+
+// Define your item width/height - adjust this to match your AgendaHeaderItem
+const ITEM_WIDTH = 50; // Adjust to your actual item width
+const ITEM_SPACING = 8; // Gap between items (from p-2 padding)
+
 const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
   const { selectDate, selected, filter, setFilter, matched } =
     useSelectedDate();
@@ -67,21 +72,18 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
   }, [selected, events]);
 
   useEffect(() => {
-    const index = monthDates.findIndex((e) => e.active);
-    if (index !== -1 && listRef.current) {
-      setTimeout(
-        () => {
+    if (loaded && monthDates.length > 0) {
+      const index = monthDates.findIndex((e) => e.active);
+      if (index !== -1 && listRef.current) {
+        setTimeout(() => {
           listRef.current?.scrollToIndex({
             index,
-            animated: true,
             viewPosition: 0.5,
           });
-          setLoaded(true);
-        },
-        loaded ? 0 : 1000
-      );
+        }, 100);
+      }
     }
-  }, [selected, monthDates, loaded]);
+  }, [selected, loaded]);
 
   const filterCount = useMemo(() => {
     let count = 0;
@@ -95,7 +97,7 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
 
   return (
     <View
-      className="bg-surface"
+      className="bg-surface w-full"
       style={{
         borderColor: group?.color,
       }}
@@ -142,12 +144,30 @@ const AgendaHeader = ({ group, events }: AgendaHeaderProps) => {
       </View>
 
       <FlatList
+        onLayout={() => setLoaded(true)}
         ref={listRef}
         data={monthDates}
         keyExtractor={(item) => item.date.toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerClassName="p-2"
+        className="w-full"
+        // Add getItemLayout for proper scrollToIndex behavior
+        getItemLayout={(data, index) => ({
+          length: ITEM_WIDTH,
+          offset: (ITEM_WIDTH ) * index,
+          index,
+        })}
+        // Handle scroll failures gracefully
+        onScrollToIndexFailed={(info) => {
+          const wait = new Promise((resolve) => setTimeout(resolve, 500));
+          wait.then(() => {
+            listRef.current?.scrollToIndex({
+              index: info.index,
+              viewPosition: 0.5, 
+            });
+          });
+        }}
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() => {

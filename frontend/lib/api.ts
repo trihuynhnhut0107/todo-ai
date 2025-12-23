@@ -48,7 +48,7 @@ api.interceptors.response.use(
     return response.data.data;
   },
   async (error) => {
-    console.log(error);
+    console.log("error", error);
     if (error?.response?.status === 401) {
       const newToken = await refreshAccessToken();
 
@@ -58,12 +58,13 @@ api.interceptors.response.use(
       }
     }
     showMessage({
-      message: scanAndProcessUTCDates(error.response?.data?.message || error.message).processedString, // ✅ Access the API's error message
+      message: scanAndProcessUTCDates(
+        error.response?.data?.message || error.message
+      ).processedString, // ✅ Access the API's error message
       type: "danger",
-      autoHide:false,
-      duration:0,
-      floating:true
-      
+      autoHide: false,
+      duration: 0,
+      floating: true,
     });
     return Promise.reject(error.response?.data?.message || error.message);
     // return Promise.reject(error);

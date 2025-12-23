@@ -7,13 +7,19 @@ import {
   ReminderType,
 } from "../entities/reminder.entity";
 import { mapboxService } from "./mapbox.service";
-import { scheduleEventNotification } from "./notification-queue.service";
+import {
+  scheduleEventNotification,
+  scheduleLocationNotification,
+} from "./notification-queue.service";
+import { NotificationService } from "./notification.service";
 import { Between } from "typeorm";
 import dayjs from "dayjs";
 
 export class ReminderService {
   private reminderRepository = AppDataSource.getRepository(Reminder);
   private eventRepository = AppDataSource.getRepository(Event);
+  private userRepository = AppDataSource.getRepository(User);
+  private notificationService = new NotificationService();
 
   /**
    * Check user location and prepare location-based reminders
@@ -68,11 +74,48 @@ export class ReminderService {
         continue;
       }
 
-      // 3. Calculate time to leave
-      // Scheduled Time = Event Start - Travel Time
+      // 3. Calculate time to leave with preparation buffer
       const eventStart = dayjs(event.start);
+      const timeUntilEvent = eventStart.diff(dayjs(), "second");
+
+      // Check if user is already running late
+      if (travelTimeSeconds > timeUntilEvent && timeUntilEvent > 0) {
+        const lateBySeconds = travelTimeSeconds - timeUntilEvent;
+        const lateByMinutes = Math.ceil(lateBySeconds / 60);
+
+        console.log(
+          `User ${userId} is running late for event ${event.name} by ${lateByMinutes} minutes`
+        );
+
+        // Send immediate "running late" notification
+        const user = await this.userRepository.findOne({
+          where: { id: userId },
+        });
+
+        if (user?.pushToken) {
+          await this.notificationService.sendRunningLateNotification(
+            [user.pushToken],
+            event,
+            lateByMinutes
+          );
+        }
+
+        // Don't schedule a future reminder since they should leave NOW
+        continue;
+      }
+
+      // Calculate buffer time: use min of 10 mins or available spare time
+      const DESIRED_BUFFER_SECONDS = 10 * 60; // 10 minutes
+      const spareTimeSeconds = timeUntilEvent - travelTimeSeconds;
+      const bufferSeconds = Math.min(
+        DESIRED_BUFFER_SECONDS,
+        Math.max(0, spareTimeSeconds)
+      );
+
+      // Scheduled Time = Event Start - Travel Time - Buffer
       const scheduledTime = eventStart
         .subtract(travelTimeSeconds, "second")
+        .subtract(bufferSeconds, "second")
         .toDate();
 
       // 4. Check/Update Reminder
@@ -100,20 +143,22 @@ export class ReminderService {
           reminder.status = ReminderStatus.PENDING;
           await this.reminderRepository.save(reminder);
 
-          // Note: We don't reschedule the shared notification job here because that affects everyone.
-          // The notification worker logic sends to everyone based on the event.
-          // If we want personalized "Leave Now" notifications per user, we need a per-user job or checked by the worker using the Reminder entity.
-          // For now, let's update the job timing to the *earliest* or *latest*?
-          // Or just update it.
-          // Since the NotificationWorker uses `scheduleEventNotification`, which sets a single job per event ID,
-          // this is a limitation if users are at different locations.
-          // However, adapting the NotificationQueue to be per-user is a larger refactor of `notification-queue.service`.
-          // Given the prompt "update the entities and the logic", I should probably stick to creating the Reminder records correct first.
-          // The User's "Leave Now" is highly personal.
+          // Recalculate buffer for rescheduling
+          const newTimeUntilEvent = dayjs(event.start).diff(dayjs(), "second");
+          const newSpareTimeSeconds = newTimeUntilEvent - travelTimeSeconds;
+          const newBufferSeconds = Math.min(
+            10 * 60,
+            Math.max(0, newSpareTimeSeconds)
+          );
 
-          // Workaround: We will rely on the Reminder entity for "state",
-          // but the `scheduleEventNotification` logic needs to support targeted reminders if we want separate push notifications.
-          // But for this step, I will ensure the REPO is updated.
+          // Reschedule the location-based notification job for this user
+          await scheduleLocationNotification(
+            event.id,
+            userId,
+            scheduledTime,
+            travelTimeSeconds,
+            newBufferSeconds
+          );
         }
       } else {
         // Create new reminder
@@ -129,6 +174,15 @@ export class ReminderService {
         await this.reminderRepository.save(reminder);
         console.log(
           `Created location reminder for event ${event.name} at ${scheduledTime}`
+        );
+
+        // Schedule the location-based notification job for this user
+        await scheduleLocationNotification(
+          event.id,
+          userId,
+          scheduledTime,
+          travelTimeSeconds,
+          bufferSeconds
         );
       }
     }

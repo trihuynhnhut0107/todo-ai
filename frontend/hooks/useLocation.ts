@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import * as Location from "expo-location";
 import { sendUserLocation } from "@/services/user";
 
@@ -44,6 +44,10 @@ export const useLocation = () => {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    fetchLocation();
   }, []);
 
   return {
