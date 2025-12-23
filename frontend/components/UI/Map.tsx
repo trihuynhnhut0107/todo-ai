@@ -82,8 +82,6 @@ export default function Map({
   const getInitialRegion = () => {
     // snap to nearest upcoming event (by time)
     if (coordinates.length > 0) {
-      console.log("using event location");
-      console.log("coords:", coordinates);
       const nearestByTime = coordinates.sort(
         (a, b) =>
           new Date(a.start ?? "").getTime() - new Date(b.start ?? "").getTime()
@@ -99,7 +97,6 @@ export default function Map({
 
     // If displayUser and userLocation exists, center on user
     if (displayUser && userLocation) {
-      console.log("using user location");
       return {
         latitude: userLocation.latitude,
         longitude: userLocation.longitude,
@@ -108,7 +105,6 @@ export default function Map({
       };
     }
 
-    console.log("using default");
     // Absolute fallback
     return {
       latitude: 10.8231,
@@ -126,7 +122,6 @@ export default function Map({
   }, [loading, loaded]);
 
   const snapToCoord = (lng: number, lat: number) => {
-    console.log(`snapping to: lng:${lng},lat:${lat}`);
     mapRef.current?.animateToRegion(
       {
         latitude: lat,
@@ -273,7 +268,8 @@ export default function Map({
             style={[position, { backgroundColor: marker.color || "#007AFF" }]}
             onPress={() => {
               setSelectedMarkerId(marker.id);
-              snapToCoord(marker.longitude, marker.latitude)}}
+              snapToCoord(marker.longitude, marker.latitude);
+            }}
           >
             <Ionicons name="location" size={16} color="white" />
           </TouchableOpacity>

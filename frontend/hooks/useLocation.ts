@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import * as Location from "expo-location";
 import { sendUserLocation } from "@/services/user";
 
@@ -29,12 +29,6 @@ export const useLocation = () => {
       const latitude = location.coords.latitude;
       const longitude = location.coords.longitude;
 
-      // Send location to backend
-      await sendUserLocation({
-        lat: latitude,
-        lng: longitude,
-      });
-
       setUserLocation({
         latitude: latitude,
         longitude: longitude,
@@ -51,19 +45,6 @@ export const useLocation = () => {
       setLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    // Initial fetch
-    fetchLocation();
-
-    // Set up interval to fetch and send location every 1 minute (60000 ms)
-    const intervalId = setInterval(() => {
-      fetchLocation();
-    }, 60000);
-
-    // Cleanup interval on unmount
-    return () => clearInterval(intervalId);
-  }, [fetchLocation]);
 
   return {
     userLocation,

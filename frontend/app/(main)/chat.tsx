@@ -12,7 +12,6 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -208,63 +207,6 @@ const ChatScreen = () => {
                 </Text>
               </View>
 
-              <ScrollView className="pt-6" showsVerticalScrollIndicator={false}>
-                {/* Thẻ 1: Appointment book */}
-                <TouchableOpacity
-                  className="bg-white p-4 rounded-2xl flex-row items-center mb-4 shadow-sm shadow-black/10"
-                  style={{ elevation: 3 }} // elevation cho shadow Android
-                >
-                  <View className="bg-purple-100 p-3 rounded-lg mr-4">
-                    <Ionicons
-                      name="calendar-outline"
-                      size={24}
-                      color="#8A2BE2"
-                    />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="font-bold text-base">
-                      Appointment book
-                    </Text>
-                    <Text className="text-gray-500 text-sm">
-                      Book an appointment with ease & stay organized
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-
-                {/* Thẻ 2: Meds reminder */}
-                <TouchableOpacity
-                  className="bg-white p-4 rounded-2xl flex-row items-center mb-4 shadow-sm shadow-black/10"
-                  style={{ elevation: 3 }}
-                >
-                  <View className="bg-purple-100 p-3 rounded-lg mr-4">
-                    <Ionicons name="alarm-outline" size={24} color="#8A2BE2" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="font-bold text-base">Meds reminder</Text>
-                    <Text className="text-gray-500 text-sm">
-                      Set timely reminders to take your medication
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-
-                {/* Thẻ 3: Add to to-do list */}
-                <TouchableOpacity
-                  className="bg-white p-4 rounded-2xl flex-row items-center mb-4 shadow-sm shadow-black/10"
-                  style={{ elevation: 3 }}
-                >
-                  <View className="bg-blue-100 p-3 rounded-lg mr-4">
-                    <Ionicons name="list-outline" size={24} color="#007AFF" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="font-bold text-base">
-                      Add to to-do list
-                    </Text>
-                    <Text className="text-gray-500 text-sm">
-                      Quickly add tasks to your to-do list
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </ScrollView>
             </View>
           )}
 

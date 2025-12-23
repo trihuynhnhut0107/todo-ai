@@ -12,6 +12,7 @@ import {
 import { CalendarDrift } from "@/types/calender";
 import * as Calendar from "expo-calendar";
 import { getEvents, updateEvent } from "@/services/event";
+import useAuthStore from "@/store/auth.store";
 
 // Cấu hình cách thông báo hiển thị khi App đang mở
 Notifications.setNotificationHandler({
@@ -43,10 +44,22 @@ export function useCalendarSync() {
   const notificationListener = useRef<Notifications.Subscription | null>(null);
   const [appEvents, setAppEvents] = useState<any[]>([]);
   const [isFetched, setIsFetched] = useState(false); // Flag để biết đã load xong chưa
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   // 1. Fetch dữ liệu từ Backend khi mở App
   useEffect(() => {
     let isMounted = true;
+
+    // Chỉ đồng bộ khi đã đăng nhập thành công
+    if (!isAuthenticated || !user) {
+      setAppEvents([]);
+      setIsFetched(false);
+      return () => {
+        isMounted = false;
+      };
+    }
+
     getEvents({})
       .then((events) => {
         if (isMounted) {
@@ -61,13 +74,13 @@ export function useCalendarSync() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isAuthenticated, user]);
 
   // 2. Logic Sync ngược (Device -> App) chạy khi đã fetch xong
   useEffect(() => {
     const syncDeviceChanges = async () => {
       // Chỉ chạy khi đã lấy được dữ liệu từ Backend (dù rỗng hay có)
-      if (!isFetched) return;
+      if (!isFetched || !isAuthenticated || !user) return;
 
       console.log("🔄 Đang kiểm tra đồng bộ ngược (Device -> App)...");
 
@@ -120,9 +133,11 @@ export function useCalendarSync() {
       const timeout = setTimeout(syncDeviceChanges, 1000);
       return () => clearTimeout(timeout);
     }
-  }, [isFetched, appEvents]); // Chạy khi isFetched = true
+  }, [isFetched, appEvents, isAuthenticated, user]); // Chạy khi isFetched = true
 
   useEffect(() => {
+    if (!isAuthenticated || !user) return;
+
     registerForPushNotificationsAsync();
 
     // LẮNG NGHE THÔNG BÁO ĐẾN
@@ -199,7 +214,7 @@ export function useCalendarSync() {
     return () => {
       notificationListener.current?.remove();
     };
-  }, []);
+  }, [isAuthenticated, user]);
 }
 
 // Hàm phụ trợ: Tạo Channel và xin quyền

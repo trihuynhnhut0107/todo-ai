@@ -14,7 +14,7 @@ export interface CustomMapInputProps {
 }
 
 const CustomMapInput = ({ coord, onChange }: CustomMapInputProps) => {
-  const { userLocation, refetch } = useLocation();
+  const { userLocation } = useLocation();
   const mapRef = useRef<MapView>(null);
 
   // Convert from Mapbox format [lng, lat] to react-native-maps format
