@@ -12,12 +12,10 @@ import { sendUserLocation } from "@/services/user";
 const MainLayout = () => {
   const { isAuthenticated } = useAuthStore();
   const theme = useColorScheme();
-  const {refetch } = useLocation();
+  const { refetch } = useLocation();
 
   // Set up notification listeners for handling taps
   useNotificationListeners();
-
-  if (!isAuthenticated) return <Redirect href="/sign-in" />;
 
   const sendLocation = async () => {
     const location = await refetch();
@@ -29,7 +27,7 @@ const MainLayout = () => {
       });
     }
   };
-  
+
   useEffect(() => {
     sendLocation();
     // Set up interval to fetch and send location every 5 minute (300000 ms)
@@ -41,6 +39,8 @@ const MainLayout = () => {
     return () => clearInterval(intervalId);
   }, []);
 
+  if (!isAuthenticated) return <Redirect href="/sign-in" />;
+  
   return (
     <SafeAreaView className="flex-1 bg-background">
       <StatusBar barStyle="light-content" />

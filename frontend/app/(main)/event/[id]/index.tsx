@@ -13,7 +13,7 @@ import useAuthStore from "@/store/auth.store";
 import { useGroupMember } from "@/query/group.query";
 import CustomButton from "@/components/Input/CustomButton";
 import { EventStatus } from "@/enum/event";
-import { ScrollView } from "react-native-gesture-handler";
+import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 import StatusChip from "@/components/UI/Calendar/StatusChip";
 import useThemeColor from "@/hooks/useThemeColor";
 import Map from "@/components/UI/Map";
@@ -27,7 +27,7 @@ const EventDetail = () => {
   const { mutate: deleteEvent } = useDeleteEvent(() => router.back());
   const { mutate: updateStatus, isPending: pendingUpdateStatus } =
     useUpdateEventStatus();
-  const { data: eventdata, isFetching: pendingEvent } = useEventById(id);
+  const { data: eventdata, isFetching: pendingEvent, refetch } = useEventById(id);
   const { data: members, isFetching: pendingMembers } = useGroupMember(
     eventdata?.workspaceId ?? ""
   );
@@ -112,7 +112,7 @@ const EventDetail = () => {
   }, [eventdata, members]);
 
   return (
-    <ScrollView className="flex-1" contentContainerClassName="p-4 gap-4">
+    <ScrollView className="flex-1" contentContainerClassName="p-4 gap-4" refreshControl={<RefreshControl refreshing={pendingEvent} onRefresh={refetch} />}>
       <View className="flex-row items-center justify-between">
         <TouchableOpacity
           onPress={() => router.push(`/(main)/group/${event?.workspaceId}`)}

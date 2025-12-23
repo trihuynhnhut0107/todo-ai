@@ -48,7 +48,7 @@ api.interceptors.response.use(
     return response.data.data;
   },
   async (error) => {
-    console.log(error);
+    console.error(error);
     if (error?.response?.status === 401) {
       const newToken = await refreshAccessToken();
 
