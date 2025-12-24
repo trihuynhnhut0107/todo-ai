@@ -90,6 +90,7 @@ const Event_form = () => {
     (newEventId) => {
       // Navigate to new event if ID changed (recurring event update)
       if (newEventId !== event_id) {
+        router.back();
         router.replace(`/(main)/event/${newEventId}`);
       }
     }
