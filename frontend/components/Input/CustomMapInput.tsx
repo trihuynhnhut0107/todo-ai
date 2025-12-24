@@ -3,7 +3,7 @@ import MapView, {
   PROVIDER_GOOGLE,
   MapPressEvent,
 } from "react-native-maps";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { View, TouchableOpacity } from "react-native";
 import { useLocation } from "@/hooks/useLocation";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,6 +15,7 @@ export interface CustomMapInputProps {
 
 const CustomMapInput = ({ coord, onChange }: CustomMapInputProps) => {
   const { userLocation } = useLocation();
+  const [loaded, setLoaded] = useState(false);
   const mapRef = useRef<MapView>(null);
 
   // Convert from Mapbox format [lng, lat] to react-native-maps format
@@ -42,7 +43,6 @@ const CustomMapInput = ({ coord, onChange }: CustomMapInputProps) => {
   };
 
   const getInitialCoordinate = () => {
-    
     let reg = {
       latitude: 10.8231,
       longitude: 106.6297,
@@ -72,6 +72,26 @@ const CustomMapInput = ({ coord, onChange }: CustomMapInputProps) => {
 
     return reg;
   };
+
+  const snapToCoord = (lng: number, lat: number) => {
+    mapRef.current?.animateToRegion(
+      {
+        latitude: lat,
+        longitude: lng,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      },
+      500
+    );
+  };
+
+  useEffect(() => {
+    if (loaded) {
+      const reg = getInitialCoordinate();
+      snapToCoord(reg.longitude, reg.latitude);
+    }
+  }, [loaded]);
+
   return (
     <View className="flex-1 min-h-[400px]">
       <MapView
@@ -83,6 +103,7 @@ const CustomMapInput = ({ coord, onChange }: CustomMapInputProps) => {
         showsUserLocation={true}
         showsMyLocationButton={false}
         toolbarEnabled={false}
+        onMapLoaded={() => setLoaded(true)}
       >
         {coord?.lat && coord?.lng && (
           <Marker
